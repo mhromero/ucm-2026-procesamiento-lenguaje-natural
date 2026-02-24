@@ -6,6 +6,5 @@
   "mailbox_endpoint": "/buzon",
   "letter_endpoint": "/carta",
   "package_endpoint": "/paquete",
-  "alias": "burrito sabanero",
-  "modo_monopuesto": false
+  "alias": "burrito sabanero"
 }

@@ -13,22 +13,13 @@ from .config import (
     MAILBOX_ENDPOINT,
     PACKAGE_ENDPOINT,
     ALIAS,
-    MODO_MONOPUESTO,
 )
 
 REQUEST_TIMEOUT = 10
 
 
-def _params_agente() -> Dict[str, str] | None:
-    """En modo monopuesto, devuelve params para identificar al agente; si no, None."""
-    if MODO_MONOPUESTO and ALIAS:
-        return {"agente": ALIAS}
-    return None
-
-
 def get_info() -> Dict[str, Any]:
-    params = _params_agente()
-    r = requests.get(f"{API_BASE}/info", timeout=REQUEST_TIMEOUT, params=params)
+    r = requests.get(f"{API_BASE}/info", timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
@@ -41,8 +32,7 @@ def get_people() -> Any:
 
 def set_alias(nombre: str) -> Any:
     """Configura nuestro alias en el servidor (POST /alias/{nombre})."""
-    params = _params_agente()
-    r = requests.post(f"{API_BASE}/alias/{nombre}", timeout=REQUEST_TIMEOUT, params=params)
+    r = requests.post(f"{API_BASE}/alias/{nombre}", timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
@@ -98,16 +88,14 @@ def send_letter(to_alias: str, subject: str, body: str) -> Any:
 
 def get_mailbox() -> Any:
     """Obtiene las cartas del buzón."""
-    params = _params_agente()
-    r = requests.get(MAILBOX_ENDPOINT, timeout=REQUEST_TIMEOUT, params=params)
+    r = requests.get(MAILBOX_ENDPOINT, timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
 
 def delete_letter(uid: str) -> Any:
     """Elimina una carta del buzón (DELETE /mail/{uid})."""
-    params = _params_agente()
-    r = requests.delete(f"{API_BASE}/mail/{uid}", timeout=REQUEST_TIMEOUT, params=params)
+    r = requests.delete(f"{API_BASE}/mail/{uid}", timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
@@ -127,12 +115,10 @@ def send_package(to_alias: str, resources: Dict[str, int]) -> Any:
     """
     # La API espera el alias del destinatario en el path y directamente
     # un objeto con los recursos en el cuerpo.
-    params = _params_agente()
     r = requests.post(
         f"{PACKAGE_ENDPOINT}/{to_alias}",
         json=resources,
         timeout=REQUEST_TIMEOUT,
-        params=params,
     )
     r.raise_for_status()
     return r.json()
