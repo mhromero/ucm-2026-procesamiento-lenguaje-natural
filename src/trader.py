@@ -36,7 +36,29 @@ def analizar_oferta(
     """
     Usa Ollama para decidir si aceptar o rechazar una oferta.
     Devuelve un JSON con decision (aceptada|rechazada), oferta y pide.
+    Si needs está vacío (objetivo cumplido), acepta ofertas que nos den oro a cambio de surplus.
     """
+    objetivo_cumplido = len(needs) == 0
+    if objetivo_cumplido:
+        reglas = f"""
+- Ya hemos cumplido el objetivo de recursos. Ahora queremos MAXIMIZAR ORO.
+- "decision" = "aceptada" si:
+    a) nos ofrecen {GOLD_RESOURCE_NAME} (oro)
+    b) nos piden recursos que tenemos en surplus (PODEMOS OFRECER)
+    c) podemos dar las cantidades que pide
+    d) es razonable (p. ej. 1:1 o menos recursos que recibimos de oro)
+- "decision" = "rechazada" si no nos ofrecen oro o piden algo que no tenemos en surplus.
+"""
+    else:
+        reglas = """
+- "decision" = "aceptada" si se cumplen TODAS las condiciones siguientes:
+    a) los recursos que ofrece los necesitamos para cumplir el objetivo
+    b) no pide recursos que necesitemos para nuestro objetivo
+    c) podemos dar los recursos que pide
+    d) se envían como máximo el mismo número de recursos que se reciben, salvo que con la oferta completemos el objetivo al 100%
+
+- "decision" = "rechazada" si no se cumple alguna de las condiciones anteriores
+"""
     prompt = f"""
 Eres un asistente que toma decisiones sobre ofertas recibidas.
 
@@ -54,13 +76,7 @@ Tu tarea es LEER la oferta y devolver un JSON estructurado con esta forma:
 }}
 
 Donde:
-- "decision" = "aceptada" si se cumplen TODAS las condiciones siguientes:
-    a) los recursos que ofrece los necesitamos para cumplir el objetivo
-    b) no pide recursos que necesitemos para nuestro objetivo
-    c) podemos dar los recursos que pide
-    d) se envían como máximo el mismo número de recursos que se reciben, salvo que con la oferta completemos el objetivo al 100%
-
-- "decision" = "rechazada" si no se cumple alguna de las condiciones anteriores
+{reglas}
 - "oferta" describe lo que EL OTRO agente nos ofrece.
 - "pide" describe lo que EL OTRO agente quiere que le enviemos.
 - No hace falta aceptar la oferta al completo, se puede aceptar parcialmente solo los recursos que nos interesen y que cumplan las condiciones anteriores.
