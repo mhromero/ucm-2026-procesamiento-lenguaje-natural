@@ -145,7 +145,7 @@ CARTA RECIBIDA (como JSON bruto de la API):
 {json.dumps(carta_dict, ensure_ascii=False, indent=2)}
 """
     respuesta = ollama(prompt, format=ANALIZAR_CARTA_JSON_SCHEMA)
-    
+
     try:
         data = json.loads(respuesta)
         if not isinstance(data, dict):

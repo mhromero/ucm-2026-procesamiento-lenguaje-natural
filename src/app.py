@@ -4,6 +4,7 @@ Lógica principal del bot: flujo de negociación (main) y flujo legacy.
 
 import json
 import time
+import requests
 
 from . import api
 from .config import ALIAS
@@ -49,7 +50,14 @@ def main() -> None:
     print_kv("Acción", "Obteniendo nuestros recursos (/info)")
 
     state = State(alias="", inventario={}, objetivo={}, needs={}, surplus={}, buzon={})
-    state.update()
+    while True:
+        try:
+            state.update()
+            break
+        except requests.exceptions.RequestException as e:
+            print_error(f"Error leyendo /info al arrancar: {e}")
+            print_bot("Reintentando en 5 s...", warning=True)
+            time.sleep(5)
 
     print_section("ESTADO INICIAL")
     print_kv("Alias", state.alias)
@@ -115,7 +123,6 @@ def main() -> None:
 
         # 3) Procesar de más antigua a más nueva y eliminar del buzón
         for id_carta, content in sorted_letters:
-
             remitente = content.get("remi", "??")
             asunto = content.get("asunto", "")
             fecha = content.get("fecha", "")
@@ -144,9 +151,15 @@ def main() -> None:
                 if not remitente:
                     print_bot("Oferta sin remitente claro, se ignora.", warning=True)
                 else:
-                    print_kv("Acción", f"Gestionando OFERTA de {remitente}", color=logs.GREEN)
+                    print_kv(
+                        "Acción", f"Gestionando OFERTA de {remitente}", color=logs.GREEN
+                    )
                     handle_offer(
-                        remitente, analisis, state.needs, state.surplus, state.inventario
+                        remitente,
+                        analisis,
+                        state.needs,
+                        state.surplus,
+                        state.inventario,
                     )
             elif tipo == "confirmacion":
                 remitente = content.get("remi")
@@ -182,5 +195,9 @@ def main() -> None:
             warning=True,
         )
         time.sleep(5)
-        state.update()
+        try:
+            state.update()
+        except requests.exceptions.RequestException as e:
+            print_error(f"Error refrescando estado: {e}")
+            continue
         print_buzon(state.buzon)

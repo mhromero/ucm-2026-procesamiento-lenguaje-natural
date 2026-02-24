@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from .config import MODEL
+from .config import MODEL, OLLAMA_URL
 
 
 def ollama(prompt: str, format: Optional[Dict[str, Any]] = None) -> str:
@@ -20,13 +20,11 @@ def ollama(prompt: str, format: Optional[Dict[str, Any]] = None) -> str:
         "prompt": prompt,
         "stream": False,
     }
-    """
     if format is not None:
         payload["format"] = format
-    """
     try:
         r = requests.post(
-            "http://localhost:11434/api/generate",
+            OLLAMA_URL,
             json=payload,
             timeout=180,
         )

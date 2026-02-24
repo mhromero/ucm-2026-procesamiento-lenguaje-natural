@@ -45,8 +45,7 @@ def print_carta_cruda(content: Any) -> None:
 def print_llm(analisis: Any) -> None:
     """Imprime el análisis del LLM con etiqueta [LLM]."""
     print(
-        f"{CYAN}{BOLD}[LLM]{RESET} "
-        f"{json.dumps(analisis, ensure_ascii=False, indent=2)}"
+        f"{CYAN}{BOLD}[LLM]{RESET} {json.dumps(analisis, ensure_ascii=False, indent=2)}"
     )
 
 

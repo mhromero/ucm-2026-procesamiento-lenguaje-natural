@@ -146,7 +146,10 @@ def process_offer(
         }
 
     # Comprobaciones de condiciones antes de aceptar
-    if GOLD_RESOURCE_NAME in recursos_a_enviar and recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0) > 0:
+    if (
+        GOLD_RESOURCE_NAME in recursos_a_enviar
+        and recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0) > 0
+    ):
         return {
             "aceptada": False,
             "motivo": "No enviamos oro.",
@@ -242,7 +245,10 @@ def process_confirmation(
         }
 
     # Comprobaciones de condiciones antes de autorizar el envío
-    if GOLD_RESOURCE_NAME in recursos_a_enviar and recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0) > 0:
+    if (
+        GOLD_RESOURCE_NAME in recursos_a_enviar
+        and recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0) > 0
+    ):
         return {
             "tiene_recursos_recibidos": True,
             "es_regalo": False,
@@ -308,7 +314,9 @@ def handle_offer(
     oferta = resultado.get("oferta") or {}
     recursos_a_enviar = resultado.get("recursos_a_enviar") or {}
     if not recursos_a_enviar:
-        print("Oferta aceptada pero sin recursos a enviar (resultado vacío), no se realiza envío.")
+        print(
+            "Oferta aceptada pero sin recursos a enviar (resultado vacío), no se realiza envío."
+        )
         return False
 
     try:
@@ -324,7 +332,9 @@ def handle_offer(
             recursos_esperados=oferta,
         )
         print(f"→ Enviando carta de confirmación de oferta aceptada a {remitente}...")
-        api.send_letter(remitente, "Confirmación de oferta aceptada", carta_confirmacion)
+        api.send_letter(
+            remitente, "Confirmación de oferta aceptada", carta_confirmacion
+        )
     except Exception as e:
         print(f"ERROR enviando carta de confirmación a {remitente}: {e}")
 
@@ -353,15 +363,21 @@ def handle_confirmation(
     recursos_a_enviar = resultado.get("recursos_a_enviar") or {}
 
     if resultado.get("es_regalo"):
-        print("Se interpreta la confirmación como regalo, no se envían recursos a cambio.")
+        print(
+            "Se interpreta la confirmación como regalo, no se envían recursos a cambio."
+        )
         return True
 
     if not resultado.get("puede_enviar") or not recursos_a_enviar:
-        print(f"No se envía paquete de confirmación: {resultado.get('motivo', 'sin recursos a enviar')}.")
+        print(
+            f"No se envía paquete de confirmación: {resultado.get('motivo', 'sin recursos a enviar')}."
+        )
         return False
 
     try:
-        print(f"Confirmación correcta de {remitente}. Enviando paquete de vuelta: {recursos_a_enviar}")
+        print(
+            f"Confirmación correcta de {remitente}. Enviando paquete de vuelta: {recursos_a_enviar}"
+        )
         api.send_package(remitente, recursos_a_enviar)
     except Exception as e:
         print(f"ERROR enviando paquete de confirmación a {remitente}: {e}")
@@ -373,8 +389,12 @@ def handle_confirmation(
             recursos_esperados=recursos_recibidos,
         )
         print(f"→ Enviando carta de confirmación de envío de recursos a {remitente}...")
-        api.send_letter(remitente, "Confirmación de envío de recursos", carta_confirmacion)
+        api.send_letter(
+            remitente, "Confirmación de envío de recursos", carta_confirmacion
+        )
     except Exception as e:
-        print(f"ERROR enviando carta de confirmación (confirmación recibida) a {remitente}: {e}")
+        print(
+            f"ERROR enviando carta de confirmación (confirmación recibida) a {remitente}: {e}"
+        )
 
     return True

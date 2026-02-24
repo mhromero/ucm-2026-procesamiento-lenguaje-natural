@@ -3,6 +3,7 @@ ConfiguraciÃ³n del bot: se carga desde config.json (mismo directorio que este mÃ
 """
 
 import json
+import os
 from pathlib import Path
 
 _CONFIG_PATH = Path(__file__).resolve().parent / "config.json"
@@ -15,11 +16,16 @@ def _load_config() -> dict:
 
 _c = _load_config()
 
-API_BASE = _c["api_base"]
-OLLAMA_URL = _c["ollama_url"]
-MODEL = _c["model"]
+
+def _no_trailing_slash(url: str) -> str:
+    return url.rstrip("/")
+
+
+API_BASE = _no_trailing_slash(os.getenv("FDI_PLN__BUTLER_ADDRESS", _c["api_base"]))
+OLLAMA_URL = os.getenv("FDI_PLN__OLLAMA_URL", _c["ollama_url"])
+MODEL = os.getenv("FDI_PLN__MODEL", _c["model"])
 GOLD_RESOURCE_NAME = _c["gold_resource_name"]
 MAILBOX_ENDPOINT = API_BASE + _c["mailbox_endpoint"]
 LETTER_ENDPOINT = API_BASE + _c["letter_endpoint"]
 PACKAGE_ENDPOINT = API_BASE + _c["package_endpoint"]
-ALIAS = _c.get("alias", "")
+ALIAS = os.getenv("FDI_PLN__ALIAS", _c.get("alias", ""))
