@@ -1,4 +1,0 @@
-[console_scripts]
-fdi-pln-butler = butler.cli:cli
-fdi-pln-profe = profe.main:cli
-
