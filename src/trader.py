@@ -77,7 +77,7 @@ OFERTA:
 {json.dumps(oferta, ensure_ascii=False, indent=2)}
 
 """
-    respuesta = ollama(prompt, format=ANALIZAR_OFERTA_JSON_SCHEMA)
+    respuesta = ollama(prompt)
     try:
         data = json.loads(respuesta)
         if not isinstance(data, dict):

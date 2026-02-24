@@ -79,9 +79,8 @@ def main() -> None:
     # En lugar de una carta gigante, mandamos "mini cartas" 1 a 1
     # combinando cada recurso que necesitamos con cada recurso que nos sobra.
     print_section("CARTAS DE OFERTA SIMPLES A ENVIAR")
-    """
+    
     for p in people:
-        p = p["alias"]
         if p == state.alias:
             continue
         for recurso_necesario in state.needs.keys():
@@ -100,7 +99,7 @@ def main() -> None:
                     api.send_letter(p, asunto, cuerpo)
                 except Exception as e:
                     print_error(f"al enviar mini oferta a {p}: {e}")
-    """
+    
     if state.has_reached_objective():
         print_bot(
             "Ya hemos alcanzado el 100% de los recursos objetivo. "
