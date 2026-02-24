@@ -76,6 +76,17 @@ def build_simple_offer_letter(
     )
 
 
+def build_surplus_for_gold_letter(recurso_sobrante: str, gold_name: str) -> str:
+    """
+    Genera una mini carta ofreciendo 1 unidad de recurso sobrante a cambio de 1 oro.
+    Se usa cuando ya hemos alcanzado el objetivo y queremos maximizar oro.
+    """
+    return (
+        f"Ya he cumplido mi objetivo de recursos. "
+        f"Te ofrezco 1 {recurso_sobrante} a cambio de 1 {gold_name}."
+    )
+
+
 def build_trade_confirmation_letter(
     recursos_enviados: Dict[str, int],
     recursos_esperados: Dict[str, int],
