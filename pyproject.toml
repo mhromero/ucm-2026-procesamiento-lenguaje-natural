@@ -9,11 +9,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "click>=8.0.0",
     "requests>=2.28.0",
 ]
 
 [project.scripts]
-fdi-pln-2611-p1 = "src.app:main"
+fdi-pln-2611-p1 = "src.config:cli"
 
 [tool.uv]
 package = true

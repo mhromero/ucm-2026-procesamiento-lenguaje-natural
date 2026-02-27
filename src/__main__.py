@@ -2,7 +2,7 @@
 Punto de entrada: python -m src
 """
 
-from .app import main
+from .config import cli
 
 if __name__ == "__main__":
-    main()
+    cli()

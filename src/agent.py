@@ -69,8 +69,13 @@ CARTA RECIBIDA (como JSON bruto de la API):
 """
     try:
         response = ollama(prompt)
-    except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        print("ERROR: Timeout al analizar carta; se usa fallback.")
+    except (
+        requests.exceptions.Timeout,
+        requests.exceptions.ReadTimeout,
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.HTTPError,
+    ):
+        print("ERROR: No se pudo analizar la carta (timeout/conexión/modelo no encontrado); se usa fallback.")
         return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
 
     print(response)
@@ -167,11 +172,16 @@ OFERTA:
     for attempt in range(max_attempts):
         try:
             response = ollama(prompt)
-        except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+        except (
+            requests.exceptions.Timeout,
+            requests.exceptions.ReadTimeout,
+            requests.exceptions.ConnectTimeout,
+            requests.exceptions.HTTPError,
+        ):
             if attempt < max_attempts - 1:
-                print(f"Intento {attempt + 1}/{max_attempts}: Timeout con Ollama, reintentando...")
+                print(f"Intento {attempt + 1}/{max_attempts}: Error con Ollama, reintentando...")
             else:
-                print("ERROR: Timeout con Ollama al analizar oferta (tras 3 intentos)")
+                print("ERROR: No se pudo contactar Ollama (timeout/404/modelo); se rechaza la oferta por defecto.")
                 return {"decision": "rechazada", "oferta": {}, "pide": {}}
         try:
             data = json.loads(response)
