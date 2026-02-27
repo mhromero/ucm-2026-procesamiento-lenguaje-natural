@@ -1,1 +1,13 @@
-{"api_base":"http://127.0.0.1:7719","ollama_url":"http://localhost:11434/api/generate","model":"qwen3-vl:8b","gold_resource_name":"oro","mailbox_endpoint":"/buzon","letter_endpoint":"/carta","package_endpoint":"/paquete","alias":"burrito","modo_monopuesto":true}
+{
+  "api_base": "http://127.0.0.1:7719",
+  "ollama_url": "http://localhost:11434/api/generate",
+  "model": "mistral:7b",
+  "gold_resource_name": "oro",
+  "mailbox_endpoint": "/buzon",
+  "letter_endpoint": "/carta",
+  "package_endpoint": "/paquete",
+  "alias": "agente2",
+  "modo_monopuesto": true,
+  "letters_before_rebroadcast": 5,
+  "offers_per_person": 2
+}
