@@ -30,17 +30,28 @@ ANALIZAR_OFERTA_JSON_SCHEMA = {
 }
 
 
+def _solo_oro(needs: Dict[str, Any], surplus: Dict[str, int], inventario: Dict[str, int]) -> bool:
+    """True si no hemos alcanzado objetivo, no tenemos surplus y tenemos al menos 1 oro."""
+    if len(needs) == 0 or surplus:
+        return False
+    return inventario.get(GOLD_RESOURCE_NAME, 0) >= 1
+
+
 def analizar_oferta(
     oferta: Dict[str, Any],
     needs: Dict[str, Any],
     surplus: Dict[str, int],
+    inventario: Dict[str, int],
 ) -> Dict[str, Any]:
     """
     Usa Ollama para decidir si aceptar o rechazar una oferta.
     Devuelve un JSON con decision (aceptada|rechazada), oferta y pide.
     Si needs está vacío (objetivo cumplido), acepta ofertas que nos den oro a cambio de surplus.
+    Si solo tenemos oro (surplus vacío, tenemos needs y >= 1 oro), acepta ofertas de 1 recurso a cambio de 1 oro.
     """
     objetivo_cumplido = len(needs) == 0
+    solo_oro = _solo_oro(needs, surplus, inventario)
+
     if objetivo_cumplido:
         reglas = f"""
 - Ya hemos cumplido el objetivo de recursos. Ahora queremos MAXIMIZAR ORO.
@@ -50,6 +61,14 @@ def analizar_oferta(
     c) podemos dar las cantidades que pide
     d) es razonable (p. ej. 1:1 o menos recursos que recibimos de oro)
 - "decision" = "rechazada" si no nos ofrecen oro o piden algo que no tenemos en surplus.
+"""
+    elif solo_oro:
+        reglas = f"""
+- Solo tenemos {GOLD_RESOURCE_NAME} para ofrecer y no hemos alcanzado el objetivo.
+- "decision" = "aceptada" si:
+    a) nos ofrecen 1 unidad de CUALQUIER recurso (no necesariamente de NECESITAMOS)
+    b) nos piden exactamente 1 {GOLD_RESOURCE_NAME} (y tenemos al menos 1)
+- "decision" = "rechazada" si no nos ofrecen ningún recurso o no piden 1 oro.
 """
     else:
         reglas = """
@@ -69,10 +88,10 @@ Tu tarea es LEER la oferta y devolver un JSON estructurado con esta forma:
 {{
   "decision": "aceptada" | "rechazada",
   "oferta": {{
-    "recurso": cantidad entero
+    "tipo de recurso": cantidad entero
   }},
   "pide": {{
-    "recurso": cantidad entero
+    "tipo de recurso": cantidad entero
   }},
 
 }}
@@ -150,7 +169,7 @@ def process_offer(
             "recursos_a_enviar": {},
         }
 
-    decision = analizar_oferta(analisis, needs, surplus)
+    decision = analizar_oferta(analisis, needs, surplus, inventario)
 
     if decision.get("decision") != "aceptada":
         return {
@@ -176,17 +195,25 @@ def process_offer(
         }
 
     # Comprobaciones de condiciones antes de aceptar
-    if (
-        GOLD_RESOURCE_NAME in recursos_a_enviar
-        and recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0) > 0
-    ):
-        return {
-            "aceptada": False,
-            "motivo": "No enviamos oro.",
-            "oferta": oferta_decidida,
-            "pide": pide_decidido,
-            "recursos_a_enviar": {},
-        }
+    solo_oro = _solo_oro(needs, surplus, inventario)
+    envia_oro = recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0)
+    if envia_oro > 0:
+        if not solo_oro or envia_oro > 1:
+            return {
+                "aceptada": False,
+                "motivo": "No enviamos oro (o solo permitimos 1 oro cuando solo tenemos oro para cambiar).",
+                "oferta": oferta_decidida,
+                "pide": pide_decidido,
+                "recursos_a_enviar": {},
+            }
+        if inventario.get(GOLD_RESOURCE_NAME, 0) < 1:
+            return {
+                "aceptada": False,
+                "motivo": "No tenemos suficiente oro para enviar.",
+                "oferta": oferta_decidida,
+                "pide": pide_decidido,
+                "recursos_a_enviar": {},
+            }
 
     for recurso, cant in recursos_a_enviar.items():
         if needs.get(recurso, 0) > 0:
@@ -219,6 +246,7 @@ def process_confirmation(
     analisis: Dict[str, Any],
     inventario: Dict[str, int],
     needs: Dict[str, Any],
+    surplus: Dict[str, int],
 ) -> Dict[str, Any]:
     """
     Procesa una confirmación de envío: extrae qué nos han enviado y qué piden
@@ -275,19 +303,29 @@ def process_confirmation(
         }
 
     # Comprobaciones de condiciones antes de autorizar el envío
-    if (
-        GOLD_RESOURCE_NAME in recursos_a_enviar
-        and recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0) > 0
-    ):
-        return {
-            "tiene_recursos_recibidos": True,
-            "es_regalo": False,
-            "puede_enviar": False,
-            "motivo": "No enviamos oro en confirmación.",
-            "recursos_recibidos": recursos_recibidos,
-            "pide": pide,
-            "recursos_a_enviar": {},
-        }
+    solo_oro = _solo_oro(needs, surplus, inventario)
+    envia_oro = recursos_a_enviar.get(GOLD_RESOURCE_NAME, 0)
+    if envia_oro > 0:
+        if not solo_oro or envia_oro > 1:
+            return {
+                "tiene_recursos_recibidos": True,
+                "es_regalo": False,
+                "puede_enviar": False,
+                "motivo": "No enviamos oro en confirmación (o solo 1 oro cuando solo tenemos oro para cambiar).",
+                "recursos_recibidos": recursos_recibidos,
+                "pide": pide,
+                "recursos_a_enviar": {},
+            }
+        if inventario.get(GOLD_RESOURCE_NAME, 0) < 1:
+            return {
+                "tiene_recursos_recibidos": True,
+                "es_regalo": False,
+                "puede_enviar": False,
+                "motivo": "No tenemos suficiente oro para enviar.",
+                "recursos_recibidos": recursos_recibidos,
+                "pide": pide,
+                "recursos_a_enviar": {},
+            }
 
     for recurso, cant in recursos_a_enviar.items():
         if needs.get(recurso, 0) > 0:
@@ -376,12 +414,13 @@ def handle_confirmation(
     analisis: Dict[str, Any],
     inventario: Dict[str, int],
     needs: Dict[str, Any],
+    surplus: Dict[str, int],
 ) -> bool:
     """
     Procesa una confirmación: decide, comprueba condiciones, envía paquete
     y carta de confirmación si aplica. Devuelve True si nuestros recursos cambiaron.
     """
-    resultado = process_confirmation(analisis, inventario, needs)
+    resultado = process_confirmation(analisis, inventario, needs, surplus)
     print("Decisión sobre la confirmación:")
     print(json.dumps(resultado, ensure_ascii=False, indent=2))
 

@@ -3,6 +3,7 @@ Generación y análisis de cartas: prompts para Ollama y carta de estado.
 """
 
 import json
+import random
 from typing import Any, Dict
 
 import requests
@@ -86,6 +87,25 @@ def build_surplus_for_gold_letter(recurso_sobrante: str, gold_name: str) -> str:
     return (
         f"Ya he cumplido mi objetivo de recursos. "
         f"Te ofrezco 1 {recurso_sobrante} a cambio de 1 {gold_name}."
+    )
+
+
+def build_gold_for_any_letter(needs: Dict[str, int], gold_name: str) -> str:
+    """
+    Genera una carta ofreciendo 1 oro a cambio de 1 unidad de un recurso concreto que necesitemos.
+    Se usa cuando solo tenemos oro y no hemos alcanzado el objetivo.
+    """
+    if needs:
+        recurso_objetivo = random.choice(list(needs.keys()))
+        return (
+            f"No tengo otros recursos para intercambiar. Necesito: {json.dumps(needs, ensure_ascii=False)}. "
+            f"Te ofrezco 1 {gold_name} a cambio de 1 unidad de {recurso_objetivo}."
+        )
+
+    # Fallback si por alguna razón no hay needs: cualquier recurso
+    return (
+        f"No tengo otros recursos para intercambiar. "
+        f"Te ofrezco 1 {gold_name} a cambio de 1 unidad de cualquier recurso."
     )
 
 

@@ -15,6 +15,7 @@ from .letters import (
     build_status_letter,
     build_simple_offer_letter,
     build_surplus_for_gold_letter,
+    build_gold_for_any_letter,
 )
 from . import logs
 from .logs import (
@@ -102,6 +103,23 @@ def main() -> None:
                 api.send_letter(alias, asunto, cuerpo)
             except Exception as e:
                 print_error(f"al enviar oferta a {p}: {e}")
+    elif state.only_has_gold_to_trade():
+        print_bot("Solo tenemos oro. Enviando oferta 1 oro por cualquier recurso que necesitemos.", success=True)
+        cuerpo = build_gold_for_any_letter(state.needs, GOLD_RESOURCE_NAME)
+        asunto = f"Oferta: 1 {GOLD_RESOURCE_NAME} por 1 recurso que necesite"
+        for p in people:
+            alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
+            if not alias or alias == state.alias:
+                continue
+            try:
+                print_kv(
+                    "Enviando oferta oro por recurso a",
+                    f"{alias} -> {asunto}",
+                    color=logs.GREEN,
+                )
+                api.send_letter(alias, asunto, cuerpo)
+            except Exception as e:
+                print_error(f"al enviar oferta oro por recurso a {alias}: {e}")
     else:
         # Caso normal: dos ofertas aleatorias (necesario↔sobrante) por persona
         pares_oferta = [
@@ -199,7 +217,7 @@ def main() -> None:
                         color=logs.GREEN,
                     )
                     handle_confirmation(
-                        remitente, analisis, state.inventario, state.needs
+                        remitente, analisis, state.inventario, state.needs, state.surplus
                     )
 
             print_bot_dim(f"[BOT] Eliminando carta del buzón (id={id_carta})")
@@ -232,6 +250,26 @@ def main() -> None:
                         api.send_letter(alias, asunto, cuerpo)
                     except Exception as e:
                         print_error(f"al enviar oferta surplus→oro a {alias}: {e}")
+            elif state.only_has_gold_to_trade():
+                print_bot(
+                    "5 cartas analizadas. Solo tenemos oro. Enviando oferta 1 oro por cualquier recurso.",
+                    success=True,
+                )
+                cuerpo = build_gold_for_any_letter(state.needs, GOLD_RESOURCE_NAME)
+                asunto = f"Oferta: 1 {GOLD_RESOURCE_NAME} por 1 recurso que necesite"
+                for p in people:
+                    alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
+                    if not alias or alias == state.alias:
+                        continue
+                    try:
+                        print_kv(
+                            "Enviando oferta oro por recurso a",
+                            f"{alias} -> {asunto}",
+                            color=logs.GREEN,
+                        )
+                        api.send_letter(alias, asunto, cuerpo)
+                    except Exception as e:
+                        print_error(f"al enviar oferta oro por recurso a {alias}: {e}")
             elif state.needs and state.surplus:
                 pares_oferta = [
                     (n, s) for n in state.needs.keys() for s in state.surplus.keys()

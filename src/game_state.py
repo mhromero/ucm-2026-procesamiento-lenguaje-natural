@@ -117,6 +117,17 @@ class State:
                 return False
         return True
 
+    def only_has_gold_to_trade(self) -> bool:
+        """
+        True si no hemos alcanzado el objetivo, no tenemos surplus de otros recursos
+        y tenemos al menos 1 de oro para ofrecer (intercambiar 1 oro por cualquier recurso).
+        """
+        if self.has_reached_objective():
+            return False
+        if self.surplus:
+            return False
+        return self.inventario.get(GOLD_RESOURCE_NAME, 0) >= 1
+
     def to_dict(self) -> Dict[str, Any]:
         """
         Exporta el estado a un diccionario (alias, inventario, objetivo, needs, surplus, buzon).
