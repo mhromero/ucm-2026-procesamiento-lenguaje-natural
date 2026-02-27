@@ -1,0 +1,131 @@
+{
+  "127.0.0.1": {
+    "Alias": "agente_b",
+    "Recursos": {
+      "madera": 3,
+      "arroz": 3,
+      "tela": 3,
+      "oro": 16,
+      "trigo": 1,
+      "queso": 1
+    },
+    "Objetivo": {
+      "vino": 5,
+      "madera": 5,
+      "trigo": 5
+    },
+    "Buzon": {
+      "f8d82ebd-a718-44bb-af3e-b53f87e66328": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 madera",
+        "cuerpo": "Te propongo intercambiar 1 trigo que necesito por 1 madera que te ofrezco.",
+        "id": "f8d82ebd-a718-44bb-af3e-b53f87e66328",
+        "fecha": "2026-02-27T18:51:44.657312"
+      },
+      "64ed0349-d8ed-47a6-8cce-3e864ad28643": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 madera",
+        "cuerpo": "Te propongo intercambiar 1 trigo que necesito por 1 madera que te ofrezco.",
+        "id": "64ed0349-d8ed-47a6-8cce-3e864ad28643",
+        "fecha": "2026-02-27T18:51:44.658245"
+      },
+      "c2757f95-3be2-407e-9102-5ec3bb05153e": {
+        "remi": "Sistema",
+        "dest": "agente_b",
+        "asunto": "Recursos generados",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "c2757f95-3be2-407e-9102-5ec3bb05153e",
+        "fecha": "2026-02-27T18:52:13.801296"
+      },
+      "4a3fb721-df74-4437-8df8-f1777144f027": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 queso por 1 aceite",
+        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
+        "id": "4a3fb721-df74-4437-8df8-f1777144f027",
+        "fecha": "2026-02-27T18:52:19.219714"
+      },
+      "007b5d2d-d3a4-48ef-98a9-268017181818": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 queso por 1 trigo",
+        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 trigo que te ofrezco.",
+        "id": "007b5d2d-d3a4-48ef-98a9-268017181818",
+        "fecha": "2026-02-27T18:52:19.220660"
+      },
+      "5dd723fa-7746-406d-9a65-7c86ce1ea5b9": {
+        "remi": "Sistema",
+        "dest": "agente_b",
+        "asunto": "Recursos generados",
+        "cuerpo": "Has recibido:\nqueso: 1",
+        "id": "5dd723fa-7746-406d-9a65-7c86ce1ea5b9",
+        "fecha": "2026-02-27T18:53:43.803704"
+      },
+      "24f6122a-5357-46b3-9804-3c6978479c46": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 queso por 1 arroz",
+        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 arroz que te ofrezco.",
+        "id": "24f6122a-5357-46b3-9804-3c6978479c46",
+        "fecha": "2026-02-27T19:04:35.609853"
+      },
+      "b41ec8ac-5c4f-4a02-94be-2c0ee3d95625": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 madera",
+        "cuerpo": "Te propongo intercambiar 1 trigo que necesito por 1 madera que te ofrezco.",
+        "id": "b41ec8ac-5c4f-4a02-94be-2c0ee3d95625",
+        "fecha": "2026-02-27T19:04:35.610907"
+      },
+      "9ae7971d-af44-45a6-b412-caa894d0f0bc": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 queso por 1 aceite",
+        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
+        "id": "9ae7971d-af44-45a6-b412-caa894d0f0bc",
+        "fecha": "2026-02-27T19:05:00.484703"
+      },
+      "966d1b50-b6c7-43e5-bbad-e9123c9331f1": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 queso por 1 aceite",
+        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
+        "id": "966d1b50-b6c7-43e5-bbad-e9123c9331f1",
+        "fecha": "2026-02-27T19:05:00.485589"
+      }
+    }
+  },
+  "ag001": {
+    "Alias": "mapache ingenioso",
+    "Recursos": {
+      "trigo": 2,
+      "madera": 3,
+      "arroz": 2,
+      "oro": 18
+    },
+    "Objetivo": {
+      "tela": 4,
+      "trigo": 5,
+      "queso": 5
+    },
+    "Buzon": {}
+  },
+  "ag002": {
+    "Alias": "búho versátil",
+    "Recursos": {
+      "madera": 4,
+      "trigo": 3,
+      "aceite": 4,
+      "oro": 14,
+      "queso": 2
+    },
+    "Objetivo": {
+      "madera": 4,
+      "arroz": 4,
+      "queso": 4
+    },
+    "Buzon": {}
+  }
+}

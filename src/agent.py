@@ -78,6 +78,7 @@ CARTA RECIBIDA:
         requests.exceptions.ReadTimeout,
         requests.exceptions.ConnectTimeout,
         requests.exceptions.HTTPError,
+        requests.exceptions.ConnectionError,
     ):
         logs.print_error("No se pudo analizar la carta (timeout/conexión/modelo no encontrado); se usa fallback.")
         return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
@@ -181,6 +182,7 @@ OFERTA:
             requests.exceptions.ReadTimeout,
             requests.exceptions.ConnectTimeout,
             requests.exceptions.HTTPError,
+            requests.exceptions.ConnectionError,
         ):
             if attempt < max_attempts - 1:
                 logs.print_retry(f"Intento {attempt + 1}/{max_attempts}: Error con Ollama, reintentando...")

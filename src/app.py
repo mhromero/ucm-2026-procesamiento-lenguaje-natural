@@ -89,7 +89,8 @@ def main() -> None:
     print_section("INICIO DEL BOT")
 
     # Registrar alias en Butler (en modo monopuesto el servidor lo asigna, no se llama POST /alias)
-    if ALIAS and not SINGLE_PLAYER_MODE:
+    #if ALIAS and not SINGLE_PLAYER_MODE:
+    if ALIAS:
         try:
             print_kv("Alias configurado", ALIAS)
             api.set_alias(ALIAS)
@@ -135,12 +136,16 @@ def main() -> None:
     print_kv("Cartas", len(state.mailbox))
 
     letters_processed = 0
+    empty_mailbox_cycles = 0
+    empty_mailbox_rebroadcast_every = 5
     while True:
+        rebroadcasted_this_cycle = False
         # Ordenar cartas por fecha para procesar las más antiguas primero
         sorted_letters = sorted(
             state.mailbox.items(),
             key=lambda item: item[1].get("fecha", ""),
         )
+        had_letters = len(sorted_letters) > 0
 
         for letter_id, content in sorted_letters:
             # Ignorar nuestras propias cartas (eco) y las del sistema
@@ -163,6 +168,20 @@ def main() -> None:
             letters_processed = 0
             reason = f"{LETTERS_BEFORE_REBROADCAST} cartas analizadas. "
             broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason)
+            rebroadcasted_this_cycle = True
+
+        if had_letters:
+            empty_mailbox_cycles = 0
+        else:
+            empty_mailbox_cycles += 1
+            # Reenviar cada N ciclos consecutivos de buzón vacío para reactivar negociación.
+            if (
+                empty_mailbox_cycles >= empty_mailbox_rebroadcast_every
+                and not rebroadcasted_this_cycle
+            ):
+                reason = f"Buzón vacío durante {empty_mailbox_cycles} revisiones. "
+                broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason)
+                empty_mailbox_cycles = 0
 
         # Esperar y refrescar buzón
         print_section("BUZÓN VACÍO")
