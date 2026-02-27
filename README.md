@@ -137,49 +137,83 @@ uv run fdi-pln-2611-p1 --api-base http://127.0.0.1:7719 --alias ag001 --model mi
 También puedes modificar los valores por defecto en `config.json`, que se aplican cuando no se especifica una variable de entorno ni una opción CLI correspondiente.
 
 ## Funcionamiento y lógica del bot
-### Flujo general
-1. Arranca y obtiene estado inicial desde `/info` (alias, inventario, objetivo y buzón).
-2. Obtiene agentes desde `/gente` y elimina su propio alias de la lista destino.
-3. Calcula:
-- `needs`: recursos que faltan para completar objetivo.
-- `surplus`: recursos sobrantes (excluyendo oro).
-4. Envía ofertas iniciales a otros agentes.
-5. Entra en bucle:
-- procesa cartas por fecha (antiguas primero),
-- interpreta cada carta con LLM,
-- decide aceptar/rechazar,
-- envía paquete y carta de confirmación cuando procede,
-- elimina carta procesada del buzón,
-- reintenta lectura de buzón cada 5 segundos.
 
-### Tipos de oferta que genera
-- `propuesta intercambio`: intercambio simple 1:1 (surplus por recurso necesario).
-- `Oferta: 1 <surplus> por 1 oro`: cuando ya cumplió objetivo y busca oro.
-- `Oferta: 1 oro por 1 recurso que necesite`: cuando solo puede negociar con oro.
+### Diseño de prompts y uso del modelo
+
+El bot utiliza **dos prompts principales** que incorporan el estado del agente y están pensados para obtener respuestas estructuradas y fiables con Ollama. Con el modelo por defecto (`qwen3-vl:8b`) por lo general devuelve JSONs válidos a la primera.
+
+#### 1. Prompt de interpretación de cartas (`parse_letter`)
+
+**Objetivo:** Extraer de cada carta entrante una estructura JSON con tipo (`oferta` | `confirmacion` | `otro`), recursos ofrecidos, solicitados y recibidos.
+
+**Datos inyectados en el prompt:**
+- Se incluyen dinámicamente `OFRECEMOS` (surplus) y `NECESITAMOS` (needs) para que el modelo entienda el marco de negociación.
+- Se incluye la carta completa (`letter_data`) sobre la que debe trabajar.
+
+**Robustez ante respuestas imperfectas:**
+- **Salida JSON pura:** Se pide explícitamente "Devuelve SIEMPRE un JSON VÁLIDO, sin texto adicional" porque los LLM suelen añadir explicaciones o markdown.
+- **Extracción robusta:** Si la respuesta incluye texto extra, el código busca y extrae el primer objeto JSON válido (`_parse_json_response`).
+- **Normalización de cantidades:** Si la carta no contiene números explícitos, se normaliza cada recurso detectado a 1 unidad para evitar que el LLM invente cantidades (`_normalize_amounts_if_ambiguous`).
+- **Esquema flexible:** Se soportan variantes de formato (`{"recurso":"queso"}` → `{"queso":1}`) porque distintos modelos estructuran el JSON de formas distintas.
+
+#### 2. Prompt de decisión de ofertas (`analyze_offer`)
+
+**Objetivo:** Decidir si aceptar o rechazar una oferta según el estado actual del agente.
+
+**Reglas según el estado del agente:** El prompt incluye **tres variantes de reglas** según el estado:
+
+| Estado del agente | Reglas inyectadas |
+|-------------------|-------------------|
+| Objetivo cumplido | Maximizar oro: aceptar si nos ofrecen oro a cambio de surplus; rechazar si no ofrecen oro o piden lo que no tenemos. |
+| Solo tenemos oro (`gold_only`) | Aceptar si nos ofrecen 1 unidad de cualquier recurso a cambio de 1 oro. |
+| Negociación normal | Aceptar si nos dan lo que necesitamos, no piden lo que necesitamos, podemos dar lo que piden, y las cantidades son razonables; incluye excepción para ofertas con oro y surplus. |
+
+**Robustez ante respuestas imperfectas:**
+- **Acotación de decisión:** Tras la respuesta del LLM, se aplica `_sanitize_decision_against_received_offer` para que la decisión solo incluya recursos y cantidades presentes en la oferta original; se evita que el modelo "invente" recursos o cantidades mayores.
+- **Reintentos:** Se configura `MAX_INTENTOS_OFERTA` para reintentar ante errores de conexión o JSON inválido.
+- **Formato estricto:** Se exige nuevamente JSON válido sin texto adicional.
+
+---
+
+### Flujo general
+
+El agente arranca solicitando el estado inicial a Butler (`/info`): obtiene su alias, inventario, objetivo y buzón. Luego consulta la lista de jugadores (`/gente`), descarta su propio alias y calcula:
+
+- **needs**: recursos que faltan para completar el objetivo.
+- **surplus**: recursos sobrantes (excluyendo oro).
+
+Con eso envía ofertas iniciales al resto de agentes y entra en bucle de buzón:
+
+1. Lee las cartas del buzón y las ordena por fecha (antiguas primero).
+2. Interpreta cada carta con el LLM, decide si acepta o rechaza y, si corresponde, envía paquete y confirmación.
+3. Marca la carta como procesada y consulta de nuevo el buzón cada 5 segundos.
+
+### Tipos de oferta que envía
+
+Según el estado del agente, se usan distintos formatos de carta:
+
+| Situación | Tipo de oferta | Ejemplo |
+|-----------|----------------|---------|
+| Necesita recursos y tiene surplus | `propuesta intercambio` | Intercambio 1:1: "Te ofrezco 1 arroz y tú me das 1 trigo." |
+| Objetivo cumplido, maximizando oro | Surplus → oro | "Te ofrezco 1 arroz y tú me das 1 oro." |
+| Solo puede ofrecer oro | Oro → recurso | "Te ofrezco 1 oro a cambio de 1 trigo." |
 
 ### Procesado de cartas entrantes
-1. Se parsea la respuesta de Ollama incluso si trae texto adicional (se extrae JSON válido).
-2. Se normaliza el esquema para convertir variantes a formato canónico:
-- `{"recurso":"queso"}` -> `{"queso":1}`
-- `{"recurso":"queso","cantidad":2}` -> `{"queso":2}`
-3. Si una carta no trae cantidades numéricas explícitas, se evita inflar cantidades y se normaliza a 1 por recurso detectado.
-4. Si la carta es de tipo `oferta`:
-- se vuelve a evaluar con LLM en `analyze_offer`,
-- la decisión final se acota a recursos/cantidades presentes en la oferta original (sin inventar más).
-5. Si la carta es de tipo `confirmacion`, se evalúa si procede devolver recursos.
 
-### Reglas de aceptación/rechazo (resumen)
-- Rechaza ofertas incompletas (`oferta` o `pide` vacío).
-- No envía recursos que necesita para su propio objetivo.
-- No envía más de lo que tiene en inventario.
-- El oro tiene restricciones específicas.
-- Si una oferta es aceptada:
-1. envía paquete (`/paquete/{dest}`),
-2. envía carta de confirmación.
+Para cada carta recibida:
 
-### Política de rebroadcast
-- Reenvía ofertas al procesar `LETTERS_BEFORE_REBROADCAST` cartas.
-- Si el buzón permanece vacío, también rebroadcast cada 5 revisiones vacías consecutivas (con polling cada 5 s).
+1. **Interpretación:** Se llama al LLM para obtener un JSON estructurado. Si la respuesta incluye texto extra, se extrae el primer objeto JSON válido.
+2. **Normalización:** Se convierten variantes de esquema al formato interno (p. ej. `{"recurso":"queso"}` → `{"queso":1}`). Si no hay cantidades explícitas en la carta, se asume 1 por recurso para evitar inflar cifras.
+3. **Evaluación de ofertas:** Si la carta es una oferta, se pasa por `analyze_offer` y la decisión se acota a recursos y cantidades presentes en la oferta original.
+4. **Confirmaciones:** Si la carta es confirmación, se comprueba si debemos devolver recursos según lo pactado.
+
+### Criterios de aceptación y rechazo
+
+El agente rechaza ofertas incompletas (sin `oferta` o sin `pide`) y no envía nunca recursos que necesita para su objetivo ni más de lo que tiene en inventario. El oro tiene reglas propias según la fase del juego. Cuando acepta una oferta, envía primero el paquete vía `/paquete/{dest}` y luego la carta de confirmación.
+
+### Reenvío de ofertas (rebroadcast)
+
+Se vuelven a enviar ofertas tras procesar `LETTERS_BEFORE_REBROADCAST` cartas. Si el buzón está vacío durante varias revisiones consecutivas (polling cada 5 s), también se hace rebroadcast para mantener la visibilidad de las ofertas.
 
 ## Estructura del código
 ```text
