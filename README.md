@@ -120,8 +120,6 @@ src/
 ├── logs.py           # Salida por consola
 ├── config.py         # Configuración (env > CLI > config.json)
 └── config.json       # Valores por defecto del proyecto
-
-scripts/
 └── send_test_letter.sh  # Script para inyectar cartas de prueba
 ```
 
