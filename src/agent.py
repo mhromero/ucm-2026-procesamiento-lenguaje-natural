@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 import requests
 
-from .config import GOLD_RESOURCE_NAME
+from .config import GOLD_RESOURCE_NAME, MAX_INTENTOS_OFERTA
 from .ollama_client import ollama
 
 
@@ -168,7 +168,7 @@ OFERTA:
 {json.dumps(offer, ensure_ascii=False, indent=2)}
 
 """
-    max_attempts = 3
+    max_attempts = MAX_INTENTOS_OFERTA
     for attempt in range(max_attempts):
         try:
             response = ollama(prompt)
@@ -192,6 +192,6 @@ OFERTA:
             if attempt < max_attempts - 1:
                 print(f"Intento {attempt + 1}/{max_attempts}: JSON inválido, reintentando...")
             else:
-                print("ERROR: Ollama no devolvió JSON válido al analizar oferta (tras 3 intentos)")
+                print(f"ERROR: Ollama no devolvió JSON válido al analizar oferta (tras {max_attempts} intentos)")
                 print(response)
                 return {"decision": "rechazada", "oferta": {}, "pide": {}}

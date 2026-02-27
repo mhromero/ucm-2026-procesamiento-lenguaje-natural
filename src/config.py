@@ -58,7 +58,7 @@ _EXPORTS = frozenset({
     "API_BASE", "OLLAMA_URL", "MODEL", "GOLD_RESOURCE_NAME",
     "MAILBOX_ENDPOINT", "LETTER_ENDPOINT", "PACKAGE_ENDPOINT",
     "ALIAS", "SINGLE_PLAYER_MODE", "LETTERS_BEFORE_REBROADCAST", "OFFERS_PER_PERSON",
-    "REMITENTE_SISTEMA",
+    "REMITENTE_SISTEMA", "MAX_INTENTOS_OFERTA",
 })
 
 
@@ -92,6 +92,9 @@ def __getattr__(name: str) -> Any:
 
     if name == "REMITENTE_SISTEMA":
         return _resolve("remitente_sistema", "FDI_PLN__REMITENTE_SISTEMA")
+
+    if name == "MAX_INTENTOS_OFERTA":
+        return _resolve("max_intentos_oferta", "FDI_PLN__MAX_INTENTOS_OFERTA", int)
 
     base = __getattr__("API_BASE")
     if name == "MAILBOX_ENDPOINT":
@@ -162,6 +165,11 @@ def __getattr__(name: str) -> Any:
     "--remitente-sistema",
     help="Remitente de cartas del sistema que no se procesan (ej. Sistema). Env: FDI_PLN__REMITENTE_SISTEMA.",
 )
+@click.option(
+    "--max-intentos-oferta",
+    type=int,
+    help="Intentos máximos al analizar oferta con Ollama. Env: FDI_PLN__MAX_INTENTOS_OFERTA.",
+)
 def cli(
     api_base: str | None,
     ollama_url: str | None,
@@ -175,6 +183,7 @@ def cli(
     letters_before_rebroadcast: int | None,
     offers_per_person: int | None,
     remitente_sistema: str | None,
+    max_intentos_oferta: int | None,
 ) -> None:
     """Ejecuta el bot de negociación. Prioridad: env > args Click > config.json."""
     init_cli_overrides({
@@ -190,6 +199,7 @@ def cli(
         "letters_before_rebroadcast": letters_before_rebroadcast,
         "offers_per_person": offers_per_person,
         "remitente_sistema": remitente_sistema,
+        "max_intentos_oferta": max_intentos_oferta,
     })
     from .app import main
     main()

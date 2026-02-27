@@ -10,5 +10,6 @@
   "modo_monopuesto": true,
   "letters_before_rebroadcast": 5,
   "offers_per_person": 2,
-  "remitente_sistema": "Sistema"
+  "remitente_sistema": "Sistema",
+  "max_intentos_oferta": 3
 }
