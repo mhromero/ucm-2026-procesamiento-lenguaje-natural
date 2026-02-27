@@ -29,9 +29,13 @@ El agente analiza cartas con LLM (Ollama), decide si aceptar/rechazar ofertas se
 ### 1) Lanzar Butler
 ```bash
 fdi-pln-butler server
+--buzon
+```
+Si quieres probar en local:
+```bash
+fdi-pln-butler server
 --buzon --monopuesto # para probar en local
 ```
-
 ### 2) Lanzar Ollama
 ```bash
 ollama serve
@@ -53,13 +57,13 @@ FDI_PLN__BUTLER_ADDRESS=http://127.0.0.1:7719 uv run fdi-pln-2611-p1
 Terminal A:
 ```bash
 cd ~/fdi-pln-2611
-FDI_PLN__MODO_MONOPUESTO=true FDI_PLN__ALIAS=ag001 FDI_PLN__BUTLER_ADDRESS=http://127.0.0.1:7719 uv run fdi-pln-2611-p1
+FDI_PLN__ALIAS=ag001 FDI_PLN__BUTLER_ADDRESS=<direccion> uv run fdi-pln-2611-p1
 ```
 
 Terminal B:
 ```bash
 cd ~/fdi-pln-2611
-FDI_PLN__MODO_MONOPUESTO=true FDI_PLN__ALIAS=ag002 FDI_PLN__BUTLER_ADDRESS=http://127.0.0.1:7719 uv run fdi-pln-2611-p1
+FDI_PLN__ALIAS=ag002 FDI_PLN__BUTLER_ADDRESS=<direccion> uv run fdi-pln-2611-p1
 ```
 
 ## Funcionamiento y lógica del bot
