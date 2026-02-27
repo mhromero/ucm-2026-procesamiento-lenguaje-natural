@@ -97,10 +97,10 @@ def build_trade_confirmation_letter(
     return f"""
 He aceptado tu oferta.
 
-Te he enviado los recursos que pedías:
+Te he enviado:
 {json.dumps(resources_sent, ensure_ascii=False, indent=2)}
 
-Espero recibir a cambio los recursos que ofrecías:
+Espero recibir:
 {json.dumps(resources_expected, ensure_ascii=False, indent=2)}
 """.strip()
 
@@ -165,7 +165,7 @@ def broadcast_offers(
                         needed_resource=needed_resource,
                         surplus_resource=surplus_resource,
                     )
-                    subject = f"Oferta: 1 {needed_resource} por 1 {surplus_resource}"
+                    subject = f"propuesta intercambio"
                     try:
                         logs.print_kv("Enviando mini oferta a", f"{alias} -> {subject}", color=logs.GREEN)
                         api.send_letter(alias, subject, body)
