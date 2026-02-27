@@ -63,7 +63,7 @@ def build_surplus_for_gold_letter(surplus_resource: str, gold_name: str) -> str:
     """
     return (
         f"Ya he cumplido mi objetivo de recursos. "
-        f"Te ofrezco 1 {surplus_resource} a cambio de 1 {gold_name}."
+        f"Te ofrezco 1 {surplus_resource} y tu me das 1 {gold_name}."
     )
 
 
@@ -133,7 +133,7 @@ def broadcast_offers(
         for alias, _ in _iter_other_people(people, state.alias):
             surplus_resource = random.choice(surplus_list)
             body = build_surplus_for_gold_letter(surplus_resource, GOLD_RESOURCE_NAME)
-            subject = f"Oferta: 1 {surplus_resource} por 1 {GOLD_RESOURCE_NAME}"
+            subject = f"propuesta intercambio"
             try:
                 logs.print_kv("Enviando oferta surplus→oro a", f"{alias} -> {subject}", color=logs.GREEN)
                 api.send_letter(alias, subject, body)

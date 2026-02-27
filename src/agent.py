@@ -310,6 +310,11 @@ def analyze_offer(
     c) podemos dar los recursos que pide
     d) se envían como máximo el mismo número de recursos que se reciben, salvo que con la oferta completemos el objetivo al 100%
 
+- EXCEPCIÓN IMPORTANTE:
+    si la oferta incluye oro y los recursos que nos piden están en nuestro surplus
+    (y tenemos stock suficiente), también se puede aceptar aunque no necesitemos
+    ese oro para completar el objetivo.
+
 - "decision" = "rechazada" si no se cumple alguna de las condiciones anteriores
 """
     prompt = f"""

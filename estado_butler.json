@@ -1822,16 +1822,817 @@
         "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
         "id": "fdf6f042-84fb-49a9-ba3b-2ce9d605000b",
         "fecha": "2026-02-27T20:21:56.419654"
+      },
+      "d5571826-460e-4edd-9178-0eda6c1edc47": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 arroz por 1 trigo",
+        "cuerpo": "Te ofrezo 1 arroz y tu me das 1 trigo.",
+        "id": "d5571826-460e-4edd-9178-0eda6c1edc47",
+        "fecha": "2026-02-27T20:22:10.069288"
+      },
+      "7764a76a-5b69-46e1-ad91-007dd31c7401": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 madera por 1 queso",
+        "cuerpo": "Te ofrezo 1 madera y tu me das 1 queso.",
+        "id": "7764a76a-5b69-46e1-ad91-007dd31c7401",
+        "fecha": "2026-02-27T20:22:10.071286"
+      },
+      "dd4554db-caf2-4940-8388-92bd381175df": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "dd4554db-caf2-4940-8388-92bd381175df",
+        "fecha": "2026-02-27T20:22:12.318905"
+      },
+      "db2dd7d2-bdcf-4093-a84b-c7cd24d75c15": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "db2dd7d2-bdcf-4093-a84b-c7cd24d75c15",
+        "fecha": "2026-02-27T20:22:12.319802"
+      },
+      "6b93a046-77a4-4de4-a92d-44ff55e9425e": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "6b93a046-77a4-4de4-a92d-44ff55e9425e",
+        "fecha": "2026-02-27T20:25:31.495365"
+      },
+      "585d7fc2-e7e9-47a7-be0e-2ff15795a424": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "585d7fc2-e7e9-47a7-be0e-2ff15795a424",
+        "fecha": "2026-02-27T20:25:31.498976"
+      },
+      "afe81cde-13ac-408f-b806-bff6d96b86a3": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "afe81cde-13ac-408f-b806-bff6d96b86a3",
+        "fecha": "2026-02-27T20:25:56.554676"
+      },
+      "9510e476-be2d-4bb7-a4c3-8d0fc1b5387c": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "9510e476-be2d-4bb7-a4c3-8d0fc1b5387c",
+        "fecha": "2026-02-27T20:25:56.559281"
+      },
+      "253ac752-d0c5-4d72-854a-23c83c1f55e1": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "253ac752-d0c5-4d72-854a-23c83c1f55e1",
+        "fecha": "2026-02-27T20:26:21.616954"
+      },
+      "ecff436c-a1aa-4145-b641-c69f6683acba": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "ecff436c-a1aa-4145-b641-c69f6683acba",
+        "fecha": "2026-02-27T20:26:21.620512"
+      },
+      "e5f65d02-2c5c-4e4f-8810-6033436a671c": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "e5f65d02-2c5c-4e4f-8810-6033436a671c",
+        "fecha": "2026-02-27T20:27:20.812346"
+      },
+      "28487952-2aa3-4785-b311-4addbb46ce75": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "28487952-2aa3-4785-b311-4addbb46ce75",
+        "fecha": "2026-02-27T20:27:20.815063"
+      },
+      "897a9620-7594-4baf-9827-5dcf985c506c": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "897a9620-7594-4baf-9827-5dcf985c506c",
+        "fecha": "2026-02-27T20:27:45.871053"
+      },
+      "3e90cde6-e689-4390-9e59-dc58ea7694f4": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "3e90cde6-e689-4390-9e59-dc58ea7694f4",
+        "fecha": "2026-02-27T20:27:45.875077"
+      },
+      "d5a5d20b-bbec-44b3-8e34-6b6601c64053": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "d5a5d20b-bbec-44b3-8e34-6b6601c64053",
+        "fecha": "2026-02-27T20:28:10.937506"
+      },
+      "ff3ff31e-de20-47b2-9a36-f40df0920024": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "ff3ff31e-de20-47b2-9a36-f40df0920024",
+        "fecha": "2026-02-27T20:28:10.942143"
+      },
+      "b6f27e94-c993-4e9f-9684-04324f775173": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "b6f27e94-c993-4e9f-9684-04324f775173",
+        "fecha": "2026-02-27T20:28:36.007781"
+      },
+      "8417e211-d8d9-4de0-9908-05b5ba4b8bee": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "8417e211-d8d9-4de0-9908-05b5ba4b8bee",
+        "fecha": "2026-02-27T20:28:36.012150"
+      },
+      "98313559-d760-4d45-b82a-5141ebea9eea": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "98313559-d760-4d45-b82a-5141ebea9eea",
+        "fecha": "2026-02-27T20:29:01.070455"
+      },
+      "8648bcf2-ef44-450e-845d-72c2662cf113": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "8648bcf2-ef44-450e-845d-72c2662cf113",
+        "fecha": "2026-02-27T20:29:01.073476"
+      },
+      "20edcac5-ce74-4f28-a440-0f141bb36a4d": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "20edcac5-ce74-4f28-a440-0f141bb36a4d",
+        "fecha": "2026-02-27T20:29:26.134227"
+      },
+      "cde7f37e-50e2-4500-bb6f-490500ba367f": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "cde7f37e-50e2-4500-bb6f-490500ba367f",
+        "fecha": "2026-02-27T20:29:26.138251"
+      },
+      "ec916547-7df3-496c-9e18-e85d54cceaa9": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "ec916547-7df3-496c-9e18-e85d54cceaa9",
+        "fecha": "2026-02-27T20:29:51.197928"
+      },
+      "db9aa9db-2d6e-4d3b-b77c-de7a8d84b3fd": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "db9aa9db-2d6e-4d3b-b77c-de7a8d84b3fd",
+        "fecha": "2026-02-27T20:29:51.201831"
+      },
+      "719a133e-3bc6-4e90-969f-cca2808d8907": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "719a133e-3bc6-4e90-969f-cca2808d8907",
+        "fecha": "2026-02-27T20:30:16.251248"
+      },
+      "68f1321f-8b0a-4bbd-bf3f-da8b23dfa2d3": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "68f1321f-8b0a-4bbd-bf3f-da8b23dfa2d3",
+        "fecha": "2026-02-27T20:30:16.254095"
+      },
+      "75c37f51-9fdd-48a2-9479-9d520c60f878": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "75c37f51-9fdd-48a2-9479-9d520c60f878",
+        "fecha": "2026-02-27T20:30:41.306426"
+      },
+      "f265642b-5f2d-4d30-99ac-ddc1bfe7a245": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "f265642b-5f2d-4d30-99ac-ddc1bfe7a245",
+        "fecha": "2026-02-27T20:30:41.310464"
+      },
+      "15f096be-4c0e-40b9-abe6-0f5308292143": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "15f096be-4c0e-40b9-abe6-0f5308292143",
+        "fecha": "2026-02-27T20:31:06.359418"
+      },
+      "8689c656-a4f2-43c2-bb36-b0c2ab78c939": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "8689c656-a4f2-43c2-bb36-b0c2ab78c939",
+        "fecha": "2026-02-27T20:31:06.364509"
+      },
+      "4296d58d-1541-4f58-b731-ec356d6482a4": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "4296d58d-1541-4f58-b731-ec356d6482a4",
+        "fecha": "2026-02-27T20:31:31.408637"
+      },
+      "074e8b5c-0391-4979-a9f5-ac540c68f1ba": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "074e8b5c-0391-4979-a9f5-ac540c68f1ba",
+        "fecha": "2026-02-27T20:31:31.412921"
+      },
+      "0b198ad5-937e-41a8-9f55-3f08c63a2565": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "0b198ad5-937e-41a8-9f55-3f08c63a2565",
+        "fecha": "2026-02-27T20:31:56.459150"
+      },
+      "e63d376b-1a73-4211-bd74-aa33fe4859a7": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "e63d376b-1a73-4211-bd74-aa33fe4859a7",
+        "fecha": "2026-02-27T20:31:56.463776"
+      },
+      "504dd69c-1be5-4b35-946b-a36fa2fd8829": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "504dd69c-1be5-4b35-946b-a36fa2fd8829",
+        "fecha": "2026-02-27T20:32:21.520279"
+      },
+      "49c75d94-2c94-4d02-97e9-9c84de051c9c": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "49c75d94-2c94-4d02-97e9-9c84de051c9c",
+        "fecha": "2026-02-27T20:32:21.523531"
+      },
+      "20171e54-5a58-4584-b63d-21bee1998335": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "20171e54-5a58-4584-b63d-21bee1998335",
+        "fecha": "2026-02-27T20:32:46.581806"
+      },
+      "97d01909-a81e-438b-9608-728cd47912bd": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "97d01909-a81e-438b-9608-728cd47912bd",
+        "fecha": "2026-02-27T20:32:46.586429"
+      },
+      "c96f7488-5e9b-491a-80b1-afee0417b5f0": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "c96f7488-5e9b-491a-80b1-afee0417b5f0",
+        "fecha": "2026-02-27T20:33:11.636235"
+      },
+      "135f55fd-d3dc-4872-8342-f0b7d40e3c67": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "135f55fd-d3dc-4872-8342-f0b7d40e3c67",
+        "fecha": "2026-02-27T20:33:11.639706"
+      },
+      "3bd7127d-15f6-4208-868c-ec5188f246ae": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "3bd7127d-15f6-4208-868c-ec5188f246ae",
+        "fecha": "2026-02-27T20:33:36.689073"
+      },
+      "441e2d14-3ddf-4849-a581-26c9c8a0c318": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "441e2d14-3ddf-4849-a581-26c9c8a0c318",
+        "fecha": "2026-02-27T20:33:36.692809"
+      },
+      "10b8d3dd-f42f-4961-98bc-4c4eabcc985f": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "10b8d3dd-f42f-4961-98bc-4c4eabcc985f",
+        "fecha": "2026-02-27T20:37:40.251742"
+      },
+      "4f1b42c3-5dbd-4907-b724-554c3e702dd0": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "4f1b42c3-5dbd-4907-b724-554c3e702dd0",
+        "fecha": "2026-02-27T20:37:40.253719"
+      },
+      "0ada34c0-3c2c-492e-9695-25062e5eb5a3": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "0ada34c0-3c2c-492e-9695-25062e5eb5a3",
+        "fecha": "2026-02-27T20:38:05.333860"
+      },
+      "afc8e496-59d1-40e6-b79e-38b113ba680a": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "afc8e496-59d1-40e6-b79e-38b113ba680a",
+        "fecha": "2026-02-27T20:38:05.337019"
+      },
+      "223a312e-85d5-4bd6-bfb5-4bca9cb2f4bd": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "223a312e-85d5-4bd6-bfb5-4bca9cb2f4bd",
+        "fecha": "2026-02-27T20:38:30.401266"
+      },
+      "dc4efb8d-6c8a-48e5-9523-4506acc03920": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "dc4efb8d-6c8a-48e5-9523-4506acc03920",
+        "fecha": "2026-02-27T20:38:30.405120"
+      },
+      "a5d040bf-96a5-4989-8bbe-f1710ef4b732": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "a5d040bf-96a5-4989-8bbe-f1710ef4b732",
+        "fecha": "2026-02-27T20:38:55.458426"
+      },
+      "9eb91081-add5-4f41-89a3-491ed6bd36a2": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "9eb91081-add5-4f41-89a3-491ed6bd36a2",
+        "fecha": "2026-02-27T20:38:55.462217"
+      },
+      "f72214c2-ce05-4aa8-b693-9afb522c0b3b": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "f72214c2-ce05-4aa8-b693-9afb522c0b3b",
+        "fecha": "2026-02-27T20:39:20.512064"
+      },
+      "358344c3-0f8d-4d1c-acd4-ff0805851db2": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "358344c3-0f8d-4d1c-acd4-ff0805851db2",
+        "fecha": "2026-02-27T20:39:20.515364"
+      },
+      "29ee5f16-d538-4481-ac69-a64f6a756ccf": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "29ee5f16-d538-4481-ac69-a64f6a756ccf",
+        "fecha": "2026-02-27T20:39:45.569191"
+      },
+      "4b504b17-5e04-4165-8b23-6f06ea84f0ac": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "4b504b17-5e04-4165-8b23-6f06ea84f0ac",
+        "fecha": "2026-02-27T20:39:45.573107"
+      },
+      "856a7d51-d2f5-49cf-af2e-a0bc9ae21f93": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "856a7d51-d2f5-49cf-af2e-a0bc9ae21f93",
+        "fecha": "2026-02-27T20:40:54.473534"
+      },
+      "cfe3a913-d8e5-4e8c-a721-17dcc98f8a29": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "cfe3a913-d8e5-4e8c-a721-17dcc98f8a29",
+        "fecha": "2026-02-27T20:40:54.477216"
+      },
+      "7beff7e0-66e9-4fb8-bacf-ee6dfcba70fd": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "7beff7e0-66e9-4fb8-bacf-ee6dfcba70fd",
+        "fecha": "2026-02-27T20:41:47.095164"
+      },
+      "f2e4033d-fe74-4646-bd19-7959d3a0138e": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "f2e4033d-fe74-4646-bd19-7959d3a0138e",
+        "fecha": "2026-02-27T20:41:47.096880"
+      },
+      "9ea3ae20-1165-4dd6-9212-458a0b23ddb7": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "9ea3ae20-1165-4dd6-9212-458a0b23ddb7",
+        "fecha": "2026-02-27T20:42:12.142623"
+      },
+      "ce834ca4-b317-4f4d-8d7c-b1cb9af1f318": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "ce834ca4-b317-4f4d-8d7c-b1cb9af1f318",
+        "fecha": "2026-02-27T20:42:12.145188"
+      },
+      "7074d47d-e07d-45f4-95dd-1de06ae53c1d": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "7074d47d-e07d-45f4-95dd-1de06ae53c1d",
+        "fecha": "2026-02-27T20:43:16.918822"
+      },
+      "f0b809a9-871a-47cb-a3fd-52c069be4c0e": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "f0b809a9-871a-47cb-a3fd-52c069be4c0e",
+        "fecha": "2026-02-27T20:43:16.923162"
+      },
+      "8e5a8c6f-5222-4064-a48d-a6dc0e13a7ca": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "8e5a8c6f-5222-4064-a48d-a6dc0e13a7ca",
+        "fecha": "2026-02-27T20:44:02.318052"
+      },
+      "6aed01fa-a94d-4a88-9153-f8ea012b85d3": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "6aed01fa-a94d-4a88-9153-f8ea012b85d3",
+        "fecha": "2026-02-27T20:44:02.320825"
+      },
+      "08edd172-0e7a-408a-b466-90ba30537299": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "08edd172-0e7a-408a-b466-90ba30537299",
+        "fecha": "2026-02-27T20:44:27.374203"
+      },
+      "fae7275e-764e-44cc-8e4d-7166cd091b16": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "fae7275e-764e-44cc-8e4d-7166cd091b16",
+        "fecha": "2026-02-27T20:44:27.377057"
+      },
+      "8abdcbe7-8f8b-44f6-aa13-506a44695435": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "8abdcbe7-8f8b-44f6-aa13-506a44695435",
+        "fecha": "2026-02-27T20:44:52.436296"
+      },
+      "48262685-d309-4225-8e51-9d6969bf861a": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "48262685-d309-4225-8e51-9d6969bf861a",
+        "fecha": "2026-02-27T20:44:52.440458"
+      },
+      "97969cda-85aa-4d47-a492-859be5aae680": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "97969cda-85aa-4d47-a492-859be5aae680",
+        "fecha": "2026-02-27T20:45:17.497183"
+      },
+      "b08fddbd-4211-463c-ac45-34e04dcdf158": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "b08fddbd-4211-463c-ac45-34e04dcdf158",
+        "fecha": "2026-02-27T20:45:17.499553"
+      },
+      "b247cbb7-4326-43a2-a175-c0ef0204fd92": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "b247cbb7-4326-43a2-a175-c0ef0204fd92",
+        "fecha": "2026-02-27T20:45:42.554265"
+      },
+      "b1fd8118-774a-4ac5-ba8c-6bdfb9a7402a": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "b1fd8118-774a-4ac5-ba8c-6bdfb9a7402a",
+        "fecha": "2026-02-27T20:45:42.557772"
+      },
+      "39f37a6e-2774-4c5c-8500-701c1cb7f880": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 arroz y tu me das 1 trigo.",
+        "id": "39f37a6e-2774-4c5c-8500-701c1cb7f880",
+        "fecha": "2026-02-27T20:46:32.280785"
+      },
+      "45594551-ee08-430f-ac40-adb98ade2489": {
+        "remi": "ag001",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 madera y tu me das 1 queso.",
+        "id": "45594551-ee08-430f-ac40-adb98ade2489",
+        "fecha": "2026-02-27T20:46:32.281664"
+      },
+      "7a87b204-21da-4c66-998b-34d71d8c308c": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "7a87b204-21da-4c66-998b-34d71d8c308c",
+        "fecha": "2026-02-27T20:46:37.204984"
+      },
+      "fd84b81d-3c8b-48f5-a4b6-5513acf016bb": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "fd84b81d-3c8b-48f5-a4b6-5513acf016bb",
+        "fecha": "2026-02-27T20:46:37.205911"
+      },
+      "e62a906f-b28e-461a-a246-c148f9dc1a8a": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "e62a906f-b28e-461a-a246-c148f9dc1a8a",
+        "fecha": "2026-02-27T20:53:08.569408"
+      },
+      "dec79954-e923-497b-ad80-f7550fd67019": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "dec79954-e923-497b-ad80-f7550fd67019",
+        "fecha": "2026-02-27T20:53:08.571492"
+      },
+      "7b194cd3-3b1b-4e82-8b84-5a585387c7c6": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "7b194cd3-3b1b-4e82-8b84-5a585387c7c6",
+        "fecha": "2026-02-27T20:55:01.813951"
+      },
+      "295ad8c8-9ca0-437d-b6ad-8c78e85126ad": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "295ad8c8-9ca0-437d-b6ad-8c78e85126ad",
+        "fecha": "2026-02-27T20:55:01.818083"
+      },
+      "4d6c3e84-e115-4cf0-a915-5e632dca1d69": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "4d6c3e84-e115-4cf0-a915-5e632dca1d69",
+        "fecha": "2026-02-27T20:55:26.880095"
+      },
+      "c00f7f2f-b170-45c4-a3f0-a6eab30e00c8": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "c00f7f2f-b170-45c4-a3f0-a6eab30e00c8",
+        "fecha": "2026-02-27T20:55:26.884310"
+      },
+      "3e206cdd-65aa-4710-a4ee-87759c0d1248": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "3e206cdd-65aa-4710-a4ee-87759c0d1248",
+        "fecha": "2026-02-27T20:55:51.943336"
+      },
+      "1c168ee3-d8ff-4cde-9fa6-4a94ba3ab4b2": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "1c168ee3-d8ff-4cde-9fa6-4a94ba3ab4b2",
+        "fecha": "2026-02-27T20:55:51.947629"
+      },
+      "3104b32e-4251-4827-bfaf-4371bd04d5f3": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "3104b32e-4251-4827-bfaf-4371bd04d5f3",
+        "fecha": "2026-02-27T20:56:17.000286"
+      },
+      "51251bf9-905d-420c-b046-de031ef7c432": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "51251bf9-905d-420c-b046-de031ef7c432",
+        "fecha": "2026-02-27T20:56:17.004605"
+      },
+      "87cd3b7a-9754-405c-a203-ac28727b8289": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "87cd3b7a-9754-405c-a203-ac28727b8289",
+        "fecha": "2026-02-27T20:56:42.065433"
+      },
+      "02dc7a83-0bf6-4ec9-865a-b6654e306ee4": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "02dc7a83-0bf6-4ec9-865a-b6654e306ee4",
+        "fecha": "2026-02-27T20:56:42.070223"
+      },
+      "1bc24a10-01c4-4796-9263-418f0df34686": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "1bc24a10-01c4-4796-9263-418f0df34686",
+        "fecha": "2026-02-27T20:57:07.131509"
+      },
+      "1867f117-5744-428e-be09-6e407da7aa71": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "1867f117-5744-428e-be09-6e407da7aa71",
+        "fecha": "2026-02-27T20:57:07.135818"
+      },
+      "820d8b77-b773-4056-9d3d-60becc830ec5": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "820d8b77-b773-4056-9d3d-60becc830ec5",
+        "fecha": "2026-02-27T20:57:32.192708"
+      },
+      "edf14a28-3b86-4c2e-b771-a274bd73631b": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "edf14a28-3b86-4c2e-b771-a274bd73631b",
+        "fecha": "2026-02-27T20:57:32.196349"
+      },
+      "2aff7d26-dbd5-4974-b19f-ad587f3e7ad8": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "2aff7d26-dbd5-4974-b19f-ad587f3e7ad8",
+        "fecha": "2026-02-27T20:57:57.257923"
+      },
+      "33846468-1be4-4f36-9871-a392a0e69287": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "33846468-1be4-4f36-9871-a392a0e69287",
+        "fecha": "2026-02-27T20:57:57.261887"
+      },
+      "e49568c7-a7dc-4b18-8186-fb60f8ef24ff": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "e49568c7-a7dc-4b18-8186-fb60f8ef24ff",
+        "fecha": "2026-02-27T20:58:22.317694"
+      },
+      "764f0f2b-775f-451b-8f22-6f60414266f7": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "764f0f2b-775f-451b-8f22-6f60414266f7",
+        "fecha": "2026-02-27T20:58:22.323145"
+      },
+      "c8a67e9a-ebbe-43de-a93c-2ecae01a6ed2": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "c8a67e9a-ebbe-43de-a93c-2ecae01a6ed2",
+        "fecha": "2026-02-27T20:58:47.373468"
+      },
+      "f76a5d87-f04d-4a89-bf90-0e7dcc95721a": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "f76a5d87-f04d-4a89-bf90-0e7dcc95721a",
+        "fecha": "2026-02-27T20:58:47.377119"
+      },
+      "486d231b-618e-48cb-93f7-8bbead990a30": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "486d231b-618e-48cb-93f7-8bbead990a30",
+        "fecha": "2026-02-27T20:59:12.435427"
+      },
+      "5964b420-401b-4465-98ab-eb5de819848f": {
+        "remi": "ag002",
+        "dest": "agente_b",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "5964b420-401b-4465-98ab-eb5de819848f",
+        "fecha": "2026-02-27T20:59:12.439957"
       }
     }
   },
   "ag001": {
     "Alias": "ag001",
     "Recursos": {
-      "trigo": 2,
+      "trigo": 5,
       "madera": 3,
-      "arroz": 2,
-      "oro": 18
+      "arroz": 0,
+      "oro": 18,
+      "aceite": 1
     },
     "Objetivo": {
       "tela": 4,
@@ -1839,470 +2640,6 @@
       "queso": 5
     },
     "Buzon": {
-      "ce34cb9d-8eb8-4bf8-81af-1ad82110f9ee": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 trigo que te ofrezco.",
-        "id": "ce34cb9d-8eb8-4bf8-81af-1ad82110f9ee",
-        "fecha": "2026-02-27T19:50:13.876810"
-      },
-      "890395d0-6dc7-4f3c-afcd-cc70b9a35951": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
-        "id": "890395d0-6dc7-4f3c-afcd-cc70b9a35951",
-        "fecha": "2026-02-27T19:50:13.880603"
-      },
-      "03e437dc-29fb-4059-843a-6e9133e7fa33": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 aceite que te ofrezco.",
-        "id": "03e437dc-29fb-4059-843a-6e9133e7fa33",
-        "fecha": "2026-02-27T19:50:38.933436"
-      },
-      "347c0fcf-cc71-48b8-8231-09479edb8f20": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
-        "id": "347c0fcf-cc71-48b8-8231-09479edb8f20",
-        "fecha": "2026-02-27T19:50:38.937477"
-      },
-      "fe347f63-3999-44cf-a128-3a4d19a2412a": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 trigo que te ofrezco.",
-        "id": "fe347f63-3999-44cf-a128-3a4d19a2412a",
-        "fecha": "2026-02-27T19:51:03.991056"
-      },
-      "ba7b6df9-49c9-466b-9ee5-513221de5cc5": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
-        "id": "ba7b6df9-49c9-466b-9ee5-513221de5cc5",
-        "fecha": "2026-02-27T19:51:03.994878"
-      },
-      "1205e5a2-8c0e-4bab-95b9-aed12000a5af": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 trigo que te ofrezco.",
-        "id": "1205e5a2-8c0e-4bab-95b9-aed12000a5af",
-        "fecha": "2026-02-27T19:51:29.040277"
-      },
-      "ba939cd8-6f2c-4734-9045-3794d326cd45": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 aceite que te ofrezco.",
-        "id": "ba939cd8-6f2c-4734-9045-3794d326cd45",
-        "fecha": "2026-02-27T19:51:29.042406"
-      },
-      "dc774ef5-4e8d-45d1-aa15-380ee32d7f5e": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 trigo que te ofrezco.",
-        "id": "dc774ef5-4e8d-45d1-aa15-380ee32d7f5e",
-        "fecha": "2026-02-27T19:51:54.099375"
-      },
-      "dfe77a8d-6305-4562-9a57-0cb623d9731d": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 aceite que te ofrezco.",
-        "id": "dfe77a8d-6305-4562-9a57-0cb623d9731d",
-        "fecha": "2026-02-27T19:51:54.103453"
-      },
-      "59e506a0-96d2-40c5-9a5c-279c426bb3d1": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 trigo que te ofrezco.",
-        "id": "59e506a0-96d2-40c5-9a5c-279c426bb3d1",
-        "fecha": "2026-02-27T19:52:19.152048"
-      },
-      "d40d5969-6679-4529-9a10-1688da8ecbce": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 trigo que te ofrezco.",
-        "id": "d40d5969-6679-4529-9a10-1688da8ecbce",
-        "fecha": "2026-02-27T19:52:19.154362"
-      },
-      "a297861a-28a2-4c05-9f19-4d32284842af": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
-        "id": "a297861a-28a2-4c05-9f19-4d32284842af",
-        "fecha": "2026-02-27T19:52:44.220790"
-      },
-      "23fadc76-a0f8-4205-811a-b3efc9eaa6c5": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 trigo que te ofrezco.",
-        "id": "23fadc76-a0f8-4205-811a-b3efc9eaa6c5",
-        "fecha": "2026-02-27T19:52:44.224318"
-      },
-      "82c41f11-0059-4179-b5ee-87b1668ffa3c": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
-        "id": "82c41f11-0059-4179-b5ee-87b1668ffa3c",
-        "fecha": "2026-02-27T19:53:09.287038"
-      },
-      "ec9f5e31-8711-4962-a725-076c36fd1d40": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 trigo que te ofrezco.",
-        "id": "ec9f5e31-8711-4962-a725-076c36fd1d40",
-        "fecha": "2026-02-27T19:53:09.290490"
-      },
-      "83c430ba-c06a-4ab5-9bde-48634d3d9b98": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 trigo que te ofrezco.",
-        "id": "83c430ba-c06a-4ab5-9bde-48634d3d9b98",
-        "fecha": "2026-02-27T19:53:34.348441"
-      },
-      "1c0e0bad-c0a2-4c69-90fd-68355ee8f984": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 arroz que necesito por 1 aceite que te ofrezco.",
-        "id": "1c0e0bad-c0a2-4c69-90fd-68355ee8f984",
-        "fecha": "2026-02-27T19:53:34.352693"
-      },
-      "e1742e4c-caf5-4937-b0b3-8473c950b1ec": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 aceite que te ofrezco.",
-        "id": "e1742e4c-caf5-4937-b0b3-8473c950b1ec",
-        "fecha": "2026-02-27T19:53:59.413220"
-      },
-      "bd2ce210-3a78-4716-bedc-fe0cce4b7a85": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 trigo que te ofrezco.",
-        "id": "bd2ce210-3a78-4716-bedc-fe0cce4b7a85",
-        "fecha": "2026-02-27T19:53:59.415851"
-      },
-      "3f89e27d-fb90-4a28-845c-dd3cb209d5a8": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 trigo que te ofrezco.",
-        "id": "3f89e27d-fb90-4a28-845c-dd3cb209d5a8",
-        "fecha": "2026-02-27T19:54:24.473906"
-      },
-      "6580e1ea-424d-4d93-ab8e-f434d24038b6": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te propongo intercambiar 1 queso que necesito por 1 trigo que te ofrezco.",
-        "id": "6580e1ea-424d-4d93-ab8e-f434d24038b6",
-        "fecha": "2026-02-27T19:54:24.476367"
-      },
-      "4334a6b9-c638-40a5-8197-b079cc3adbd3": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "4334a6b9-c638-40a5-8197-b079cc3adbd3",
-        "fecha": "2026-02-27T19:56:35.554687"
-      },
-      "b2870ef7-3dcd-4833-8403-1ebfd4f2749f": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
-        "id": "b2870ef7-3dcd-4833-8403-1ebfd4f2749f",
-        "fecha": "2026-02-27T19:56:35.555601"
-      },
-      "3af5501c-3d2b-4f33-afc0-34a68b800fd7": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "3af5501c-3d2b-4f33-afc0-34a68b800fd7",
-        "fecha": "2026-02-27T20:00:19.898265"
-      },
-      "32caedea-24c7-4a04-af2d-8cbf2cd38968": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
-        "id": "32caedea-24c7-4a04-af2d-8cbf2cd38968",
-        "fecha": "2026-02-27T20:00:19.901846"
-      },
-      "92f05d58-be63-4c5e-b4b6-d81e13f30fdb": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
-        "id": "92f05d58-be63-4c5e-b4b6-d81e13f30fdb",
-        "fecha": "2026-02-27T20:00:45.029641"
-      },
-      "af4866dc-96f9-4919-aaaa-04a5b4185c38": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
-        "id": "af4866dc-96f9-4919-aaaa-04a5b4185c38",
-        "fecha": "2026-02-27T20:00:45.034102"
-      },
-      "023a81c5-a044-463b-aff0-cc8af35f9224": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "023a81c5-a044-463b-aff0-cc8af35f9224",
-        "fecha": "2026-02-27T20:01:10.091635"
-      },
-      "46f0462e-0e9a-4437-9898-5f095985f9d4": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "46f0462e-0e9a-4437-9898-5f095985f9d4",
-        "fecha": "2026-02-27T20:01:10.093944"
-      },
-      "1fc417cd-f178-4968-902b-03fe61327b0b": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "1fc417cd-f178-4968-902b-03fe61327b0b",
-        "fecha": "2026-02-27T20:01:35.135503"
-      },
-      "27978b6e-bf4b-442e-b1ee-59f1e23c245d": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "27978b6e-bf4b-442e-b1ee-59f1e23c245d",
-        "fecha": "2026-02-27T20:01:35.138904"
-      },
-      "d17f0819-32fc-4f4b-8399-358836a6abc7": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
-        "id": "d17f0819-32fc-4f4b-8399-358836a6abc7",
-        "fecha": "2026-02-27T20:02:00.192235"
-      },
-      "471fd344-5db7-41cc-8b0b-e5da84ef34bf": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "471fd344-5db7-41cc-8b0b-e5da84ef34bf",
-        "fecha": "2026-02-27T20:02:00.196908"
-      },
-      "e5d8b5fd-c974-47b3-80a4-4ecd492e047c": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "e5d8b5fd-c974-47b3-80a4-4ecd492e047c",
-        "fecha": "2026-02-27T20:02:25.251346"
-      },
-      "7599afb0-f796-46f8-836b-6f56684afdbb": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "7599afb0-f796-46f8-836b-6f56684afdbb",
-        "fecha": "2026-02-27T20:02:25.254280"
-      },
-      "047a9c18-f2ac-4b40-97af-42dcbb54408d": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "047a9c18-f2ac-4b40-97af-42dcbb54408d",
-        "fecha": "2026-02-27T20:02:50.315477"
-      },
-      "cb00218c-b39f-4c00-abbf-cc7bb65b9814": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
-        "id": "cb00218c-b39f-4c00-abbf-cc7bb65b9814",
-        "fecha": "2026-02-27T20:02:50.319204"
-      },
-      "5ba638d5-350e-4e77-bfc1-1ec9a8ab0bcc": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "5ba638d5-350e-4e77-bfc1-1ec9a8ab0bcc",
-        "fecha": "2026-02-27T20:03:15.370996"
-      },
-      "2c58fda7-ed38-478a-97a5-4d6e2e845e04": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "2c58fda7-ed38-478a-97a5-4d6e2e845e04",
-        "fecha": "2026-02-27T20:03:15.374596"
-      },
-      "ac1b936f-a435-478a-a7aa-3727cdbc5a01": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "ac1b936f-a435-478a-a7aa-3727cdbc5a01",
-        "fecha": "2026-02-27T20:03:40.432324"
-      },
-      "45429c48-752d-484b-85f6-28536052ab27": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "45429c48-752d-484b-85f6-28536052ab27",
-        "fecha": "2026-02-27T20:03:40.436505"
-      },
-      "82ccfb2a-0d41-4e87-8aed-910fd73cbe58": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
-        "id": "82ccfb2a-0d41-4e87-8aed-910fd73cbe58",
-        "fecha": "2026-02-27T20:04:05.492584"
-      },
-      "a9e68af4-2215-4da4-b65e-682cd933b3ae": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "a9e68af4-2215-4da4-b65e-682cd933b3ae",
-        "fecha": "2026-02-27T20:04:05.496709"
-      },
-      "5cd8b4d5-d735-4857-b02f-91e967bc4d22": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
-        "id": "5cd8b4d5-d735-4857-b02f-91e967bc4d22",
-        "fecha": "2026-02-27T20:04:57.605833"
-      },
-      "378ab0d8-a40e-4ecd-b639-0b41f9303cd6": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "378ab0d8-a40e-4ecd-b639-0b41f9303cd6",
-        "fecha": "2026-02-27T20:04:57.606763"
-      },
-      "bd4c6836-c4eb-4d3d-9e03-09319f6bdee7": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "bd4c6836-c4eb-4d3d-9e03-09319f6bdee7",
-        "fecha": "2026-02-27T20:07:12.477615"
-      },
-      "e92b6bc7-b507-4f84-ae51-67d3b83fec8f": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "e92b6bc7-b507-4f84-ae51-67d3b83fec8f",
-        "fecha": "2026-02-27T20:07:12.481750"
-      },
-      "8ca649ff-ed38-4fec-8fae-9e9b300ad959": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
-        "id": "8ca649ff-ed38-4fec-8fae-9e9b300ad959",
-        "fecha": "2026-02-27T20:07:37.542582"
-      },
-      "60a4f450-3bd9-4af7-ba0c-ce4c0da02f4d": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
-        "id": "60a4f450-3bd9-4af7-ba0c-ce4c0da02f4d",
-        "fecha": "2026-02-27T20:07:37.546702"
-      },
-      "44b64c5a-15cd-43c4-b805-9971b405994e": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "44b64c5a-15cd-43c4-b805-9971b405994e",
-        "fecha": "2026-02-27T20:08:02.607851"
-      },
-      "ec12ebc9-4e40-4d3a-8b4a-59c5719e3ae8": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "ec12ebc9-4e40-4d3a-8b4a-59c5719e3ae8",
-        "fecha": "2026-02-27T20:08:02.611749"
-      },
-      "cd8d0e57-e174-40c6-addf-c56781beb5dc": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
-        "id": "cd8d0e57-e174-40c6-addf-c56781beb5dc",
-        "fecha": "2026-02-27T20:08:27.665018"
-      },
-      "59159096-bc1e-4aec-8bb9-818bed147613": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "59159096-bc1e-4aec-8bb9-818bed147613",
-        "fecha": "2026-02-27T20:08:27.668671"
-      },
-      "9570201c-d326-4db9-a05a-da8d11d1875d": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
-        "id": "9570201c-d326-4db9-a05a-da8d11d1875d",
-        "fecha": "2026-02-27T20:08:52.723666"
-      },
-      "c05b63e9-3500-4b20-b86b-4785abefd9ed": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 aceite",
-        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
-        "id": "c05b63e9-3500-4b20-b86b-4785abefd9ed",
-        "fecha": "2026-02-27T20:08:52.727474"
-      },
-      "27277851-884d-43e8-93bc-9ee7a9b1dc85": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 queso por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
-        "id": "27277851-884d-43e8-93bc-9ee7a9b1dc85",
-        "fecha": "2026-02-27T20:09:17.781535"
-      },
-      "71bbddaa-1ffd-41e8-bc97-d589e34ef1e0": {
-        "remi": "ag002",
-        "dest": "ag001",
-        "asunto": "Oferta: 1 arroz por 1 trigo",
-        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
-        "id": "71bbddaa-1ffd-41e8-bc97-d589e34ef1e0",
-        "fecha": "2026-02-27T20:09:17.783893"
-      },
       "e2a92e4a-1dc2-4bdc-8535-24b819f4dc89": {
         "remi": "ag002",
         "dest": "ag001",
@@ -2590,6 +2927,918 @@
         "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
         "id": "fafad02e-8420-4856-8956-ab0fb308904c",
         "fecha": "2026-02-27T20:21:56.424674"
+      },
+      "84f69849-9879-40be-a5ec-6ad9d4814726": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "84f69849-9879-40be-a5ec-6ad9d4814726",
+        "fecha": "2026-02-27T20:22:12.320645"
+      },
+      "cf64c05b-9747-4ffc-9fb9-e9f075a44d21": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "cf64c05b-9747-4ffc-9fb9-e9f075a44d21",
+        "fecha": "2026-02-27T20:22:12.321654"
+      },
+      "b2a50924-a5bb-4cd5-b7d3-d4731f0c2523": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "b2a50924-a5bb-4cd5-b7d3-d4731f0c2523",
+        "fecha": "2026-02-27T20:25:31.501842"
+      },
+      "f4fbb4fa-b88d-4447-8894-9bd952c462d1": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "f4fbb4fa-b88d-4447-8894-9bd952c462d1",
+        "fecha": "2026-02-27T20:25:31.504468"
+      },
+      "adb2705b-3e86-4f83-8207-4b8b61cd9a55": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "adb2705b-3e86-4f83-8207-4b8b61cd9a55",
+        "fecha": "2026-02-27T20:25:56.564320"
+      },
+      "b2bde490-a1c7-4a6e-9384-35cb383697b4": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "b2bde490-a1c7-4a6e-9384-35cb383697b4",
+        "fecha": "2026-02-27T20:25:56.568016"
+      },
+      "ed4a017b-f7a3-4274-8267-35dda4d87add": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "ed4a017b-f7a3-4274-8267-35dda4d87add",
+        "fecha": "2026-02-27T20:26:21.623299"
+      },
+      "7a8f635a-3a6b-44ee-8dd5-259d7b89bdbe": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "7a8f635a-3a6b-44ee-8dd5-259d7b89bdbe",
+        "fecha": "2026-02-27T20:26:21.625712"
+      },
+      "5e8ccebc-9f8b-4b94-b8cf-583921e36aea": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "5e8ccebc-9f8b-4b94-b8cf-583921e36aea",
+        "fecha": "2026-02-27T20:27:20.817544"
+      },
+      "2c4292ea-3fbb-45e1-ac85-d35c280d113a": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "2c4292ea-3fbb-45e1-ac85-d35c280d113a",
+        "fecha": "2026-02-27T20:27:20.820170"
+      },
+      "252955aa-edaa-4881-b0f2-71407275805b": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "252955aa-edaa-4881-b0f2-71407275805b",
+        "fecha": "2026-02-27T20:27:45.879046"
+      },
+      "19abdc79-6661-4a97-87e6-335fd135c032": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "19abdc79-6661-4a97-87e6-335fd135c032",
+        "fecha": "2026-02-27T20:27:45.882418"
+      },
+      "d8aba1d6-e8cc-4534-8e72-176d1d43ab95": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "d8aba1d6-e8cc-4534-8e72-176d1d43ab95",
+        "fecha": "2026-02-27T20:28:10.945977"
+      },
+      "1ba4f27d-52b7-4dc5-948e-b0341231bcbb": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "1ba4f27d-52b7-4dc5-948e-b0341231bcbb",
+        "fecha": "2026-02-27T20:28:10.949709"
+      },
+      "0ab37711-a6e2-4948-a9b7-62bac9f80bdb": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "0ab37711-a6e2-4948-a9b7-62bac9f80bdb",
+        "fecha": "2026-02-27T20:28:36.015212"
+      },
+      "c5ebd132-8718-4453-be23-d71a32c2228d": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "c5ebd132-8718-4453-be23-d71a32c2228d",
+        "fecha": "2026-02-27T20:28:36.017904"
+      },
+      "f24e89cc-2198-463d-9e7b-581dcacf5a98": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "f24e89cc-2198-463d-9e7b-581dcacf5a98",
+        "fecha": "2026-02-27T20:29:01.075911"
+      },
+      "1073b6ee-e7de-4e9a-a23b-c0885525ba9e": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "1073b6ee-e7de-4e9a-a23b-c0885525ba9e",
+        "fecha": "2026-02-27T20:29:01.078263"
+      },
+      "7bc05bef-38b6-4933-add7-b6411d470705": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "7bc05bef-38b6-4933-add7-b6411d470705",
+        "fecha": "2026-02-27T20:29:26.141136"
+      },
+      "73adf905-2116-469f-8e63-f002a90149fd": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "73adf905-2116-469f-8e63-f002a90149fd",
+        "fecha": "2026-02-27T20:29:26.143703"
+      },
+      "c966d3fe-3dfd-49a3-b2f7-71e8714cd201": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "c966d3fe-3dfd-49a3-b2f7-71e8714cd201",
+        "fecha": "2026-02-27T20:29:51.204490"
+      },
+      "81846524-ffb6-4377-ac99-cd8ebfe76bc9": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "81846524-ffb6-4377-ac99-cd8ebfe76bc9",
+        "fecha": "2026-02-27T20:29:51.207064"
+      },
+      "34fdf142-9dae-412b-b2fb-b6ea899407f7": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "34fdf142-9dae-412b-b2fb-b6ea899407f7",
+        "fecha": "2026-02-27T20:30:16.258326"
+      },
+      "fd028fce-a854-471e-ba36-2e2ed81b6fc7": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "fd028fce-a854-471e-ba36-2e2ed81b6fc7",
+        "fecha": "2026-02-27T20:30:16.262610"
+      },
+      "9dff7e17-8c96-4625-b5a3-c9df652cecb6": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "9dff7e17-8c96-4625-b5a3-c9df652cecb6",
+        "fecha": "2026-02-27T20:30:41.313226"
+      },
+      "bd6d7e8b-6815-4c21-9cfb-c634a2166b25": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "bd6d7e8b-6815-4c21-9cfb-c634a2166b25",
+        "fecha": "2026-02-27T20:30:41.315734"
+      },
+      "80446f48-47a1-42f1-a243-8a4576f552e8": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "80446f48-47a1-42f1-a243-8a4576f552e8",
+        "fecha": "2026-02-27T20:31:06.368700"
+      },
+      "1a7b36c5-ec26-4cc8-8d8f-4e0c8f116bd2": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "1a7b36c5-ec26-4cc8-8d8f-4e0c8f116bd2",
+        "fecha": "2026-02-27T20:31:06.372430"
+      },
+      "30b6e01b-9393-48dc-a880-0b43dc332104": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "30b6e01b-9393-48dc-a880-0b43dc332104",
+        "fecha": "2026-02-27T20:31:31.417274"
+      },
+      "23566ef1-4bb3-4132-8d37-8a6f09a98e8a": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "23566ef1-4bb3-4132-8d37-8a6f09a98e8a",
+        "fecha": "2026-02-27T20:31:31.420540"
+      },
+      "d7b09c9e-10b4-41bf-ab26-7424c6e48eec": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "d7b09c9e-10b4-41bf-ab26-7424c6e48eec",
+        "fecha": "2026-02-27T20:31:56.467562"
+      },
+      "98bccc90-faa6-4941-973a-ecbd96da95b5": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "98bccc90-faa6-4941-973a-ecbd96da95b5",
+        "fecha": "2026-02-27T20:31:56.471456"
+      },
+      "88408185-5539-4424-9e2f-281e21a697dd": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "88408185-5539-4424-9e2f-281e21a697dd",
+        "fecha": "2026-02-27T20:32:21.526904"
+      },
+      "262b09a3-d353-4f6a-bc64-1310d8ead858": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "262b09a3-d353-4f6a-bc64-1310d8ead858",
+        "fecha": "2026-02-27T20:32:21.531270"
+      },
+      "22c96eee-c108-4202-ab4e-43e4a21f4fc3": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "22c96eee-c108-4202-ab4e-43e4a21f4fc3",
+        "fecha": "2026-02-27T20:32:46.590315"
+      },
+      "34f0a432-0e7b-4c77-bd4b-c267aef5b731": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "34f0a432-0e7b-4c77-bd4b-c267aef5b731",
+        "fecha": "2026-02-27T20:32:46.593812"
+      },
+      "cdb4eda7-20bd-4f48-a67d-b9fae2e448cc": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "cdb4eda7-20bd-4f48-a67d-b9fae2e448cc",
+        "fecha": "2026-02-27T20:33:11.643759"
+      },
+      "57c68204-8fe3-4792-9ef8-a5f4ab31b59e": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "57c68204-8fe3-4792-9ef8-a5f4ab31b59e",
+        "fecha": "2026-02-27T20:33:11.647116"
+      },
+      "0c63f935-7391-4257-8691-58bd7c12be61": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "0c63f935-7391-4257-8691-58bd7c12be61",
+        "fecha": "2026-02-27T20:33:36.695520"
+      },
+      "25cdb6c0-f3db-4a78-b73f-3209e5e64dc7": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "25cdb6c0-f3db-4a78-b73f-3209e5e64dc7",
+        "fecha": "2026-02-27T20:33:36.698106"
+      },
+      "47ac283c-fce2-4fe5-93a3-3dfa37b8f589": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "47ac283c-fce2-4fe5-93a3-3dfa37b8f589",
+        "fecha": "2026-02-27T20:35:18.125641"
+      },
+      "3ba01107-9e1d-4831-8059-2ade6fbaef06": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de oferta aceptada",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado los recursos que pedías:\n{\n  \"trigo\": 1\n}\n\nEspero recibir a cambio los recursos que ofrecías:\n{\n  \"arroz\": 1\n}",
+        "id": "3ba01107-9e1d-4831-8059-2ade6fbaef06",
+        "fecha": "2026-02-27T20:35:18.129214"
+      },
+      "470fca55-e61b-4441-95fd-0614121da90b": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "470fca55-e61b-4441-95fd-0614121da90b",
+        "fecha": "2026-02-27T20:37:00.506563"
+      },
+      "ea432608-6ea2-4dc8-b299-c6be8eb02c7b": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de oferta aceptada",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado los recursos que pedías:\n{\n  \"trigo\": 1\n}\n\nEspero recibir a cambio los recursos que ofrecías:\n{\n  \"orro\": 1\n}",
+        "id": "ea432608-6ea2-4dc8-b299-c6be8eb02c7b",
+        "fecha": "2026-02-27T20:37:00.510165"
+      },
+      "adfdfcbc-318c-4647-9b05-d1ef1029faa6": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\naceite: 1",
+        "id": "adfdfcbc-318c-4647-9b05-d1ef1029faa6",
+        "fecha": "2026-02-27T20:37:22.600513"
+      },
+      "35689040-59b1-4123-b8cb-01cf91efba70": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de envío de recursos",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado los recursos que pedías:\n{\n  \"aceite\": 1\n}\n\nEspero recibir a cambio los recursos que ofrecías:\n{\n  \"aceite\": 1\n}",
+        "id": "35689040-59b1-4123-b8cb-01cf91efba70",
+        "fecha": "2026-02-27T20:37:22.603413"
+      },
+      "169211e2-978b-485b-b45a-b784d3cf2da8": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "169211e2-978b-485b-b45a-b784d3cf2da8",
+        "fecha": "2026-02-27T20:37:40.244174"
+      },
+      "1d7ae6c5-effd-4934-828e-d4993a123ce9": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de envío de recursos",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado los recursos que pedías:\n{\n  \"trigo\": 1\n}\n\nEspero recibir a cambio los recursos que ofrecías:\n{\n  \"arroz\": 1\n}",
+        "id": "1d7ae6c5-effd-4934-828e-d4993a123ce9",
+        "fecha": "2026-02-27T20:37:40.246869"
+      },
+      "7fec9255-a0a4-44ac-956f-43fe030cdfbd": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 arroz",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "7fec9255-a0a4-44ac-956f-43fe030cdfbd",
+        "fecha": "2026-02-27T20:37:40.255753"
+      },
+      "82c5852c-f732-4a4b-95cb-2543a96d0c1c": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 trigo por 1 queso",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "82c5852c-f732-4a4b-95cb-2543a96d0c1c",
+        "fecha": "2026-02-27T20:37:40.257689"
+      },
+      "20d728e7-5e48-4e19-86af-abd5315822d1": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "20d728e7-5e48-4e19-86af-abd5315822d1",
+        "fecha": "2026-02-27T20:38:05.339701"
+      },
+      "14d69846-fd61-46a6-9299-051f60e4c354": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "14d69846-fd61-46a6-9299-051f60e4c354",
+        "fecha": "2026-02-27T20:38:05.342042"
+      },
+      "52856bbb-8b79-42a8-b399-c3b5e808f3ae": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "52856bbb-8b79-42a8-b399-c3b5e808f3ae",
+        "fecha": "2026-02-27T20:38:30.408890"
+      },
+      "c53694fc-35be-428b-8c73-96d7f62b5c43": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "c53694fc-35be-428b-8c73-96d7f62b5c43",
+        "fecha": "2026-02-27T20:38:30.412651"
+      },
+      "cc0b1313-e699-4d5b-9243-b0cbea9ad60d": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "cc0b1313-e699-4d5b-9243-b0cbea9ad60d",
+        "fecha": "2026-02-27T20:38:55.465671"
+      },
+      "02049c63-a27d-4e4d-8410-8fb4189788a6": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "02049c63-a27d-4e4d-8410-8fb4189788a6",
+        "fecha": "2026-02-27T20:38:55.468986"
+      },
+      "a045b0cc-15b2-457a-98c2-90ffd18ca9d0": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "a045b0cc-15b2-457a-98c2-90ffd18ca9d0",
+        "fecha": "2026-02-27T20:39:20.517857"
+      },
+      "1acf4fa5-2401-4f1b-9e61-ec195f1a8647": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "1acf4fa5-2401-4f1b-9e61-ec195f1a8647",
+        "fecha": "2026-02-27T20:39:20.520129"
+      },
+      "1277b3bd-63bc-4163-b085-fed7d306a8b1": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "1277b3bd-63bc-4163-b085-fed7d306a8b1",
+        "fecha": "2026-02-27T20:39:45.575982"
+      },
+      "5996ae08-42fa-4a25-ba52-489e2420e846": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "5996ae08-42fa-4a25-ba52-489e2420e846",
+        "fecha": "2026-02-27T20:39:45.578659"
+      },
+      "19848233-cc18-4668-bff2-6f5caa6884ad": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "19848233-cc18-4668-bff2-6f5caa6884ad",
+        "fecha": "2026-02-27T20:40:29.413173"
+      },
+      "c522542e-79dd-4127-a51d-3e089027e51f": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de envío de recursos",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado los recursos que pedías:\n{\n  \"trigo\": 1\n}\n\nEspero recibir a cambio los recursos que ofrecías:\n{\n  \"trigo\": 1,\n  \"arroz\": 1\n}",
+        "id": "c522542e-79dd-4127-a51d-3e089027e51f",
+        "fecha": "2026-02-27T20:40:29.416767"
+      },
+      "eac1d2b6-9331-4632-abde-7fe52cc24514": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "eac1d2b6-9331-4632-abde-7fe52cc24514",
+        "fecha": "2026-02-27T20:40:54.479767"
+      },
+      "5c8a0358-fd47-4d61-a7b2-ceb6baee07ea": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "5c8a0358-fd47-4d61-a7b2-ceb6baee07ea",
+        "fecha": "2026-02-27T20:40:54.482391"
+      },
+      "6ed937c7-a6d4-4701-99c4-6d9ce48a3deb": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "6ed937c7-a6d4-4701-99c4-6d9ce48a3deb",
+        "fecha": "2026-02-27T20:41:47.098554"
+      },
+      "f2979ce6-efa1-47a1-ba96-ad24588f8d2c": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "f2979ce6-efa1-47a1-ba96-ad24588f8d2c",
+        "fecha": "2026-02-27T20:41:47.100365"
+      },
+      "9a9a155c-14d3-4efb-bd19-048fc8b79f4c": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "9a9a155c-14d3-4efb-bd19-048fc8b79f4c",
+        "fecha": "2026-02-27T20:42:12.147632"
+      },
+      "7e87713a-7ee7-495c-8b2a-ff36a6a64084": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "7e87713a-7ee7-495c-8b2a-ff36a6a64084",
+        "fecha": "2026-02-27T20:42:12.149620"
+      },
+      "c9d0845a-0512-451b-8eb6-0c85ee666585": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "c9d0845a-0512-451b-8eb6-0c85ee666585",
+        "fecha": "2026-02-27T20:43:16.927417"
+      },
+      "b5763dd5-e085-41c1-b049-4309c9f65df3": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "b5763dd5-e085-41c1-b049-4309c9f65df3",
+        "fecha": "2026-02-27T20:43:16.931147"
+      },
+      "cf6e766c-862f-4ec1-9334-33ae87e23627": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "cf6e766c-862f-4ec1-9334-33ae87e23627",
+        "fecha": "2026-02-27T20:44:02.323043"
+      },
+      "d47eda24-06f4-4ef7-bbb9-fa3c266b695f": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "d47eda24-06f4-4ef7-bbb9-fa3c266b695f",
+        "fecha": "2026-02-27T20:44:02.324936"
+      },
+      "7eb11096-6acc-4da4-ba93-cbaa12c3c153": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "7eb11096-6acc-4da4-ba93-cbaa12c3c153",
+        "fecha": "2026-02-27T20:44:27.379754"
+      },
+      "23b98271-00e6-4413-b90f-a6b13e200362": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "23b98271-00e6-4413-b90f-a6b13e200362",
+        "fecha": "2026-02-27T20:44:27.382226"
+      },
+      "1fc69642-f84f-4101-8b44-fc3c84cb3683": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "1fc69642-f84f-4101-8b44-fc3c84cb3683",
+        "fecha": "2026-02-27T20:44:52.444469"
+      },
+      "eec1ae36-43b2-46c1-a1c7-62d9ed569e06": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "eec1ae36-43b2-46c1-a1c7-62d9ed569e06",
+        "fecha": "2026-02-27T20:44:52.447769"
+      },
+      "bd524482-c4cd-4fc8-bd71-14802a582425": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "bd524482-c4cd-4fc8-bd71-14802a582425",
+        "fecha": "2026-02-27T20:45:17.501748"
+      },
+      "05382289-870c-454b-a0bb-8c1ac85b61dd": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "05382289-870c-454b-a0bb-8c1ac85b61dd",
+        "fecha": "2026-02-27T20:45:17.503560"
+      },
+      "cfdead52-787d-45df-82dc-a9f24b9aabe7": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 arroz",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "cfdead52-787d-45df-82dc-a9f24b9aabe7",
+        "fecha": "2026-02-27T20:45:42.560302"
+      },
+      "3032ef40-b1a0-41bf-943f-cfc2bd4d9656": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Oferta: 1 aceite por 1 queso",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "3032ef40-b1a0-41bf-943f-cfc2bd4d9656",
+        "fecha": "2026-02-27T20:45:42.562842"
+      },
+      "9cfabc42-c69a-40da-a2f1-6ecc663a7b61": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "9cfabc42-c69a-40da-a2f1-6ecc663a7b61",
+        "fecha": "2026-02-27T20:46:37.206849"
+      },
+      "3510604b-15d0-4f16-ba35-c5dc5140df93": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 arroz.",
+        "id": "3510604b-15d0-4f16-ba35-c5dc5140df93",
+        "fecha": "2026-02-27T20:46:37.207808"
+      },
+      "6f1efd97-8700-4c52-bd65-4a005776f6e9": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "6f1efd97-8700-4c52-bd65-4a005776f6e9",
+        "fecha": "2026-02-27T20:49:25.856814"
+      },
+      "8165380f-6cac-4d1c-93c0-f8d3bc56f537": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de oferta aceptada",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado:\n{\n  \"trigo\": 1\n}\n\nEspero recibir:\n{\n  \"arroz\": 1\n}",
+        "id": "8165380f-6cac-4d1c-93c0-f8d3bc56f537",
+        "fecha": "2026-02-27T20:49:25.860109"
+      },
+      "2f938c44-e3ed-487a-9cee-4c10710cd389": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "2f938c44-e3ed-487a-9cee-4c10710cd389",
+        "fecha": "2026-02-27T20:51:26.192966"
+      },
+      "6dee6667-c48c-4e0f-8ae8-f777fd15a779": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de oferta aceptada",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado:\n{\n  \"trigo\": 1\n}\n\nEspero recibir:\n{\n  \"oro\": 1\n}",
+        "id": "6dee6667-c48c-4e0f-8ae8-f777fd15a779",
+        "fecha": "2026-02-27T20:51:26.200320"
+      },
+      "e3f0e706-e603-4658-aa1d-5d242e7b47b8": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\naceite: 1",
+        "id": "e3f0e706-e603-4658-aa1d-5d242e7b47b8",
+        "fecha": "2026-02-27T20:53:08.560161"
+      },
+      "e98670be-989f-4c12-8a27-ed631fd0aacb": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de oferta aceptada",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado:\n{\n  \"aceite\": 1\n}\n\nEspero recibir:\n{\n  \"arroz\": 1\n}",
+        "id": "e98670be-989f-4c12-8a27-ed631fd0aacb",
+        "fecha": "2026-02-27T20:53:08.563766"
+      },
+      "0c8c8425-f41c-482a-bc76-fabd2f788853": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "0c8c8425-f41c-482a-bc76-fabd2f788853",
+        "fecha": "2026-02-27T20:53:08.573358"
+      },
+      "99d10e95-2cc4-4ddb-9bc2-1120eae36760": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 trigo y tu me das 1 queso.",
+        "id": "99d10e95-2cc4-4ddb-9bc2-1120eae36760",
+        "fecha": "2026-02-27T20:53:08.575393"
+      },
+      "fc55eee1-68f8-4b5b-b176-7eb80fbe829a": {
+        "remi": "Sistema",
+        "dest": "ag001",
+        "asunto": "Paquete recibido",
+        "cuerpo": "Has recibido:\ntrigo: 1",
+        "id": "fc55eee1-68f8-4b5b-b176-7eb80fbe829a",
+        "fecha": "2026-02-27T20:54:36.753079"
+      },
+      "f7fcef4e-f75a-4f13-b3da-d4689a180bd0": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "Confirmación de envío de recursos",
+        "cuerpo": "He aceptado tu oferta.\n\nTe he enviado:\n{\n  \"trigo\": 1\n}\n\nEspero recibir:\n{\n  \"arroz\": 1\n}",
+        "id": "f7fcef4e-f75a-4f13-b3da-d4689a180bd0",
+        "fecha": "2026-02-27T20:54:36.757471"
+      },
+      "027a911d-1c62-48bc-b24b-46c0bf79ef35": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "027a911d-1c62-48bc-b24b-46c0bf79ef35",
+        "fecha": "2026-02-27T20:55:01.822003"
+      },
+      "31504861-770d-4d58-9760-cd02e6a26f00": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "31504861-770d-4d58-9760-cd02e6a26f00",
+        "fecha": "2026-02-27T20:55:01.825454"
+      },
+      "34510986-6ab3-479b-896b-9638f1ab3b17": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "34510986-6ab3-479b-896b-9638f1ab3b17",
+        "fecha": "2026-02-27T20:55:26.888543"
+      },
+      "a9c201b0-8cd5-45b4-ae88-ec36391e5df7": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "a9c201b0-8cd5-45b4-ae88-ec36391e5df7",
+        "fecha": "2026-02-27T20:55:26.892188"
+      },
+      "987f9e6c-d4d8-400b-a5f6-d95010fc16c9": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "987f9e6c-d4d8-400b-a5f6-d95010fc16c9",
+        "fecha": "2026-02-27T20:55:51.951945"
+      },
+      "16e04309-45b9-45d3-aa32-86965746426c": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "16e04309-45b9-45d3-aa32-86965746426c",
+        "fecha": "2026-02-27T20:55:51.955418"
+      },
+      "af5254a2-8424-4d10-a19d-39ca59be3e64": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "af5254a2-8424-4d10-a19d-39ca59be3e64",
+        "fecha": "2026-02-27T20:56:17.009472"
+      },
+      "8f8408d8-a9b3-400e-a6c1-4a78aaff6b4e": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "8f8408d8-a9b3-400e-a6c1-4a78aaff6b4e",
+        "fecha": "2026-02-27T20:56:17.013083"
+      },
+      "9b52ee89-4277-4e28-8663-7ecf5f73cb17": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "9b52ee89-4277-4e28-8663-7ecf5f73cb17",
+        "fecha": "2026-02-27T20:56:42.074537"
+      },
+      "aab07a14-3757-4601-846a-ece110047067": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "aab07a14-3757-4601-846a-ece110047067",
+        "fecha": "2026-02-27T20:56:42.077657"
+      },
+      "b8b7df89-71f2-43bd-93c5-8aa23de454e8": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "b8b7df89-71f2-43bd-93c5-8aa23de454e8",
+        "fecha": "2026-02-27T20:57:07.140036"
+      },
+      "c4dffe46-27c2-4717-8097-ee56252d3f58": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "c4dffe46-27c2-4717-8097-ee56252d3f58",
+        "fecha": "2026-02-27T20:57:07.144036"
+      },
+      "28b1d442-19d8-4226-9259-411871c9f391": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "28b1d442-19d8-4226-9259-411871c9f391",
+        "fecha": "2026-02-27T20:57:32.200499"
+      },
+      "85a962f6-1141-42db-9855-79939d08a121": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "85a962f6-1141-42db-9855-79939d08a121",
+        "fecha": "2026-02-27T20:57:32.204173"
+      },
+      "3ed5dbb0-fe77-47d6-be59-b7bbb53e8421": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "3ed5dbb0-fe77-47d6-be59-b7bbb53e8421",
+        "fecha": "2026-02-27T20:57:57.266368"
+      },
+      "1cfde252-4f0e-4f25-9e50-6ed42bc1d845": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "1cfde252-4f0e-4f25-9e50-6ed42bc1d845",
+        "fecha": "2026-02-27T20:57:57.269410"
+      },
+      "cea494ed-6ce9-4f3a-aa1e-2ae7fecc3e32": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "cea494ed-6ce9-4f3a-aa1e-2ae7fecc3e32",
+        "fecha": "2026-02-27T20:58:22.326662"
+      },
+      "2f308d2e-0b42-4388-9534-61e17f748016": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "2f308d2e-0b42-4388-9534-61e17f748016",
+        "fecha": "2026-02-27T20:58:22.331100"
+      },
+      "d1a720f6-61e8-4187-be6b-346b2380a267": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "d1a720f6-61e8-4187-be6b-346b2380a267",
+        "fecha": "2026-02-27T20:58:47.381819"
+      },
+      "d72d7c5a-8cff-4e30-ac0b-dea0e1ba825e": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "d72d7c5a-8cff-4e30-ac0b-dea0e1ba825e",
+        "fecha": "2026-02-27T20:58:47.386266"
+      },
+      "983dcffd-41be-4dae-9cdc-5bee2703a846": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 queso.",
+        "id": "983dcffd-41be-4dae-9cdc-5bee2703a846",
+        "fecha": "2026-02-27T20:59:12.443992"
+      },
+      "af665264-641a-4924-858f-d12c792d6cfd": {
+        "remi": "ag002",
+        "dest": "ag001",
+        "asunto": "propuesta intercambio",
+        "cuerpo": "Te ofrezo 1 aceite y tu me das 1 arroz.",
+        "id": "af665264-641a-4924-858f-d12c792d6cfd",
+        "fecha": "2026-02-27T20:59:12.447762"
       }
     }
   },
@@ -2597,10 +3846,11 @@
     "Alias": "ag002",
     "Recursos": {
       "madera": 4,
-      "trigo": 3,
-      "aceite": 4,
+      "trigo": 0,
+      "aceite": 3,
       "oro": 14,
-      "queso": 2
+      "queso": 2,
+      "arroz": 2
     },
     "Objetivo": {
       "madera": 4,
