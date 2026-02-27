@@ -15,6 +15,31 @@ from . import logs
 from .ollama_client import ollama
 
 
+def _parse_json_response(response: str) -> dict[str, Any] | None:
+    """
+    Intenta parsear JSON aunque el modelo añada texto antes/después.
+    Devuelve dict o None si no encuentra ningún objeto JSON válido.
+    """
+    try:
+        data = json.loads(response)
+        if isinstance(data, dict):
+            return data
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+
+    decoder = json.JSONDecoder()
+    for idx, ch in enumerate(response):
+        if ch != "{":
+            continue
+        try:
+            candidate, _end = decoder.raw_decode(response[idx:])
+            if isinstance(candidate, dict):
+                return candidate
+        except json.JSONDecodeError:
+            continue
+    return None
+
+
 def _gold_only(needs: dict[str, Any], surplus: dict[str, int], inventory: dict[str, int]) -> bool:
     """True si no hemos alcanzado objetivo, no tenemos surplus y tenemos al menos 1 oro."""
     if len(needs) == 0 or surplus:
@@ -85,12 +110,10 @@ CARTA RECIBIDA:
 
     logs.print_llm_response(response)
 
-    try:
-        data = json.loads(response)
-        if not isinstance(data, dict):
-            raise ValueError("Respuesta no es un dict")
+    data = _parse_json_response(response)
+    if data is not None:
         return data
-    except (json.JSONDecodeError, ValueError):
+    else:
         logs.print_error("Ollama no devolvió JSON válido al analizar carta")
         logs.print_llm_response(response)
         return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
@@ -189,12 +212,10 @@ OFERTA:
             else:
                 logs.print_error("No se pudo contactar Ollama (timeout/404/modelo); se rechaza la oferta por defecto.")
                 return {"decision": "rechazada", "oferta": {}, "pide": {}}
-        try:
-            data = json.loads(response)
-            if not isinstance(data, dict):
-                raise ValueError("Respuesta no es un dict")
+        data = _parse_json_response(response)
+        if data is not None:
             return data
-        except (json.JSONDecodeError, ValueError):
+        else:
             if attempt < max_attempts - 1:
                 logs.print_retry(f"Intento {attempt + 1}/{max_attempts}: JSON inválido, reintentando...")
             else:

@@ -51,8 +51,8 @@ def build_simple_offer_letter(
     Ejemplo: "Te propongo intercambiar 1 piedra por 1 tela."
     """
     return (
-        f"Te propongo intercambiar 1 {needed_resource} que necesito "
-        f"por 1 {surplus_resource} que te ofrezco."
+        f"Te ofrezo 1 {surplus_resource} y tu me das "
+        f"1 {needed_resource}."
     )
 
 

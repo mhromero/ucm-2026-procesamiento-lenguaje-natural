@@ -89,13 +89,17 @@ def main() -> None:
     print_section("INICIO DEL BOT")
 
     # Registrar alias en Butler (en modo monopuesto el servidor lo asigna, no se llama POST /alias)
-    #if ALIAS and not SINGLE_PLAYER_MODE:
     if ALIAS:
-        try:
-            print_kv("Alias configurado", ALIAS)
-            api.set_alias(ALIAS)
-        except Exception as e:
-            print_error(f"No se pudo configurar el alias '{ALIAS}': {e}")
+        if SINGLE_PLAYER_MODE:
+            print_bot_dim("[BOT] Modo monopuesto: se omite POST /alias y se usa alias de /info")
+        else:
+            try:
+                print_kv("Alias configurado", ALIAS)
+                api.set_alias(ALIAS)
+            except Exception as e:
+                print_error(f"No se pudo configurar el alias '{ALIAS}': {e}")
+    else:
+        print_bot_dim("[BOT] Sin alias configurado en entorno/CLI")
 
     # Cargar estado inicial: inventario, objetivo y buzón desde Butler
     print_kv("Acción", "Obteniendo nuestros recursos (/info)")
