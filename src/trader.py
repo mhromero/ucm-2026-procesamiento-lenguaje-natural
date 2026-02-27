@@ -8,27 +8,6 @@ from .config import GOLD_RESOURCE_NAME
 from .letters import build_trade_confirmation_letter
 from .ollama_client import ollama
 
-# JSON Schema para forzar la forma de la decisión de oferta (Ollama format).
-ANALIZAR_OFERTA_JSON_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "decision": {
-            "type": "string",
-            "enum": ["aceptada", "rechazada"],
-        },
-        "oferta": {
-            "type": "object",
-            "additionalProperties": {"type": "integer", "minimum": 0},
-        },
-        "pide": {
-            "type": "object",
-            "additionalProperties": {"type": "integer", "minimum": 0},
-        },
-    },
-    "required": ["decision", "oferta", "pide"],
-    "additionalProperties": False,
-}
-
 
 def _solo_oro(needs: Dict[str, Any], surplus: Dict[str, int], inventario: Dict[str, int]) -> bool:
     """True si no hemos alcanzado objetivo, no tenemos surplus y tenemos al menos 1 oro."""
