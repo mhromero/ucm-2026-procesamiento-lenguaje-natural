@@ -1,13 +1,20 @@
 """
-Lógica principal del bot: flujo de negociación (main) y flujo legacy.
+Flujo principal del bot: ciclo de negociación con Butler.
+
+1. Obtiene estado (/info) y lista de agentes (/gente).
+2. Envía ofertas según necesidades y excedentes.
+3. Lee buzón, interpreta cartas con LLM y actúa (acepta/rechaza).
+4. Si cambian los recursos, reenvía ofertas actualizadas.
 """
 
 import json
 import time
+from typing import Any
+
 import requests
 
 from . import api
-from .config import ALIAS, LETTERS_BEFORE_REBROADCAST, OFFERS_PER_PERSON, REMITENTE_SISTEMA
+from .config import ALIAS, LETTERS_BEFORE_REBROADCAST, OFFERS_PER_PERSON, REMITENTE_SISTEMA, SINGLE_PLAYER_MODE
 from .game_state import State
 from .agent import parse_letter
 from .letters import broadcast_offers
@@ -26,10 +33,12 @@ from .logs import (
 from .trader import handle_confirmation, handle_offer
 
 
-def _process_letter(letter_id: str, content: dict, state: State) -> str | None:
+def _process_letter(letter_id: str, content: dict[str, Any], state: State) -> str | None:
     """
-    Procesa una carta: analiza, gestiona oferta/confirmación. Retorna tipo de carta o None.
-    No borra la carta del buzón (lo hace el llamador).
+    Interpreta una carta con el LLM y actúa según su tipo (oferta o confirmación).
+
+    Retorna el tipo de carta procesada, o None si se ignora.
+    La eliminación del buzón la realiza quien llama.
     """
     sender = content.get("remi", "??")
 
@@ -70,24 +79,25 @@ def _process_letter(letter_id: str, content: dict, state: State) -> str | None:
 
 def main() -> None:
     """
-    Flujo de negociación:
-    1) Leer /info y construir estado (alias, inventario, objetivo, buzón).
-    2) Enviar a todos una carta preescrita con lo que tenemos y necesitamos.
-    3) Leer buzón del estado, analizar cada carta y actuar (ofertas/confirmaciones).
-    4) Si cambian nuestros recursos, reenviar carta de estado actualizada.
+    Flujo principal del bot:
+
+    1. Registrar alias y obtener estado (inventario, objetivo, buzón) desde Butler.
+    2. Enviar ofertas a los otros agentes según necesidades y excedentes.
+    3. Procesar cartas del buzón: interpretar con LLM y ejecutar aceptar/rechazar.
+    4. Esperar, refrescar buzón y repetir; reenviar ofertas periódicamente.
     """
     print_section("INICIO DEL BOT")
 
-    # Configuramos nuestro alias según la configuración (doc: POST /alias/{nombre})
-    if ALIAS:
+    # Registrar alias en Butler (en modo monopuesto el servidor lo asigna, no se llama POST /alias)
+    if ALIAS and not SINGLE_PLAYER_MODE:
         try:
             print_kv("Alias configurado", ALIAS)
             api.set_alias(ALIAS)
         except Exception as e:
             print_error(f"No se pudo configurar el alias '{ALIAS}': {e}")
 
+    # Cargar estado inicial: inventario, objetivo y buzón desde Butler
     print_kv("Acción", "Obteniendo nuestros recursos (/info)")
-
     state = State(alias="", inventory={}, target={}, needs={}, surplus={}, mailbox={})
     while True:
         try:
@@ -111,32 +121,29 @@ def main() -> None:
     print_section("NECESIDADES Y EXCEDENTES")
     print_kv("Necesitamos", json.dumps(state.needs, ensure_ascii=False))
     print_kv(
-        "Podemos ofrecer (incluido oro, aunque luego lo filtraremos al enviar)",
+        "Podemos ofrecer (sin oro, se filtra internamente al enviar)",
         json.dumps(state.surplus, ensure_ascii=False),
     )
 
-    # En lugar de una carta gigante, mandamos "mini cartas" 1 a 1.
-    # Si ya cumplimos objetivo: ofrecemos surplus a cambio de oro (maximizar oro).
-    # Si no: combinamos cada recurso que necesitamos con cada recurso que nos sobra.
-    print_section("CARTAS DE OFERTA SIMPLES A ENVIAR")
+    # Enviar ofertas según estado: si objetivo cumplido → surplus→oro; si no → intercambios necesidad↔excedente
+    print_section("CARTAS DE OFERTA A ENVIAR")
     broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON)
 
-    # 1) Leer buzón una vez (ya está en state.mailbox); luego bucle 2–4
-    # Cuando alcanzamos objetivo, no salimos: enviamos ofertas surplus→oro y seguimos maximizando oro.
+    # Bucle principal: procesar cartas, actuar, y reenviar ofertas periódicamente
     print_section("BUZÓN INICIAL")
     print_kv("Acción", "Leyendo cartas del buzón")
-    print_mailbox(state.mailbox)
+    print_kv("Cartas", len(state.mailbox))
 
     letters_processed = 0
     while True:
-        # 2) Ordenar cartas por fecha (más antiguas primero)
+        # Ordenar cartas por fecha para procesar las más antiguas primero
         sorted_letters = sorted(
             state.mailbox.items(),
             key=lambda item: item[1].get("fecha", ""),
         )
 
-        # 3) Procesar de más antigua a más nueva y eliminar del buzón
         for letter_id, content in sorted_letters:
+            # Ignorar nuestras propias cartas (eco) y las del sistema
             if content.get("remi") == state.alias:
                 api.delete_letter(letter_id)
                 continue
@@ -148,17 +155,16 @@ def main() -> None:
             letter_type = _process_letter(letter_id, content, state)
             if letter_type is not None:
                 letters_processed += 1
-
             print_bot_dim(f"[BOT] Eliminando carta del buzón (id={letter_id})")
             api.delete_letter(letter_id)
 
-        # Cada N cartas analizadas: ofertas extra
+        # Reenviar ofertas cada N cartas procesadas para mantener visibilidad
         if letters_processed >= LETTERS_BEFORE_REBROADCAST:
             letters_processed = 0
             reason = f"{LETTERS_BEFORE_REBROADCAST} cartas analizadas. "
             broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason)
 
-        # 4) No hay cartas (o ya se procesaron): esperar 5 s y volver a leer buzón
+        # Esperar y refrescar buzón
         print_section("BUZÓN VACÍO")
         print_bot(
             "Sin cartas en buzón. Esperando 5 s y releyendo buzón...",

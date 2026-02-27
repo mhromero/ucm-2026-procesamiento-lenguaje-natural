@@ -1,21 +1,23 @@
 """
-Cliente para Ollama (generación con LLM local).
-Soporta JSON Schema en `format` para forzar salida estructurada.
+Cliente HTTP para Ollama: generación de texto con LLM local.
+
+Permite opcionalmente forzar salida JSON con un schema en `format`.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import requests
 
 from .config import MODEL, OLLAMA_URL
+from . import logs
 
 
-def ollama(prompt: str, format: Optional[Dict[str, Any]] = None) -> str:
+def ollama(prompt: str, format: dict[str, Any] | None = None) -> str:
     """
     Llama al modelo Ollama. Si se pasa `format` (JSON Schema), la respuesta
     se fuerza a cumplir ese esquema (JSON Schema-guided generation).
     """
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "model": MODEL,
         "prompt": prompt,
         "stream": False,
@@ -32,14 +34,13 @@ def ollama(prompt: str, format: Optional[Dict[str, Any]] = None) -> str:
         return r.json()["response"]
 
     except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        print("ERROR: Timeout al llamar a Ollama (se superó el tiempo de espera)")
+        logs.print_error("Timeout al llamar a Ollama (se superó el tiempo de espera)")
         raise
 
-    except requests.exceptions.HTTPError as e:
-        print("ERROR HTTP OLLAMA:", r.status_code)
-        print(r.text)
+    except requests.exceptions.HTTPError:
+        logs.print_error(f"HTTP OLLAMA: {r.status_code}\n{r.text}")
         raise
 
     except requests.exceptions.ConnectionError:
-        print("ERROR: Ollama no está corriendo (ollama serve)")
+        logs.print_error("Ollama no está corriendo (ollama serve)")
         raise

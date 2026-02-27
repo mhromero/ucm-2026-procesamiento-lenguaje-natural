@@ -1,5 +1,7 @@
 """
-Visualización por consola: colores, negritas, separadores y etiquetas de origen.
+Salida formateada por consola: colores ANSI, separadores y prefijos por tipo.
+
+Distingue [BOT], [LLM], [ERROR], [CARTA ESTADO], etc., para seguir el flujo.
 """
 
 import json
@@ -68,3 +70,19 @@ def print_bot_dim(msg: str) -> None:
 def print_mailbox(mailbox: Any) -> None:
     """Imprime el contenido del buzón como JSON formateado."""
     print(json.dumps(mailbox, ensure_ascii=False, indent=2))
+
+
+def print_decision(title: str, data: Any) -> None:
+    """Imprime una decisión con título y JSON con etiqueta [DECISIÓN]."""
+    print(f"{CYAN}{BOLD}[DECISIÓN] {title}{RESET}")
+    print(json.dumps(data, ensure_ascii=False, indent=2))
+
+
+def print_llm_response(text: str) -> None:
+    """Imprime la respuesta cruda del LLM con etiqueta [LLM]."""
+    print(f"{CYAN}{BOLD}[LLM]{RESET} {text}")
+
+
+def print_retry(msg: str) -> None:
+    """Imprime mensaje de reintento/advertencia con etiqueta [BOT] en amarillo."""
+    print(f"{YELLOW}{BOLD}[BOT]{RESET} {msg}")

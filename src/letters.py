@@ -1,10 +1,12 @@
 """
-Generación de cartas: prompts preescritos, carta de estado y envío de ofertas.
+Composición de cartas: ofertas simples, surplus→oro, confirmaciones.
+
+Genera el texto de cada tipo de carta y gestiona el broadcast a los agentes.
 """
 
 import json
 import random
-from typing import Dict, Any, List
+from typing import Any
 
 from . import api
 from . import logs
@@ -14,10 +16,10 @@ from .game_state import State
 
 def build_status_letter(
     alias: str,
-    inventory: Dict[str, int],
-    target: Dict[str, int],
-    needs: Dict[str, int],
-    surplus: Dict[str, int],
+    inventory: dict[str, int],
+    target: dict[str, int],
+    needs: dict[str, int],
+    surplus: dict[str, int],
 ) -> str:
     """
     Carta preescrita que enviamos a todos los jugadores con lo que tenemos,
@@ -65,7 +67,7 @@ def build_surplus_for_gold_letter(surplus_resource: str, gold_name: str) -> str:
     )
 
 
-def build_gold_for_any_letter(needs: Dict[str, int], gold_name: str) -> str:
+def build_gold_for_any_letter(needs: dict[str, int], gold_name: str) -> str:
     """
     Genera una carta ofreciendo 1 oro a cambio de 1 unidad de un recurso concreto que necesitemos.
     Se usa cuando solo tenemos oro y no hemos alcanzado el objetivo.
@@ -85,8 +87,8 @@ def build_gold_for_any_letter(needs: Dict[str, int], gold_name: str) -> str:
 
 
 def build_trade_confirmation_letter(
-    resources_sent: Dict[str, int],
-    resources_expected: Dict[str, int],
+    resources_sent: dict[str, int],
+    resources_expected: dict[str, int],
 ) -> str:
     """
     Carta prefabricada para confirmar que hemos aceptado una oferta:
@@ -103,7 +105,7 @@ Espero recibir a cambio los recursos que ofrecías:
 """.strip()
 
 
-def _iter_other_people(people: List[Any], my_alias: str):
+def _iter_other_people(people: list[Any], my_alias: str):
     """Itera sobre (alias, person) de agentes distintos a uno mismo."""
     for p in people:
         alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
@@ -112,7 +114,7 @@ def _iter_other_people(people: List[Any], my_alias: str):
 
 
 def broadcast_offers(
-    people: List[Any],
+    people: list[Any],
     state: State,
     offers_per_person: int,
     reason: str = "",

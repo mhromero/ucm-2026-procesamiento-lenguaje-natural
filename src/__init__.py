@@ -1,5 +1,10 @@
 """
-Bot de intercambio de recursos: API + Ollama (multi-agente).
+Bot de intercambio de recursos entre agentes usando LLM (Ollama).
+
+Sistema multi-agente que negocia recursos mediante cartas y paquetes:
+- Lee estado y buzón desde Butler
+- Interpreta cartas con un LLM local
+- Acepta/rechaza ofertas y confirma envíos automáticamente
 """
 
 __all__ = ["main"]

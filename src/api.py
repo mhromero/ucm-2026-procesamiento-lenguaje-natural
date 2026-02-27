@@ -1,10 +1,12 @@
 """
-Llamadas a la API externa: info, gente, cartas y paquetes.
+Cliente HTTP de la API Butler: /info, /gente, cartas, buzón y paquetes.
+
+Encapsula todas las llamadas REST al servidor del juego.
 """
 
 import requests
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 from uuid import uuid4
 
 from .config import (
@@ -24,7 +26,7 @@ def _params() -> dict:
     return {"agente": ALIAS} if SINGLE_PLAYER_MODE else {}
 
 
-def get_info() -> Dict[str, Any]:
+def get_info() -> dict[str, Any]:
     r = requests.get(f"{API_BASE}/info", params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
@@ -43,7 +45,7 @@ def set_alias(name: str) -> Any:
     return r.json()
 
 
-def remove_myself(info: Dict[str, Any], people: list) -> list:
+def remove_myself(info: dict[str, Any], people: list) -> list:
     """
     Devuelve la lista de agentes sin incluirnos a nosotros mismos.
     GET /gente devuelve list[dict]: {"alias": ...} o {"alias": ..., "ip": ...}.
@@ -106,7 +108,7 @@ def delete_letter(uid: str) -> Any:
     return r.json()
 
 
-def send_package(to_alias: str, resources: Dict[str, int]) -> Any:
+def send_package(to_alias: str, resources: dict[str, int]) -> Any:
     """
     Envía un paquete de recursos a otro agente siguiendo la sintaxis
     documentada para POST /paquete/{dest}.

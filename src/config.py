@@ -1,6 +1,8 @@
 """
-Configuración del bot y CLI con Click.
-Prioridad: 1) variables de entorno, 2) argumentos Click, 3) config.json.
+Configuración del bot: env > argumentos CLI > config.json.
+
+Proporciona API_BASE, OLLAMA_URL, MODEL y parámetros de juego.
+CLI con Click para sobreescribir valores en tiempo de ejecución.
 """
 
 import json

@@ -1,17 +1,21 @@
 """
-Lógica del agente: análisis de cartas y ofertas con LLM.
+Agente LLM: interpreta cartas y decide si aceptar/rechazar ofertas.
+
+Usa Ollama para extraer estructura JSON de las cartas (oferta/confirmación)
+y para evaluar si una oferta cumple nuestras condiciones de intercambio.
 """
 
 import json
-from typing import Any, Dict
+from typing import Any
 
 import requests
 
 from .config import GOLD_RESOURCE_NAME, MAX_INTENTOS_OFERTA
+from . import logs
 from .ollama_client import ollama
 
 
-def _gold_only(needs: Dict[str, Any], surplus: Dict[str, int], inventory: Dict[str, int]) -> bool:
+def _gold_only(needs: dict[str, Any], surplus: dict[str, int], inventory: dict[str, int]) -> bool:
     """True si no hemos alcanzado objetivo, no tenemos surplus y tenemos al menos 1 oro."""
     if len(needs) == 0 or surplus:
         return False
@@ -19,10 +23,10 @@ def _gold_only(needs: Dict[str, Any], surplus: Dict[str, int], inventory: Dict[s
 
 
 def parse_letter(
-    letter_data: Dict[str, Any],
-    needs: Dict[str, Any],
-    surplus: Dict[str, int],
-) -> Dict[str, Any]:
+    letter_data: dict[str, Any],
+    needs: dict[str, Any],
+    surplus: dict[str, int],
+) -> dict[str, Any]:
     """
     Usa Ollama para interpretar una carta y devolver un JSON con
     tipo (oferta|confirmacion|otro), oferta, pide, recursos_recibidos.
@@ -64,7 +68,7 @@ OFRECEMOS:
 NECESITAMOS:
 {json.dumps(needs, ensure_ascii=False, indent=2)}
 
-CARTA RECIBIDA (como JSON bruto de la API):
+CARTA RECIBIDA:
 {json.dumps(letter_data, ensure_ascii=False, indent=2)}
 """
     try:
@@ -75,10 +79,10 @@ CARTA RECIBIDA (como JSON bruto de la API):
         requests.exceptions.ConnectTimeout,
         requests.exceptions.HTTPError,
     ):
-        print("ERROR: No se pudo analizar la carta (timeout/conexión/modelo no encontrado); se usa fallback.")
+        logs.print_error("No se pudo analizar la carta (timeout/conexión/modelo no encontrado); se usa fallback.")
         return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
 
-    print(response)
+    logs.print_llm_response(response)
 
     try:
         data = json.loads(response)
@@ -86,17 +90,17 @@ CARTA RECIBIDA (como JSON bruto de la API):
             raise ValueError("Respuesta no es un dict")
         return data
     except (json.JSONDecodeError, ValueError):
-        print("ERROR: Ollama no devolvió JSON válido al analizar carta")
-        print(response)
+        logs.print_error("Ollama no devolvió JSON válido al analizar carta")
+        logs.print_llm_response(response)
         return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
 
 
 def analyze_offer(
-    offer: Dict[str, Any],
-    needs: Dict[str, Any],
-    surplus: Dict[str, int],
-    inventory: Dict[str, int],
-) -> Dict[str, Any]:
+    offer: dict[str, Any],
+    needs: dict[str, Any],
+    surplus: dict[str, int],
+    inventory: dict[str, int],
+) -> dict[str, Any]:
     """
     Usa Ollama para decidir si aceptar o rechazar una oferta.
     Devuelve un JSON con decision (aceptada|rechazada), oferta y pide.
@@ -179,9 +183,9 @@ OFERTA:
             requests.exceptions.HTTPError,
         ):
             if attempt < max_attempts - 1:
-                print(f"Intento {attempt + 1}/{max_attempts}: Error con Ollama, reintentando...")
+                logs.print_retry(f"Intento {attempt + 1}/{max_attempts}: Error con Ollama, reintentando...")
             else:
-                print("ERROR: No se pudo contactar Ollama (timeout/404/modelo); se rechaza la oferta por defecto.")
+                logs.print_error("No se pudo contactar Ollama (timeout/404/modelo); se rechaza la oferta por defecto.")
                 return {"decision": "rechazada", "oferta": {}, "pide": {}}
         try:
             data = json.loads(response)
@@ -190,8 +194,8 @@ OFERTA:
             return data
         except (json.JSONDecodeError, ValueError):
             if attempt < max_attempts - 1:
-                print(f"Intento {attempt + 1}/{max_attempts}: JSON inválido, reintentando...")
+                logs.print_retry(f"Intento {attempt + 1}/{max_attempts}: JSON inválido, reintentando...")
             else:
-                print(f"ERROR: Ollama no devolvió JSON válido al analizar oferta (tras {max_attempts} intentos)")
-                print(response)
+                logs.print_error(f"Ollama no devolvió JSON válido al analizar oferta (tras {max_attempts} intentos)")
+                logs.print_llm_response(response)
                 return {"decision": "rechazada", "oferta": {}, "pide": {}}

@@ -1,10 +1,12 @@
 """
-Estado del juego: clase State con alias, inventario, objetivo, necesidades,
-excedentes y buzón. Incluye la lógica de extracción y comprobación de objetivo.
+Estado del puesto: alias, inventario, objetivo, necesidades y excedentes.
+
+Calcula needs/surplus a partir del objetivo y proporciona predicados
+(has_reached_objective, only_has_gold_to_trade) para el flujo de negociación.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from . import api
 from .config import GOLD_RESOURCE_NAME
@@ -23,14 +25,14 @@ class State:
     """
 
     alias: str
-    inventory: Dict[str, int]
-    target: Dict[str, int]
-    needs: Dict[str, int]
-    surplus: Dict[str, int]
-    mailbox: Dict[str, Any]
+    inventory: dict[str, int]
+    target: dict[str, int]
+    needs: dict[str, int]
+    surplus: dict[str, int]
+    mailbox: dict[str, Any]
 
     @classmethod
-    def from_info(cls, info: Dict[str, Any]) -> "State":
+    def from_info(cls, info: dict[str, Any]) -> "State":
         """
         Construye un State a partir de la respuesta de /info.
         Incluye alias, inventario, objetivo y buzón; calcula needs y surplus.
@@ -58,14 +60,14 @@ class State:
 
     @staticmethod
     def _compute_needs_and_surplus(
-        inventory: Dict[str, int], target: Dict[str, int]
-    ) -> Tuple[Dict[str, int], Dict[str, int]]:
+        inventory: dict[str, int], target: dict[str, int]
+    ) -> tuple[dict[str, int], dict[str, int]]:
         """
         Calcula needs (lo que nos falta) y surplus (lo que nos sobra).
         El oro se excluye del surplus.
         """
-        needs: Dict[str, int] = {}
-        surplus: Dict[str, int] = {}
+        needs: dict[str, int] = {}
+        surplus: dict[str, int] = {}
 
         for resource, target_amount in target.items():
             actual = inventory.get(resource, 0)
@@ -128,7 +130,7 @@ class State:
             return False
         return self.inventory.get(GOLD_RESOURCE_NAME, 0) >= 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Exporta el estado a un diccionario (alias, inventario, objetivo, needs, surplus, buzon).
         """

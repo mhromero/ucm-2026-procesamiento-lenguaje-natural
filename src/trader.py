@@ -1,18 +1,51 @@
-import json
-from typing import Any, Dict
+"""
+Lógica de intercambio: evaluación de ofertas/confirmaciones y envío de paquetes.
+
+Comprueba condiciones (no enviar oro innecesariamente, tener stock) antes
+de aceptar y ejecuta el envío de paquetes y cartas de confirmación.
+"""
+
+from typing import Any
 
 from . import api
+from . import logs
 from .agent import _gold_only, analyze_offer
 from .config import GOLD_RESOURCE_NAME
 from .letters import build_trade_confirmation_letter
 
 
+def _validate_resources_to_send(
+    resources_to_send: dict[str, int],
+    needs: dict[str, Any],
+    surplus: dict[str, int],
+    inventory: dict[str, int],
+    gold_only: bool,
+) -> str | None:
+    """
+    Comprueba si podemos enviar los recursos (no oro salvo gold_only, no needs, stock).
+    Devuelve None si es válido, o motivo de rechazo si no.
+    """
+    gold_to_send = resources_to_send.get(GOLD_RESOURCE_NAME, 0)
+    if gold_to_send > 0:
+        if not gold_only or gold_to_send > 1:
+            return "No enviamos oro (o solo permitimos 1 oro cuando solo tenemos oro para cambiar)."
+        if inventory.get(GOLD_RESOURCE_NAME, 0) < 1:
+            return "No tenemos suficiente oro para enviar."
+
+    for resource, amount in resources_to_send.items():
+        if needs.get(resource, 0) > 0:
+            return f"No enviamos recurso que necesitamos para el objetivo: {resource}."
+        if inventory.get(resource, 0) < amount:
+            return f"No tenemos suficientes '{resource}' (tenemos {inventory.get(resource, 0)}, piden {amount})."
+    return None
+
+
 def evaluate_offer(
-    analysis: Dict[str, Any],
-    needs: Dict[str, Any],
-    surplus: Dict[str, int],
-    inventory: Dict[str, int],
-) -> Dict[str, Any]:
+    analysis: dict[str, Any],
+    needs: dict[str, Any],
+    surplus: dict[str, int],
+    inventory: dict[str, int],
+) -> dict[str, Any]:
     """
     Procesa una oferta: decide si se acepta y comprueba todas las condiciones
     (no enviar oro, no enviar lo que necesitamos, tener stock suficiente).
@@ -21,8 +54,8 @@ def evaluate_offer(
     {
       "aceptada": bool,
       "motivo": str,
-      "oferta": Dict[str, int],
-      "pide": Dict[str, int],
+      "oferta": dict[str, int],
+      "pide": dict[str, int],
       "recursos_a_enviar": Dict[str, int] | {}
     }
     """
@@ -63,44 +96,18 @@ def evaluate_offer(
             "recursos_a_enviar": {},
         }
 
-    # Comprobaciones de condiciones antes de aceptar
     gold_only = _gold_only(needs, surplus, inventory)
-    gold_to_send = resources_to_send.get(GOLD_RESOURCE_NAME, 0)
-    if gold_to_send > 0:
-        if not gold_only or gold_to_send > 1:
-            return {
-                "aceptada": False,
-                "motivo": "No enviamos oro (o solo permitimos 1 oro cuando solo tenemos oro para cambiar).",
-                "oferta": decided_offer,
-                "pide": decided_request,
-                "recursos_a_enviar": {},
-            }
-        if inventory.get(GOLD_RESOURCE_NAME, 0) < 1:
-            return {
-                "aceptada": False,
-                "motivo": "No tenemos suficiente oro para enviar.",
-                "oferta": decided_offer,
-                "pide": decided_request,
-                "recursos_a_enviar": {},
-            }
-
-    for resource, amount in resources_to_send.items():
-        if needs.get(resource, 0) > 0:
-            return {
-                "aceptada": False,
-                "motivo": f"No enviamos recurso que necesitamos para el objetivo: {resource}.",
-                "oferta": decided_offer,
-                "pide": decided_request,
-                "recursos_a_enviar": {},
-            }
-        if inventory.get(resource, 0) < amount:
-            return {
-                "aceptada": False,
-                "motivo": f"No tenemos suficientes '{resource}' (tenemos {inventory.get(resource, 0)}, piden {amount}).",
-                "oferta": decided_offer,
-                "pide": decided_request,
-                "recursos_a_enviar": {},
-            }
+    motivo = _validate_resources_to_send(
+        resources_to_send, needs, surplus, inventory, gold_only
+    )
+    if motivo:
+        return {
+            "aceptada": False,
+            "motivo": motivo,
+            "oferta": decided_offer,
+            "pide": decided_request,
+            "recursos_a_enviar": {},
+        }
 
     return {
         "aceptada": True,
@@ -112,11 +119,11 @@ def evaluate_offer(
 
 
 def evaluate_confirmation(
-    analysis: Dict[str, Any],
-    inventory: Dict[str, int],
-    needs: Dict[str, Any],
-    surplus: Dict[str, int],
-) -> Dict[str, Any]:
+    analysis: dict[str, Any],
+    inventory: dict[str, int],
+    needs: dict[str, Any],
+    surplus: dict[str, int],
+) -> dict[str, Any]:
     """
     Procesa una confirmación de envío: extrae qué nos han enviado y qué piden
     a cambio, y comprueba las condiciones (no enviar oro, no enviar lo que
@@ -128,9 +135,9 @@ def evaluate_confirmation(
       "es_regalo": bool,
       "puede_enviar": bool,
       "motivo": str,
-      "recursos_recibidos": Dict[str, int],
-      "pide": Dict[str, int],
-      "recursos_a_enviar": Dict[str, int] | {}
+      "recursos_recibidos": dict[str, int],
+      "pide": dict[str, int],
+      "recursos_a_enviar": dict[str, int] | {}
     }
     """
     resources_received = analysis.get("recursos_recibidos") or {}
@@ -171,52 +178,20 @@ def evaluate_confirmation(
             "recursos_a_enviar": {},
         }
 
-    # Comprobaciones de condiciones antes de autorizar el envío
     gold_only = _gold_only(needs, surplus, inventory)
-    gold_to_send = resources_to_send.get(GOLD_RESOURCE_NAME, 0)
-    if gold_to_send > 0:
-        if not gold_only or gold_to_send > 1:
-            return {
-                "tiene_recursos_recibidos": True,
-                "es_regalo": False,
-                "puede_enviar": False,
-                "motivo": "No enviamos oro en confirmación (o solo 1 oro cuando solo tenemos oro para cambiar).",
-                "recursos_recibidos": resources_received,
-                "pide": requested,
-                "recursos_a_enviar": {},
-            }
-        if inventory.get(GOLD_RESOURCE_NAME, 0) < 1:
-            return {
-                "tiene_recursos_recibidos": True,
-                "es_regalo": False,
-                "puede_enviar": False,
-                "motivo": "No tenemos suficiente oro para enviar.",
-                "recursos_recibidos": resources_received,
-                "pide": requested,
-                "recursos_a_enviar": {},
-            }
-
-    for resource, amount in resources_to_send.items():
-        if needs.get(resource, 0) > 0:
-            return {
-                "tiene_recursos_recibidos": True,
-                "es_regalo": False,
-                "puede_enviar": False,
-                "motivo": f"No enviamos recurso que necesitamos para el objetivo: {resource}.",
-                "recursos_recibidos": resources_received,
-                "pide": requested,
-                "recursos_a_enviar": {},
-            }
-        if inventory.get(resource, 0) < amount:
-            return {
-                "tiene_recursos_recibidos": True,
-                "es_regalo": False,
-                "puede_enviar": False,
-                "motivo": f"No tenemos suficientes '{resource}' para enviar (tenemos {inventory.get(resource, 0)}, piden {amount}).",
-                "recursos_recibidos": resources_received,
-                "pide": requested,
-                "recursos_a_enviar": {},
-            }
+    motivo = _validate_resources_to_send(
+        resources_to_send, needs, surplus, inventory, gold_only
+    )
+    if motivo:
+        return {
+            "tiene_recursos_recibidos": True,
+            "es_regalo": False,
+            "puede_enviar": False,
+            "motivo": motivo,
+            "recursos_recibidos": resources_received,
+            "pide": requested,
+            "recursos_a_enviar": {},
+        }
 
     return {
         "tiene_recursos_recibidos": True,
@@ -231,36 +206,36 @@ def evaluate_confirmation(
 
 def handle_offer(
     sender: str,
-    analysis: Dict[str, Any],
-    needs: Dict[str, Any],
-    surplus: Dict[str, int],
-    inventory: Dict[str, int],
+    analysis: dict[str, Any],
+    needs: dict[str, Any],
+    surplus: dict[str, int],
+    inventory: dict[str, int],
 ) -> bool:
     """
     Procesa una oferta: decide, comprueba condiciones, envía paquete y carta
     de confirmación si se acepta. Devuelve True si nuestros recursos cambiaron.
     """
     result = evaluate_offer(analysis, needs, surplus, inventory)
-    print("Decisión sobre la oferta:")
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    logs.print_decision("Decisión sobre la oferta", result)
 
     if not result.get("aceptada"):
-        print(f"Oferta rechazada: {result.get('motivo')}")
+        logs.print_bot(f"Oferta rechazada: {result.get('motivo')}", warning=True)
         return False
 
     offer = result.get("oferta") or {}
     resources_to_send = result.get("recursos_a_enviar") or {}
     if not resources_to_send:
-        print(
-            "Oferta aceptada pero sin recursos a enviar (resultado vacío), no se realiza envío."
+        logs.print_bot(
+            "Oferta aceptada pero sin recursos a enviar (resultado vacío), no se realiza envío.",
+            warning=True,
         )
         return False
 
     try:
-        print(f"Aceptando oferta de {sender}. Enviando paquete: {resources_to_send}")
+        logs.print_bot(f"Aceptando oferta de {sender}. Enviando paquete: {resources_to_send}", success=True)
         api.send_package(sender, resources_to_send)
     except Exception as e:
-        print(f"ERROR enviando paquete de oferta a {sender}: {e}")
+        logs.print_error(f"Enviando paquete de oferta a {sender}: {e}")
         return False
 
     try:
@@ -268,57 +243,58 @@ def handle_offer(
             resources_sent=resources_to_send,
             resources_expected=offer,
         )
-        print(f"→ Enviando carta de confirmación de oferta aceptada a {sender}...")
+        logs.print_bot_dim(f"→ Enviando carta de confirmación de oferta aceptada a {sender}...")
         api.send_letter(
             sender, "Confirmación de oferta aceptada", confirmation_letter
         )
     except Exception as e:
-        print(f"ERROR enviando carta de confirmación a {sender}: {e}")
+        logs.print_error(f"Enviando carta de confirmación a {sender}: {e}")
 
     return True
 
 
 def handle_confirmation(
     sender: str,
-    analysis: Dict[str, Any],
-    inventory: Dict[str, int],
-    needs: Dict[str, Any],
-    surplus: Dict[str, int],
+    analysis: dict[str, Any],
+    inventory: dict[str, int],
+    needs: dict[str, Any],
+    surplus: dict[str, int],
 ) -> bool:
     """
     Procesa una confirmación: decide, comprueba condiciones, envía paquete
     y carta de confirmación si aplica. Devuelve True si nuestros recursos cambiaron.
     """
     result = evaluate_confirmation(analysis, inventory, needs, surplus)
-    print("Decisión sobre la confirmación:")
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    logs.print_decision("Decisión sobre la confirmación", result)
 
     if not result.get("tiene_recursos_recibidos"):
-        print(f"No se procesan recursos: {result.get('motivo')}")
+        logs.print_bot(f"No se procesan recursos: {result.get('motivo')}", warning=True)
         return False
 
     resources_received = result.get("recursos_recibidos") or {}
     resources_to_send = result.get("recursos_a_enviar") or {}
 
     if result.get("es_regalo"):
-        print(
-            "Se interpreta la confirmación como regalo, no se envían recursos a cambio."
+        logs.print_bot(
+            "Se interpreta la confirmación como regalo, no se envían recursos a cambio.",
         )
         return True
 
     if not result.get("puede_enviar") or not resources_to_send:
-        print(
-            f"No se envía paquete de confirmación: {result.get('motivo', 'sin recursos a enviar')}."
+        logs.print_bot(
+            f"No se envía paquete de confirmación: {result.get('motivo', 'sin recursos a enviar')}.",
+            warning=True,
         )
         return False
 
     try:
-        print(
-            f"Confirmación correcta de {sender}. Enviando paquete de vuelta: {resources_to_send}"
+        logs.print_bot(
+            f"Confirmación correcta de {sender}. Enviando paquete de vuelta: {resources_to_send}",
+            success=True,
         )
         api.send_package(sender, resources_to_send)
     except Exception as e:
-        print(f"ERROR enviando paquete de confirmación a {sender}: {e}")
+        logs.print_error(f"Enviando paquete de confirmación a {sender}: {e}")
         return False
 
     try:
@@ -326,13 +302,13 @@ def handle_confirmation(
             resources_sent=resources_to_send,
             resources_expected=resources_received,
         )
-        print(f"→ Enviando carta de confirmación de envío de recursos a {sender}...")
+        logs.print_bot_dim(f"→ Enviando carta de confirmación de envío de recursos a {sender}...")
         api.send_letter(
             sender, "Confirmación de envío de recursos", confirmation_letter
         )
     except Exception as e:
-        print(
-            f"ERROR enviando carta de confirmación (confirmación recibida) a {sender}: {e}"
+        logs.print_error(
+            f"Enviando carta de confirmación (confirmación recibida) a {sender}: {e}"
         )
 
     return True
