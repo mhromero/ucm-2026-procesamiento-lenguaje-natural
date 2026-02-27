@@ -13,26 +13,32 @@ from .config import (
     MAILBOX_ENDPOINT,
     PACKAGE_ENDPOINT,
     ALIAS,
+    MODO_MONOPUESTO,
 )
 
 REQUEST_TIMEOUT = 10
 
 
+def _params() -> dict:
+    """Query params cuando modo monopuesto: identifica al agente por alias en vez de IP."""
+    return {"agente": ALIAS} if MODO_MONOPUESTO else {}
+
+
 def get_info() -> Dict[str, Any]:
-    r = requests.get(f"{API_BASE}/info", timeout=REQUEST_TIMEOUT)
+    r = requests.get(f"{API_BASE}/info", params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
 
 def get_people() -> Any:
-    r = requests.get(f"{API_BASE}/gente", timeout=REQUEST_TIMEOUT)
+    r = requests.get(f"{API_BASE}/gente", params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
 
 def set_alias(nombre: str) -> Any:
     """Configura nuestro alias en el servidor (POST /alias/{nombre})."""
-    r = requests.post(f"{API_BASE}/alias/{nombre}", timeout=REQUEST_TIMEOUT)
+    r = requests.post(f"{API_BASE}/alias/{nombre}", params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
@@ -81,21 +87,21 @@ def send_letter(to_alias: str, subject: str, body: str) -> Any:
         "id": str(uuid4()),
         "fecha": datetime.utcnow().isoformat(),
     }
-    r = requests.post(LETTER_ENDPOINT, json=payload, timeout=REQUEST_TIMEOUT)
+    r = requests.post(LETTER_ENDPOINT, json=payload, params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
 
 def get_mailbox() -> Any:
     """Obtiene las cartas del buzón."""
-    r = requests.get(MAILBOX_ENDPOINT, timeout=REQUEST_TIMEOUT)
+    r = requests.get(MAILBOX_ENDPOINT, params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
 
 def delete_letter(uid: str) -> Any:
     """Elimina una carta del buzón (DELETE /mail/{uid})."""
-    r = requests.delete(f"{API_BASE}/mail/{uid}", timeout=REQUEST_TIMEOUT)
+    r = requests.delete(f"{API_BASE}/mail/{uid}", params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 
@@ -118,6 +124,7 @@ def send_package(to_alias: str, resources: Dict[str, int]) -> Any:
     r = requests.post(
         f"{PACKAGE_ENDPOINT}/{to_alias}",
         json=resources,
+        params=_params(),
         timeout=REQUEST_TIMEOUT,
     )
     r.raise_for_status()

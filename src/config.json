@@ -1,10 +1,1 @@
-{
-  "api_base": "http://127.0.0.1:7719",
-  "ollama_url": "http://localhost:11434/api/generate",
-  "model": "qwen3-vl:8b",
-  "gold_resource_name": "oro",
-  "mailbox_endpoint": "/buzon",
-  "letter_endpoint": "/carta",
-  "package_endpoint": "/paquete",
-  "alias": "burrito sabanero"
-}
+{"api_base":"http://127.0.0.1:7719","ollama_url":"http://localhost:11434/api/generate","model":"qwen3-vl:8b","gold_resource_name":"oro","mailbox_endpoint":"/buzon","letter_endpoint":"/carta","package_endpoint":"/paquete","alias":"burrito","modo_monopuesto":true}

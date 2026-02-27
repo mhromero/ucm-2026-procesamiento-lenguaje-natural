@@ -29,3 +29,4 @@ MAILBOX_ENDPOINT = API_BASE + _c["mailbox_endpoint"]
 LETTER_ENDPOINT = API_BASE + _c["letter_endpoint"]
 PACKAGE_ENDPOINT = API_BASE + _c["package_endpoint"]
 ALIAS = os.getenv("FDI_PLN__ALIAS", _c.get("alias", ""))
+MODO_MONOPUESTO = os.getenv("FDI_PLN__MODO_MONOPUESTO", str(_c.get("modo_monopuesto", False))).lower() in ("true", "1", "yes")

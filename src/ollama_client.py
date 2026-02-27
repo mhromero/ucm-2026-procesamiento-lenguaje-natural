@@ -26,7 +26,7 @@ def ollama(prompt: str, format: Optional[Dict[str, Any]] = None) -> str:
         r = requests.post(
             OLLAMA_URL,
             json=payload,
-            timeout=180,
+            timeout=500,
         )
         r.raise_for_status()
         return r.json()["response"]
