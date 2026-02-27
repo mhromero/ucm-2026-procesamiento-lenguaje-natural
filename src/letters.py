@@ -1,46 +1,21 @@
 """
-Generación y análisis de cartas: prompts para Ollama y carta de estado.
+Generación de cartas: prompts preescritos, carta de estado y envío de ofertas.
 """
 
 import json
 import random
-from typing import Any, Dict
+from typing import Dict, Any, List
 
-import requests
-
+from . import api
+from . import logs
 from .config import GOLD_RESOURCE_NAME
-from .ollama_client import ollama
-
-# JSON Schema para forzar la forma del análisis de cartas (Ollama format).
-ANALIZAR_CARTA_JSON_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "tipo": {
-            "type": "string",
-            "enum": ["oferta", "confirmacion", "otro"],
-        },
-        "oferta": {
-            "type": "object",
-            "additionalProperties": {"type": "integer", "minimum": 0},
-        },
-        "pide": {
-            "type": "object",
-            "additionalProperties": {"type": "integer", "minimum": 0},
-        },
-        "recursos_recibidos": {
-            "type": "object",
-            "additionalProperties": {"type": "integer", "minimum": 0},
-        },
-    },
-    "required": ["tipo", "oferta", "pide", "recursos_recibidos"],
-    "additionalProperties": False,
-}
+from .game_state import State
 
 
 def build_status_letter(
     alias: str,
-    inventario: Dict[str, int],
-    objetivo: Dict[str, int],
+    inventory: Dict[str, int],
+    target: Dict[str, int],
     needs: Dict[str, int],
     surplus: Dict[str, int],
 ) -> str:
@@ -63,8 +38,8 @@ Si te interesa intercambiar, por favor propón un trato indicando:
 
 
 def build_simple_offer_letter(
-    recurso_necesario: str,
-    recurso_sobrante: str,
+    needed_resource: str,
+    surplus_resource: str,
 ) -> str:
     """
     Genera una 'mini carta' muy simple proponiendo un intercambio 1 a 1:
@@ -74,19 +49,19 @@ def build_simple_offer_letter(
     Ejemplo: "Te propongo intercambiar 1 piedra por 1 tela."
     """
     return (
-        f"Te propongo intercambiar 1 {recurso_necesario} que necesito "
-        f"por 1 {recurso_sobrante} que te ofrezco."
+        f"Te propongo intercambiar 1 {needed_resource} que necesito "
+        f"por 1 {surplus_resource} que te ofrezco."
     )
 
 
-def build_surplus_for_gold_letter(recurso_sobrante: str, gold_name: str) -> str:
+def build_surplus_for_gold_letter(surplus_resource: str, gold_name: str) -> str:
     """
     Genera una mini carta ofreciendo 1 unidad de recurso sobrante a cambio de 1 oro.
     Se usa cuando ya hemos alcanzado el objetivo y queremos maximizar oro.
     """
     return (
         f"Ya he cumplido mi objetivo de recursos. "
-        f"Te ofrezco 1 {recurso_sobrante} a cambio de 1 {gold_name}."
+        f"Te ofrezco 1 {surplus_resource} a cambio de 1 {gold_name}."
     )
 
 
@@ -96,10 +71,10 @@ def build_gold_for_any_letter(needs: Dict[str, int], gold_name: str) -> str:
     Se usa cuando solo tenemos oro y no hemos alcanzado el objetivo.
     """
     if needs:
-        recurso_objetivo = random.choice(list(needs.keys()))
+        target_resource = random.choice(list(needs.keys()))
         return (
             f"No tengo otros recursos para intercambiar. Necesito: {json.dumps(needs, ensure_ascii=False)}. "
-            f"Te ofrezco 1 {gold_name} a cambio de 1 unidad de {recurso_objetivo}."
+            f"Te ofrezco 1 {gold_name} a cambio de 1 unidad de {target_resource}."
         )
 
     # Fallback si por alguna razón no hay needs: cualquier recurso
@@ -110,8 +85,8 @@ def build_gold_for_any_letter(needs: Dict[str, int], gold_name: str) -> str:
 
 
 def build_trade_confirmation_letter(
-    recursos_enviados: Dict[str, int],
-    recursos_esperados: Dict[str, int],
+    resources_sent: Dict[str, int],
+    resources_expected: Dict[str, int],
 ) -> str:
     """
     Carta prefabricada para confirmar que hemos aceptado una oferta:
@@ -121,76 +96,76 @@ def build_trade_confirmation_letter(
 He aceptado tu oferta.
 
 Te he enviado los recursos que pedías:
-{json.dumps(recursos_enviados, ensure_ascii=False, indent=2)}
+{json.dumps(resources_sent, ensure_ascii=False, indent=2)}
 
 Espero recibir a cambio los recursos que ofrecías:
-{json.dumps(recursos_esperados, ensure_ascii=False, indent=2)}
+{json.dumps(resources_expected, ensure_ascii=False, indent=2)}
 """.strip()
 
 
-def analizar_carta(
-    carta_dict: Dict[str, Any],
-    needs: Dict[str, Any],
-    surplus: Dict[str, int],
-) -> Dict[str, Any]:
+def _iter_other_people(people: List[Any], my_alias: str):
+    """Itera sobre (alias, person) de agentes distintos a uno mismo."""
+    for p in people:
+        alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
+        if alias and alias != my_alias:
+            yield alias, p
+
+
+def broadcast_offers(
+    people: List[Any],
+    state: State,
+    offers_per_person: int,
+    reason: str = "",
+) -> None:
     """
-    Usa Ollama para interpretar una carta y devolver un JSON con
-    tipo (oferta|confirmacion|otro), oferta, pide, recursos_recibidos.
+    Envía ofertas a todos los otros agentes según el estado actual.
+    reason: contexto para logs (ej. "5 cartas analizadas. ").
+    offers_per_person: número de ofertas aleatorias por persona en el caso normal.
     """
-    prompt = f"""
-Eres un asistente que ayuda a interpretar cartas de intercambio de recursos
-entre agentes en un juego.
+    prefix = reason or ""
 
-Tu tarea es LEER la carta y devolver un JSON estructurado con esta forma:
+    if state.has_reached_objective() and state.surplus:
+        surplus_list = list(state.surplus.keys())
+        msg = f"{prefix}Objetivo alcanzado. Enviando una oferta surplus→oro aleatoria por persona."
+        logs.print_bot(msg.strip(), success=True)
+        for alias, _ in _iter_other_people(people, state.alias):
+            surplus_resource = random.choice(surplus_list)
+            body = build_surplus_for_gold_letter(surplus_resource, GOLD_RESOURCE_NAME)
+            subject = f"Oferta: 1 {surplus_resource} por 1 {GOLD_RESOURCE_NAME}"
+            try:
+                logs.print_kv("Enviando oferta surplus→oro a", f"{alias} -> {subject}", color=logs.GREEN)
+                api.send_letter(alias, subject, body)
+            except Exception as e:
+                logs.print_error(f"al enviar oferta surplus→oro a {alias}: {e}")
 
-{{
-  "tipo": "oferta" | "confirmacion" | "otro",
-  "oferta": {{
-    "recurso": cantidad entero
-  }},
-  "pide": {{
-    "recurso": cantidad entero
-  }},
-  "recursos_recibidos": {{
-    "recurso": cantidad entero
-  }}
-}}
+    elif state.only_has_gold_to_trade():
+        msg = f"{prefix}Solo tenemos oro. Enviando oferta 1 oro por cualquier recurso."
+        logs.print_bot(msg.strip(), success=True)
+        body = build_gold_for_any_letter(state.needs, GOLD_RESOURCE_NAME)
+        subject = f"Oferta: 1 {GOLD_RESOURCE_NAME} por 1 recurso que necesite"
+        for alias, _ in _iter_other_people(people, state.alias):
+            try:
+                logs.print_kv("Enviando oferta oro por recurso a", f"{alias} -> {subject}", color=logs.GREEN)
+                api.send_letter(alias, subject, body)
+            except Exception as e:
+                logs.print_error(f"al enviar oferta oro por recurso a {alias}: {e}")
 
-Donde:
-- "tipo" = "oferta" si la carta propone un intercambio (yo te doy X, tú me das Y).
-- "tipo" = "confirmacion" si la carta dice que ya nos han enviado recursos.
-- "tipo" = "otro" si no encaja claramente en ninguno de los casos.
-- "oferta" describe lo que EL OTRO agente nos ofrece.
-- "pide" describe lo que EL OTRO agente quiere que le enviemos.
-- "recursos_recibidos" son los recursos que el agente afirma que YA nos ha enviado.
-
-IMPORTANTE:
-- Devuelve SIEMPRE un JSON VÁLIDO, sin texto adicional.
-- Si algún campo no está claro en la carta, devuélvelo como un objeto vacío {{}}.
-
-OFRECEMOS:
-{json.dumps(surplus, ensure_ascii=False, indent=2)}
-
-NECESITAMOS:
-{json.dumps(needs, ensure_ascii=False, indent=2)}
-
-CARTA RECIBIDA (como JSON bruto de la API):
-{json.dumps(carta_dict, ensure_ascii=False, indent=2)}
-"""
-    try:
-        respuesta = ollama(prompt)
-    except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-        print("ERROR: Timeout al analizar carta; se usa fallback.")
-        return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
-
-    print(respuesta)
-
-    try:
-        data = json.loads(respuesta)
-        if not isinstance(data, dict):
-            raise ValueError("Respuesta no es un dict")
-        return data
-    except (json.JSONDecodeError, ValueError):
-        print("ERROR: Ollama no devolvió JSON válido al analizar carta")
-        print(respuesta)
-        return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
+    elif state.needs and state.surplus:
+        offer_pairs = [(n, s) for n in state.needs.keys() for s in state.surplus.keys()]
+        if offer_pairs:
+            msg = f"{prefix}Enviando {offers_per_person} ofertas aleatorias por persona."
+            logs.print_bot(msg.strip(), success=True)
+            k = min(offers_per_person, len(offer_pairs))
+            for alias, _ in _iter_other_people(people, state.alias):
+                chosen = random.choices(offer_pairs, k=k)
+                for needed_resource, surplus_resource in chosen:
+                    body = build_simple_offer_letter(
+                        needed_resource=needed_resource,
+                        surplus_resource=surplus_resource,
+                    )
+                    subject = f"Oferta: 1 {needed_resource} por 1 {surplus_resource}"
+                    try:
+                        logs.print_kv("Enviando mini oferta a", f"{alias} -> {subject}", color=logs.GREEN)
+                        api.send_letter(alias, subject, body)
+                    except Exception as e:
+                        logs.print_error(f"al enviar mini oferta a {alias}: {e}")

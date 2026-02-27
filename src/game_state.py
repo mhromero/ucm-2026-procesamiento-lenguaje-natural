@@ -23,11 +23,11 @@ class State:
     """
 
     alias: str
-    inventario: Dict[str, int]
-    objetivo: Dict[str, int]
+    inventory: Dict[str, int]
+    target: Dict[str, int]
     needs: Dict[str, int]
     surplus: Dict[str, int]
-    buzon: Dict[str, Any]
+    mailbox: Dict[str, Any]
 
     @classmethod
     def from_info(cls, info: Dict[str, Any]) -> "State":
@@ -40,25 +40,25 @@ class State:
             raise ValueError("No se ha encontrado el alias en la respuesta de /info")
         alias = raw_alias[0] if isinstance(raw_alias, list) else raw_alias
 
-        raw_recursos = info.get("Recursos") or {}
-        raw_objetivo = info.get("Objetivo") or {}
-        inventario = {k: int(v) for k, v in raw_recursos.items()}
-        objetivo = {k: int(v) for k, v in raw_objetivo.items()}
-        buzon = info.get("Buzon") or {}
+        raw_resources = info.get("Recursos") or {}
+        raw_target = info.get("Objetivo") or {}
+        inventory = {k: int(v) for k, v in raw_resources.items()}
+        target = {k: int(v) for k, v in raw_target.items()}
+        mailbox = info.get("Buzon") or {}
 
-        needs, surplus = cls._compute_needs_and_surplus(inventario, objetivo)
+        needs, surplus = cls._compute_needs_and_surplus(inventory, target)
         return cls(
             alias=alias,
-            inventario=inventario,
-            objetivo=objetivo,
+            inventory=inventory,
+            target=target,
             needs=needs,
             surplus=surplus,
-            buzon=buzon,
+            mailbox=mailbox,
         )
 
     @staticmethod
     def _compute_needs_and_surplus(
-        inventario: Dict[str, int], objetivo: Dict[str, int]
+        inventory: Dict[str, int], target: Dict[str, int]
     ) -> Tuple[Dict[str, int], Dict[str, int]]:
         """
         Calcula needs (lo que nos falta) y surplus (lo que nos sobra).
@@ -67,16 +67,16 @@ class State:
         needs: Dict[str, int] = {}
         surplus: Dict[str, int] = {}
 
-        for recurso, objetivo_cant in objetivo.items():
-            actual = inventario.get(recurso, 0)
-            if objetivo_cant > actual:
-                needs[recurso] = objetivo_cant - actual
-            elif actual > objetivo_cant:
-                surplus[recurso] = actual - objetivo_cant
+        for resource, target_amount in target.items():
+            actual = inventory.get(resource, 0)
+            if target_amount > actual:
+                needs[resource] = target_amount - actual
+            elif actual > target_amount:
+                surplus[resource] = actual - target_amount
 
-        for recurso, actual in inventario.items():
-            if recurso not in objetivo and actual > 0:
-                surplus[recurso] = surplus.get(recurso, 0) + actual
+        for resource, actual in inventory.items():
+            if resource not in target and actual > 0:
+                surplus[resource] = surplus.get(resource, 0) + actual
 
         surplus = {k: v for k, v in surplus.items() if k != GOLD_RESOURCE_NAME}
         return needs, surplus
@@ -92,12 +92,12 @@ class State:
             raise ValueError("No se ha encontrado el alias en la respuesta de /info")
         alias = raw_alias[0] if isinstance(raw_alias, list) else raw_alias
 
-        raw_recursos = info.get("Recursos") or {}
-        raw_objetivo = info.get("Objetivo") or {}
+        raw_resources = info.get("Recursos") or {}
+        raw_target = info.get("Objetivo") or {}
         self.alias = alias
-        self.inventario = {k: int(v) for k, v in raw_recursos.items()}
-        self.objetivo = {k: int(v) for k, v in raw_objetivo.items()}
-        self.buzon = info.get("Buzon") or {}
+        self.inventory = {k: int(v) for k, v in raw_resources.items()}
+        self.target = {k: int(v) for k, v in raw_target.items()}
+        self.mailbox = info.get("Buzon") or {}
         self.recompute()
 
     def recompute(self) -> None:
@@ -105,15 +105,15 @@ class State:
         Recalcula needs y surplus a partir del inventario y el objetivo actuales.
         """
         self.needs, self.surplus = self._compute_needs_and_surplus(
-            self.inventario, self.objetivo
+            self.inventory, self.target
         )
 
     def has_reached_objective(self) -> bool:
         """
         Comprueba si ya hemos alcanzado el objetivo de recursos.
         """
-        for recurso, objetivo_cant in self.objetivo.items():
-            if self.inventario.get(recurso, 0) < objetivo_cant:
+        for resource, target_amount in self.target.items():
+            if self.inventory.get(resource, 0) < target_amount:
                 return False
         return True
 
@@ -126,7 +126,7 @@ class State:
             return False
         if self.surplus:
             return False
-        return self.inventario.get(GOLD_RESOURCE_NAME, 0) >= 1
+        return self.inventory.get(GOLD_RESOURCE_NAME, 0) >= 1
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -134,9 +134,9 @@ class State:
         """
         return {
             "alias": self.alias,
-            "inventario": self.inventario,
-            "objetivo": self.objetivo,
+            "inventory": self.inventory,
+            "target": self.target,
             "needs": self.needs,
             "surplus": self.surplus,
-            "buzon": self.buzon,
+            "mailbox": self.mailbox,
         }

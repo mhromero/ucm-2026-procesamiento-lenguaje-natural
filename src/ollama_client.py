@@ -13,7 +13,7 @@ from .config import MODEL, OLLAMA_URL
 def ollama(prompt: str, format: Optional[Dict[str, Any]] = None) -> str:
     """
     Llama al modelo Ollama. Si se pasa `format` (JSON Schema), la respuesta
-    se fuerza a cumplir ese esquema (JSON Schema–guided generation).
+    se fuerza a cumplir ese esquema (JSON Schema-guided generation).
     """
     payload: Dict[str, Any] = {
         "model": MODEL,

@@ -29,12 +29,12 @@ def print_kv(label: str, value: Any, color: str = CYAN) -> None:
     print(f"{color}{BOLD}[BOT]{RESET} {BOLD}{label}:{RESET} {value}")
 
 
-def print_carta_estado(text: str) -> None:
+def print_status_letter(text: str) -> None:
     """Imprime la carta de estado con etiqueta [CARTA ESTADO]."""
     print(f"{MAGENTA}{BOLD}[CARTA ESTADO]{RESET}\n{text}")
 
 
-def print_carta_cruda(content: Any) -> None:
+def print_raw_letter(content: Any) -> None:
     """Imprime el contenido crudo de una carta con etiqueta [CARTA CRUDA]."""
     print(
         f"{MAGENTA}{BOLD}[CARTA CRUDA]{RESET}\n"
@@ -42,10 +42,10 @@ def print_carta_cruda(content: Any) -> None:
     )
 
 
-def print_llm(analisis: Any) -> None:
+def print_llm(analysis: Any) -> None:
     """Imprime el análisis del LLM con etiqueta [LLM]."""
     print(
-        f"{CYAN}{BOLD}[LLM]{RESET} {json.dumps(analisis, ensure_ascii=False, indent=2)}"
+        f"{CYAN}{BOLD}[LLM]{RESET} {json.dumps(analysis, ensure_ascii=False, indent=2)}"
     )
 
 
@@ -65,6 +65,6 @@ def print_bot_dim(msg: str) -> None:
     print(f"{DIM}{msg}{RESET}")
 
 
-def print_buzon(buzon: Any) -> None:
+def print_mailbox(mailbox: Any) -> None:
     """Imprime el contenido del buzón como JSON formateado."""
-    print(json.dumps(buzon, ensure_ascii=False, indent=2))
+    print(json.dumps(mailbox, ensure_ascii=False, indent=2))

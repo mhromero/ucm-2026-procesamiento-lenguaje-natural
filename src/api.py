@@ -13,7 +13,7 @@ from .config import (
     MAILBOX_ENDPOINT,
     PACKAGE_ENDPOINT,
     ALIAS,
-    MODO_MONOPUESTO,
+    SINGLE_PLAYER_MODE,
 )
 
 REQUEST_TIMEOUT = 10
@@ -21,7 +21,7 @@ REQUEST_TIMEOUT = 10
 
 def _params() -> dict:
     """Query params cuando modo monopuesto: identifica al agente por alias en vez de IP."""
-    return {"agente": ALIAS} if MODO_MONOPUESTO else {}
+    return {"agente": ALIAS} if SINGLE_PLAYER_MODE else {}
 
 
 def get_info() -> Dict[str, Any]:
@@ -36,9 +36,9 @@ def get_people() -> Any:
     return r.json()
 
 
-def set_alias(nombre: str) -> Any:
+def set_alias(name: str) -> Any:
     """Configura nuestro alias en el servidor (POST /alias/{nombre})."""
-    r = requests.post(f"{API_BASE}/alias/{nombre}", params=_params(), timeout=REQUEST_TIMEOUT)
+    r = requests.post(f"{API_BASE}/alias/{name}", params=_params(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
     return r.json()
 

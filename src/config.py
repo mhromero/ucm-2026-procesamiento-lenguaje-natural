@@ -29,4 +29,6 @@ MAILBOX_ENDPOINT = API_BASE + _c["mailbox_endpoint"]
 LETTER_ENDPOINT = API_BASE + _c["letter_endpoint"]
 PACKAGE_ENDPOINT = API_BASE + _c["package_endpoint"]
 ALIAS = os.getenv("FDI_PLN__ALIAS", _c.get("alias", ""))
-MODO_MONOPUESTO = os.getenv("FDI_PLN__MODO_MONOPUESTO", str(_c.get("modo_monopuesto", False))).lower() in ("true", "1", "yes")
+SINGLE_PLAYER_MODE = os.getenv("FDI_PLN__MODO_MONOPUESTO", str(_c.get("modo_monopuesto", False))).lower() in ("true", "1", "yes")
+LETTERS_BEFORE_REBROADCAST = int(_c.get("letters_before_rebroadcast", 5))
+OFFERS_PER_PERSON = int(_c.get("offers_per_person", 2))

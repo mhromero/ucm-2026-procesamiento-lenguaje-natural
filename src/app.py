@@ -3,33 +3,69 @@ Lógica principal del bot: flujo de negociación (main) y flujo legacy.
 """
 
 import json
-import random
 import time
 import requests
 
 from . import api
-from .config import ALIAS, GOLD_RESOURCE_NAME
+from .config import ALIAS, LETTERS_BEFORE_REBROADCAST, OFFERS_PER_PERSON
 from .game_state import State
-from .letters import (
-    analizar_carta,
-    build_status_letter,
-    build_simple_offer_letter,
-    build_surplus_for_gold_letter,
-    build_gold_for_any_letter,
-)
+from .agent import parse_letter
+from .letters import broadcast_offers
 from . import logs
 from .logs import (
     print_section,
     print_kv,
-    print_carta_estado,
-    print_carta_cruda,
+    print_status_letter,
+    print_raw_letter,
     print_llm,
     print_error,
     print_bot,
     print_bot_dim,
-    print_buzon,
+    print_mailbox,
 )
-from .trader import handle_offer, handle_confirmation
+from .trader import handle_confirmation, handle_offer
+
+
+def _process_letter(letter_id: str, content: dict, state: State) -> str | None:
+    """
+    Procesa una carta: analiza, gestiona oferta/confirmación. Retorna tipo de carta o None.
+    No borra la carta del buzón (lo hace el llamador).
+    """
+    sender = content.get("remi", "??")
+
+    if sender == state.alias:
+        return None
+
+    print_section(f"CARTA RECIBIDA de {sender}")
+    print_kv("ID", letter_id)
+    print_kv("Remitente", sender)
+    print_kv("Asunto", content.get("asunto", ""))
+    print_kv("Fecha", content.get("fecha", ""))
+    print_raw_letter(content)
+
+    analysis = parse_letter(content, state.needs, state.surplus)
+    print_section("ANÁLISIS LLM DE LA CARTA")
+    print_llm(analysis)
+
+    letter_type = analysis.get("tipo", "otro")
+    state.update()
+
+    if letter_type == "oferta":
+        sender_val = content.get("remi")
+        if not sender_val:
+            print_bot("Oferta sin remitente claro, se ignora.", warning=True)
+        else:
+            print_kv("Acción", f"Gestionando OFERTA de {sender_val}", color=logs.GREEN)
+            handle_offer(sender_val, analysis, state.needs, state.surplus, state.inventory)
+    elif letter_type == "confirmacion":
+        sender_val = content.get("remi")
+        if not sender_val:
+            print_bot("Confirmación sin remitente claro, se ignora.", warning=True)
+        else:
+            print_kv("Acción", f"Gestionando CONFIRMACIÓN de {sender_val}", color=logs.GREEN)
+            handle_confirmation(sender_val, analysis, state.inventory, state.needs, state.surplus)
+
+    return letter_type
 
 
 def main() -> None:
@@ -52,7 +88,7 @@ def main() -> None:
 
     print_kv("Acción", "Obteniendo nuestros recursos (/info)")
 
-    state = State(alias="", inventario={}, objetivo={}, needs={}, surplus={}, buzon={})
+    state = State(alias="", inventory={}, target={}, needs={}, surplus={}, mailbox={})
     while True:
         try:
             state.update()
@@ -64,8 +100,8 @@ def main() -> None:
 
     print_section("ESTADO INICIAL")
     print_kv("Alias", state.alias)
-    print_kv("Inventario inicial", json.dumps(state.inventario, ensure_ascii=False))
-    print_kv("Objetivo de recursos", json.dumps(state.objetivo, ensure_ascii=False))
+    print_kv("Inventario inicial", json.dumps(state.inventory, ensure_ascii=False))
+    print_kv("Objetivo de recursos", json.dumps(state.target, ensure_ascii=False))
 
     print_section("AGENTES")
     print_kv("Acción", "Obteniendo agentes (/gente)")
@@ -83,221 +119,40 @@ def main() -> None:
     # Si ya cumplimos objetivo: ofrecemos surplus a cambio de oro (maximizar oro).
     # Si no: combinamos cada recurso que necesitamos con cada recurso que nos sobra.
     print_section("CARTAS DE OFERTA SIMPLES A ENVIAR")
+    broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON)
 
-    if state.has_reached_objective() and state.surplus:
-        print_bot("Objetivo alcanzado. Enviando una oferta surplus→oro aleatoria por persona.", success=True)
-        surplus_list = list(state.surplus.keys())
-        for p in people:
-            alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
-            if not alias or alias == state.alias:
-                continue
-            recurso_sobrante = random.choice(surplus_list)
-            cuerpo = build_surplus_for_gold_letter(recurso_sobrante, GOLD_RESOURCE_NAME)
-            asunto = f"Oferta: 1 {recurso_sobrante} por 1 {GOLD_RESOURCE_NAME}"
-            try:
-                print_kv(
-                    "Enviando oferta surplus→oro a",
-                    f"{alias} -> {asunto}",
-                    color=logs.GREEN,
-                )
-                api.send_letter(alias, asunto, cuerpo)
-            except Exception as e:
-                print_error(f"al enviar oferta a {p}: {e}")
-    elif state.only_has_gold_to_trade():
-        print_bot("Solo tenemos oro. Enviando oferta 1 oro por cualquier recurso que necesitemos.", success=True)
-        cuerpo = build_gold_for_any_letter(state.needs, GOLD_RESOURCE_NAME)
-        asunto = f"Oferta: 1 {GOLD_RESOURCE_NAME} por 1 recurso que necesite"
-        for p in people:
-            alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
-            if not alias or alias == state.alias:
-                continue
-            try:
-                print_kv(
-                    "Enviando oferta oro por recurso a",
-                    f"{alias} -> {asunto}",
-                    color=logs.GREEN,
-                )
-                api.send_letter(alias, asunto, cuerpo)
-            except Exception as e:
-                print_error(f"al enviar oferta oro por recurso a {alias}: {e}")
-    else:
-        # Caso normal: dos ofertas aleatorias (necesario↔sobrante) por persona
-        pares_oferta = [
-            (n, s) for n in state.needs.keys() for s in state.surplus.keys()
-        ]
-        if pares_oferta:
-            print_bot("Enviando 2 ofertas aleatorias por persona.", success=True)
-            for p in people:
-                alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
-                if not alias or alias == state.alias:
-                    continue
-                elegidos = random.choices(pares_oferta, k=min(2, len(pares_oferta)))
-                for recurso_necesario, recurso_sobrante in elegidos:
-                    cuerpo = build_simple_offer_letter(
-                        recurso_necesario=recurso_necesario,
-                        recurso_sobrante=recurso_sobrante,
-                    )
-                    asunto = f"Oferta: 1 {recurso_necesario} por 1 {recurso_sobrante}"
-                    try:
-                        print_kv(
-                            "Enviando mini oferta a",
-                            f"{alias} -> {asunto}",
-                            color=logs.GREEN,
-                        )
-                        api.send_letter(alias, asunto, cuerpo)
-                    except Exception as e:
-                        print_error(f"al enviar mini oferta a {p}: {e}")
-
-    # 1) Leer buzón una vez (ya está en state.buzon); luego bucle 2–4
+    # 1) Leer buzón una vez (ya está en state.mailbox); luego bucle 2–4
     # Cuando alcanzamos objetivo, no salimos: enviamos ofertas surplus→oro y seguimos maximizando oro.
     print_section("BUZÓN INICIAL")
     print_kv("Acción", "Leyendo cartas del buzón")
-    print_buzon(state.buzon)
+    print_mailbox(state.mailbox)
 
-    cartas_analizadas = 0
+    letters_processed = 0
     while True:
         # 2) Ordenar cartas por fecha (más antiguas primero)
         sorted_letters = sorted(
-            state.buzon.items(),
+            state.mailbox.items(),
             key=lambda item: item[1].get("fecha", ""),
         )
 
         # 3) Procesar de más antigua a más nueva y eliminar del buzón
-        for id_carta, content in sorted_letters:
-            remitente = content.get("remi", "??")
-            asunto = content.get("asunto", "")
-            fecha = content.get("fecha", "")
-
-            if remitente == state.alias:
-                api.delete_letter(id_carta)
+        for letter_id, content in sorted_letters:
+            if content.get("remi") == state.alias:
+                api.delete_letter(letter_id)
                 continue
 
-            print_section(f"CARTA RECIBIDA de {remitente}")
-            print_kv("ID", id_carta)
-            print_kv("Remitente", remitente)
-            print_kv("Asunto", asunto)
-            print_kv("Fecha", fecha)
-            print_carta_cruda(content)
+            letter_type = _process_letter(letter_id, content, state)
+            if letter_type is not None:
+                letters_processed += 1
 
-            analisis = analizar_carta(content, state.needs, state.surplus)
-            print_section("ANÁLISIS LLM DE LA CARTA")
-            print_llm(analisis)
-            cartas_analizadas += 1
+            print_bot_dim(f"[BOT] Eliminando carta del buzón (id={letter_id})")
+            api.delete_letter(letter_id)
 
-            tipo = analisis.get("tipo", "otro")
-
-            state.update()
-
-            if tipo == "oferta":
-                remitente = content.get("remi")
-                if not remitente:
-                    print_bot("Oferta sin remitente claro, se ignora.", warning=True)
-                else:
-                    print_kv(
-                        "Acción", f"Gestionando OFERTA de {remitente}", color=logs.GREEN
-                    )
-                    handle_offer(
-                        remitente,
-                        analisis,
-                        state.needs,
-                        state.surplus,
-                        state.inventario,
-                    )
-            elif tipo == "confirmacion":
-                remitente = content.get("remi")
-                if not remitente:
-                    print_bot(
-                        "Confirmación sin remitente claro, se ignora.",
-                        warning=True,
-                    )
-                else:
-                    print_kv(
-                        "Acción",
-                        f"Gestionando CONFIRMACIÓN de {remitente}",
-                        color=logs.GREEN,
-                    )
-                    handle_confirmation(
-                        remitente, analisis, state.inventario, state.needs, state.surplus
-                    )
-
-            print_bot_dim(f"[BOT] Eliminando carta del buzón (id={id_carta})")
-            api.delete_letter(id_carta)
-
-        # Cada 5 cartas analizadas: ofertas extra (oro si objetivo cumplido, sino 2 aleatorias por persona)
-        if cartas_analizadas >= 5:
-            cartas_analizadas = 0
-            if state.has_reached_objective() and state.surplus:
-                surplus_list = list(state.surplus.keys())
-                print_bot(
-                    "5 cartas analizadas. Enviando una oferta surplus→oro aleatoria por persona.",
-                    success=True,
-                )
-                for p in people:
-                    alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
-                    if not alias or alias == state.alias:
-                        continue
-                    recurso_sobrante = random.choice(surplus_list)
-                    cuerpo = build_surplus_for_gold_letter(
-                        recurso_sobrante, GOLD_RESOURCE_NAME
-                    )
-                    asunto = f"Oferta: 1 {recurso_sobrante} por 1 {GOLD_RESOURCE_NAME}"
-                    try:
-                        print_kv(
-                            "Enviando oferta surplus→oro a",
-                            f"{alias} -> {asunto}",
-                            color=logs.GREEN,
-                        )
-                        api.send_letter(alias, asunto, cuerpo)
-                    except Exception as e:
-                        print_error(f"al enviar oferta surplus→oro a {alias}: {e}")
-            elif state.only_has_gold_to_trade():
-                print_bot(
-                    "5 cartas analizadas. Solo tenemos oro. Enviando oferta 1 oro por cualquier recurso.",
-                    success=True,
-                )
-                cuerpo = build_gold_for_any_letter(state.needs, GOLD_RESOURCE_NAME)
-                asunto = f"Oferta: 1 {GOLD_RESOURCE_NAME} por 1 recurso que necesite"
-                for p in people:
-                    alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
-                    if not alias or alias == state.alias:
-                        continue
-                    try:
-                        print_kv(
-                            "Enviando oferta oro por recurso a",
-                            f"{alias} -> {asunto}",
-                            color=logs.GREEN,
-                        )
-                        api.send_letter(alias, asunto, cuerpo)
-                    except Exception as e:
-                        print_error(f"al enviar oferta oro por recurso a {alias}: {e}")
-            elif state.needs and state.surplus:
-                pares_oferta = [
-                    (n, s) for n in state.needs.keys() for s in state.surplus.keys()
-                ]
-                print_bot(
-                    "5 cartas analizadas. Enviando 2 ofertas aleatorias por persona.",
-                    success=True,
-                )
-                for p in people:
-                    alias = p.get("alias") or p.get("Alias") if isinstance(p, dict) else p
-                    if not alias or alias == state.alias:
-                        continue
-                    elegidos = random.choices(pares_oferta, k=min(2, len(pares_oferta)))
-                    for recurso_necesario, recurso_sobrante in elegidos:
-                        cuerpo = build_simple_offer_letter(
-                            recurso_necesario=recurso_necesario,
-                            recurso_sobrante=recurso_sobrante,
-                        )
-                        asunto = f"Oferta: 1 {recurso_necesario} por 1 {recurso_sobrante}"
-                        try:
-                            print_kv(
-                                "Enviando mini oferta a",
-                                f"{alias} -> {asunto}",
-                                color=logs.GREEN,
-                            )
-                            api.send_letter(alias, asunto, cuerpo)
-                        except Exception as e:
-                            print_error(f"al enviar mini oferta a {alias}: {e}")
+        # Cada N cartas analizadas: ofertas extra
+        if letters_processed >= LETTERS_BEFORE_REBROADCAST:
+            letters_processed = 0
+            reason = f"{LETTERS_BEFORE_REBROADCAST} cartas analizadas. "
+            broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason)
 
         # 4) No hay cartas (o ya se procesaron): esperar 5 s y volver a leer buzón
         print_section("BUZÓN VACÍO")
@@ -311,4 +166,4 @@ def main() -> None:
         except requests.exceptions.RequestException as e:
             print_error(f"Error refrescando estado: {e}")
             continue
-        print_buzon(state.buzon)
+        print_mailbox(state.mailbox)
