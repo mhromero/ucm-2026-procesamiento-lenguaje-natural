@@ -1,6 +1,8 @@
 import json
 from typing import Any, Dict
 
+import requests
+
 from . import api
 from .config import GOLD_RESOURCE_NAME
 from .letters import build_trade_confirmation_letter
@@ -93,16 +95,28 @@ OFERTA:
 {json.dumps(oferta, ensure_ascii=False, indent=2)}
 
 """
-    respuesta = ollama(prompt)
-    try:
-        data = json.loads(respuesta)
-        if not isinstance(data, dict):
-            raise ValueError("Respuesta no es un dict")
-        return data
-    except (json.JSONDecodeError, ValueError):
-        print("ERROR: Ollama no devolvió JSON válido al analizar oferta")
-        print(respuesta)
-        return {"decision": "rechazada", "oferta": {}, "pide": {}}
+    max_intentos = 3
+    for intento in range(max_intentos):
+        try:
+            respuesta = ollama(prompt)
+        except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+            if intento < max_intentos - 1:
+                print(f"Intento {intento + 1}/{max_intentos}: Timeout con Ollama, reintentando...")
+            else:
+                print("ERROR: Timeout con Ollama al analizar oferta (tras 3 intentos)")
+                return {"decision": "rechazada", "oferta": {}, "pide": {}}
+        try:
+            data = json.loads(respuesta)
+            if not isinstance(data, dict):
+                raise ValueError("Respuesta no es un dict")
+            return data
+        except (json.JSONDecodeError, ValueError):
+            if intento < max_intentos - 1:
+                print(f"Intento {intento + 1}/{max_intentos}: JSON inválido, reintentando...")
+            else:
+                print("ERROR: Ollama no devolvió JSON válido al analizar oferta (tras 3 intentos)")
+                print(respuesta)
+                return {"decision": "rechazada", "oferta": {}, "pide": {}}
 
 
 def process_offer(

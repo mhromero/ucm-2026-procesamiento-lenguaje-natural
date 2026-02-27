@@ -5,6 +5,8 @@ Generación y análisis de cartas: prompts para Ollama y carta de estado.
 import json
 from typing import Any, Dict
 
+import requests
+
 from .config import GOLD_RESOURCE_NAME
 from .ollama_client import ollama
 
@@ -155,7 +157,12 @@ NECESITAMOS:
 CARTA RECIBIDA (como JSON bruto de la API):
 {json.dumps(carta_dict, ensure_ascii=False, indent=2)}
 """
-    respuesta = ollama(prompt)
+    try:
+        respuesta = ollama(prompt)
+    except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+        print("ERROR: Timeout al analizar carta; se usa fallback.")
+        return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
+
     print(respuesta)
 
     try:
