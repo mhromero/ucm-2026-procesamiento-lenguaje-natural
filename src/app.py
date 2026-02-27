@@ -14,7 +14,13 @@ from typing import Any
 import requests
 
 from . import api
-from .config import ALIAS, LETTERS_BEFORE_REBROADCAST, OFFERS_PER_PERSON, REMITENTE_SISTEMA, SINGLE_PLAYER_MODE
+from .config import (
+    ALIAS,
+    LETTERS_BEFORE_REBROADCAST,
+    OFFERS_PER_PERSON,
+    REMITENTE_SISTEMA,
+    SINGLE_PLAYER_MODE,
+)
 from .game_state import State
 from .agent import parse_letter
 from .letters import broadcast_offers
@@ -33,7 +39,9 @@ from .logs import (
 from .trader import handle_confirmation, handle_offer
 
 
-def _process_letter(letter_id: str, content: dict[str, Any], state: State) -> str | None:
+def _process_letter(
+    letter_id: str, content: dict[str, Any], state: State
+) -> str | None:
     """
     Interpreta una carta con el LLM y actúa según su tipo (oferta o confirmación).
 
@@ -65,14 +73,20 @@ def _process_letter(letter_id: str, content: dict[str, Any], state: State) -> st
             print_bot("Oferta sin remitente claro, se ignora.", warning=True)
         else:
             print_kv("Acción", f"Gestionando OFERTA de {sender_val}", color=logs.GREEN)
-            handle_offer(sender_val, analysis, state.needs, state.surplus, state.inventory)
+            handle_offer(
+                sender_val, analysis, state.needs, state.surplus, state.inventory
+            )
     elif letter_type == "confirmacion":
         sender_val = content.get("remi")
         if not sender_val:
             print_bot("Confirmación sin remitente claro, se ignora.", warning=True)
         else:
-            print_kv("Acción", f"Gestionando CONFIRMACIÓN de {sender_val}", color=logs.GREEN)
-            handle_confirmation(sender_val, analysis, state.inventory, state.needs, state.surplus)
+            print_kv(
+                "Acción", f"Gestionando CONFIRMACIÓN de {sender_val}", color=logs.GREEN
+            )
+            handle_confirmation(
+                sender_val, analysis, state.inventory, state.needs, state.surplus
+            )
 
     return letter_type
 
@@ -91,7 +105,9 @@ def main() -> None:
     # Registrar alias en Butler (en modo monopuesto el servidor lo asigna, no se llama POST /alias)
     if ALIAS:
         if SINGLE_PLAYER_MODE:
-            print_bot_dim("[BOT] Modo monopuesto: se omite POST /alias y se usa alias de /info")
+            print_bot_dim(
+                "[BOT] Modo monopuesto: se omite POST /alias y se usa alias de /info"
+            )
         else:
             try:
                 print_kv("Alias configurado", ALIAS)
@@ -157,7 +173,9 @@ def main() -> None:
                 api.delete_letter(letter_id)
                 continue
             if content.get("remi") == REMITENTE_SISTEMA:
-                print_bot_dim(f"[BOT] Ignorando carta de {REMITENTE_SISTEMA} (no se procesa)")
+                print_bot_dim(
+                    f"[BOT] Ignorando carta de {REMITENTE_SISTEMA} (no se procesa)"
+                )
                 api.delete_letter(letter_id)
                 continue
 
@@ -171,7 +189,9 @@ def main() -> None:
         if letters_processed >= LETTERS_BEFORE_REBROADCAST:
             letters_processed = 0
             reason = f"{LETTERS_BEFORE_REBROADCAST} cartas analizadas. "
-            broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason)
+            broadcast_offers(
+                people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason
+            )
             rebroadcasted_this_cycle = True
 
         if had_letters:
@@ -184,7 +204,9 @@ def main() -> None:
                 and not rebroadcasted_this_cycle
             ):
                 reason = f"Buzón vacío durante {empty_mailbox_cycles} revisiones. "
-                broadcast_offers(people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason)
+                broadcast_offers(
+                    people, state, offers_per_person=OFFERS_PER_PERSON, reason=reason
+                )
                 empty_mailbox_cycles = 0
 
         # Esperar y refrescar buzón

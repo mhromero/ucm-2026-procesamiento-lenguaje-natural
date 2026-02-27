@@ -33,7 +33,11 @@ def ollama(prompt: str, format: dict[str, Any] | None = None) -> str:
         r.raise_for_status()
         return r.json()["response"]
 
-    except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+    except (
+        requests.exceptions.Timeout,
+        requests.exceptions.ReadTimeout,
+        requests.exceptions.ConnectTimeout,
+    ):
         logs.print_error("Timeout al llamar a Ollama (se superó el tiempo de espera)")
         raise
 

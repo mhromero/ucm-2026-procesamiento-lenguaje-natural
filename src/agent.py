@@ -41,7 +41,9 @@ def _parse_json_response(response: str) -> dict[str, Any] | None:
     return None
 
 
-def _gold_only(needs: dict[str, Any], surplus: dict[str, int], inventory: dict[str, int]) -> bool:
+def _gold_only(
+    needs: dict[str, Any], surplus: dict[str, int], inventory: dict[str, int]
+) -> bool:
     """True si no hemos alcanzado objetivo, no tenemos surplus y tenemos al menos 1 oro."""
     if len(needs) == 0 or surplus:
         return False
@@ -154,7 +156,9 @@ def _normalize_parsed_letter_schema(parsed: dict[str, Any]) -> dict[str, Any]:
     """
     parsed["oferta"] = _normalize_resource_map(parsed.get("oferta"))
     parsed["pide"] = _normalize_resource_map(parsed.get("pide"))
-    parsed["recursos_recibidos"] = _normalize_resource_map(parsed.get("recursos_recibidos"))
+    parsed["recursos_recibidos"] = _normalize_resource_map(
+        parsed.get("recursos_recibidos")
+    )
     return parsed
 
 
@@ -166,6 +170,7 @@ def _sanitize_decision_against_received_offer(
     Acota la decisión del LLM a los recursos/cantidades detectados en la carta.
     Evita que el segundo análisis "invente" recursos o cantidades mayores.
     """
+
     def _to_positive_int_map(value: Any) -> dict[str, int]:
         if not isinstance(value, dict):
             return {}
@@ -254,7 +259,9 @@ CARTA RECIBIDA:
         requests.exceptions.HTTPError,
         requests.exceptions.ConnectionError,
     ):
-        logs.print_error("No se pudo analizar la carta (timeout/conexión/modelo no encontrado); se usa fallback.")
+        logs.print_error(
+            "No se pudo analizar la carta (timeout/conexión/modelo no encontrado); se usa fallback."
+        )
         return {"tipo": "otro", "oferta": {}, "pide": {}, "recursos_recibidos": {}}
 
     logs.print_llm_response(response)
@@ -363,17 +370,25 @@ OFERTA:
             requests.exceptions.ConnectionError,
         ):
             if attempt < max_attempts - 1:
-                logs.print_retry(f"Intento {attempt + 1}/{max_attempts}: Error con Ollama, reintentando...")
+                logs.print_retry(
+                    f"Intento {attempt + 1}/{max_attempts}: Error con Ollama, reintentando..."
+                )
             else:
-                logs.print_error("No se pudo contactar Ollama (timeout/404/modelo); se rechaza la oferta por defecto.")
+                logs.print_error(
+                    "No se pudo contactar Ollama (timeout/404/modelo); se rechaza la oferta por defecto."
+                )
                 return {"decision": "rechazada", "oferta": {}, "pide": {}}
         data = _parse_json_response(response)
         if data is not None:
             return _sanitize_decision_against_received_offer(data, offer)
         else:
             if attempt < max_attempts - 1:
-                logs.print_retry(f"Intento {attempt + 1}/{max_attempts}: JSON inválido, reintentando...")
+                logs.print_retry(
+                    f"Intento {attempt + 1}/{max_attempts}: JSON inválido, reintentando..."
+                )
             else:
-                logs.print_error(f"Ollama no devolvió JSON válido al analizar oferta (tras {max_attempts} intentos)")
+                logs.print_error(
+                    f"Ollama no devolvió JSON válido al analizar oferta (tras {max_attempts} intentos)"
+                )
                 logs.print_llm_response(response)
                 return {"decision": "rechazada", "oferta": {}, "pide": {}}

@@ -56,12 +56,23 @@ def _resolve_bool(val: Any) -> bool:
 
 
 # Nombres exportados (lazy via __getattr__)
-_EXPORTS = frozenset({
-    "API_BASE", "OLLAMA_URL", "MODEL", "GOLD_RESOURCE_NAME",
-    "MAILBOX_ENDPOINT", "LETTER_ENDPOINT", "PACKAGE_ENDPOINT",
-    "ALIAS", "SINGLE_PLAYER_MODE", "LETTERS_BEFORE_REBROADCAST", "OFFERS_PER_PERSON",
-    "REMITENTE_SISTEMA", "MAX_INTENTOS_OFERTA",
-})
+_EXPORTS = frozenset(
+    {
+        "API_BASE",
+        "OLLAMA_URL",
+        "MODEL",
+        "GOLD_RESOURCE_NAME",
+        "MAILBOX_ENDPOINT",
+        "LETTER_ENDPOINT",
+        "PACKAGE_ENDPOINT",
+        "ALIAS",
+        "SINGLE_PLAYER_MODE",
+        "LETTERS_BEFORE_REBROADCAST",
+        "OFFERS_PER_PERSON",
+        "REMITENTE_SISTEMA",
+        "MAX_INTENTOS_OFERTA",
+    }
+)
 
 
 def __getattr__(name: str) -> Any:
@@ -87,7 +98,9 @@ def __getattr__(name: str) -> Any:
         return _resolve("modo_monopuesto", "FDI_PLN__MODO_MONOPUESTO", _resolve_bool)
 
     if name == "LETTERS_BEFORE_REBROADCAST":
-        return _resolve("letters_before_rebroadcast", "FDI_PLN__LETTERS_BEFORE_REBROADCAST", int)
+        return _resolve(
+            "letters_before_rebroadcast", "FDI_PLN__LETTERS_BEFORE_REBROADCAST", int
+        )
 
     if name == "OFFERS_PER_PERSON":
         return _resolve("offers_per_person", "FDI_PLN__OFFERS_PER_PERSON", int)
@@ -113,6 +126,7 @@ def __getattr__(name: str) -> Any:
 
 
 # --- CLI ---
+
 
 @click.command()
 @click.option(
@@ -188,20 +202,23 @@ def cli(
     max_intentos_oferta: int | None,
 ) -> None:
     """Ejecuta el bot de negociación. Prioridad: env > args Click > config.json."""
-    init_cli_overrides({
-        "api_base": api_base,
-        "ollama_url": ollama_url,
-        "model": model,
-        "gold_resource_name": gold_resource_name,
-        "mailbox_endpoint": mailbox_endpoint,
-        "letter_endpoint": letter_endpoint,
-        "package_endpoint": package_endpoint,
-        "alias": alias,
-        "modo_monopuesto": modo_monopuesto,
-        "letters_before_rebroadcast": letters_before_rebroadcast,
-        "offers_per_person": offers_per_person,
-        "remitente_sistema": remitente_sistema,
-        "max_intentos_oferta": max_intentos_oferta,
-    })
+    init_cli_overrides(
+        {
+            "api_base": api_base,
+            "ollama_url": ollama_url,
+            "model": model,
+            "gold_resource_name": gold_resource_name,
+            "mailbox_endpoint": mailbox_endpoint,
+            "letter_endpoint": letter_endpoint,
+            "package_endpoint": package_endpoint,
+            "alias": alias,
+            "modo_monopuesto": modo_monopuesto,
+            "letters_before_rebroadcast": letters_before_rebroadcast,
+            "offers_per_person": offers_per_person,
+            "remitente_sistema": remitente_sistema,
+            "max_intentos_oferta": max_intentos_oferta,
+        }
+    )
     from .app import main
+
     main()

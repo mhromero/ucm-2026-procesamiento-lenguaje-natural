@@ -232,7 +232,10 @@ def handle_offer(
         return False
 
     try:
-        logs.print_bot(f"Aceptando oferta de {sender}. Enviando paquete: {resources_to_send}", success=True)
+        logs.print_bot(
+            f"Aceptando oferta de {sender}. Enviando paquete: {resources_to_send}",
+            success=True,
+        )
         api.send_package(sender, resources_to_send)
     except Exception as e:
         logs.print_error(f"Enviando paquete de oferta a {sender}: {e}")
@@ -243,10 +246,10 @@ def handle_offer(
             resources_sent=resources_to_send,
             resources_expected=offer,
         )
-        logs.print_bot_dim(f"→ Enviando carta de confirmación de oferta aceptada a {sender}...")
-        api.send_letter(
-            sender, "Confirmación de oferta aceptada", confirmation_letter
+        logs.print_bot_dim(
+            f"→ Enviando carta de confirmación de oferta aceptada a {sender}..."
         )
+        api.send_letter(sender, "Confirmación de oferta aceptada", confirmation_letter)
     except Exception as e:
         logs.print_error(f"Enviando carta de confirmación a {sender}: {e}")
 
@@ -302,7 +305,9 @@ def handle_confirmation(
             resources_sent=resources_to_send,
             resources_expected=resources_received,
         )
-        logs.print_bot_dim(f"→ Enviando carta de confirmación de envío de recursos a {sender}...")
+        logs.print_bot_dim(
+            f"→ Enviando carta de confirmación de envío de recursos a {sender}..."
+        )
         api.send_letter(
             sender, "Confirmación de envío de recursos", confirmation_letter
         )

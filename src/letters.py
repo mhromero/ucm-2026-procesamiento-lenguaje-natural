@@ -50,10 +50,7 @@ def build_simple_offer_letter(
 
     Ejemplo: "Te propongo intercambiar 1 piedra por 1 tela."
     """
-    return (
-        f"Te ofrezo 1 {surplus_resource} y tu me das "
-        f"1 {needed_resource}."
-    )
+    return f"Te ofrezo 1 {surplus_resource} y tu me das 1 {needed_resource}."
 
 
 def build_surplus_for_gold_letter(surplus_resource: str, gold_name: str) -> str:
@@ -135,7 +132,11 @@ def broadcast_offers(
             body = build_surplus_for_gold_letter(surplus_resource, GOLD_RESOURCE_NAME)
             subject = f"propuesta intercambio"
             try:
-                logs.print_kv("Enviando oferta surplus→oro a", f"{alias} -> {subject}", color=logs.GREEN)
+                logs.print_kv(
+                    "Enviando oferta surplus→oro a",
+                    f"{alias} -> {subject}",
+                    color=logs.GREEN,
+                )
                 api.send_letter(alias, subject, body)
             except Exception as e:
                 logs.print_error(f"al enviar oferta surplus→oro a {alias}: {e}")
@@ -147,7 +148,11 @@ def broadcast_offers(
         subject = f"Oferta: 1 {GOLD_RESOURCE_NAME} por 1 recurso que necesite"
         for alias, _ in _iter_other_people(people, state.alias):
             try:
-                logs.print_kv("Enviando oferta oro por recurso a", f"{alias} -> {subject}", color=logs.GREEN)
+                logs.print_kv(
+                    "Enviando oferta oro por recurso a",
+                    f"{alias} -> {subject}",
+                    color=logs.GREEN,
+                )
                 api.send_letter(alias, subject, body)
             except Exception as e:
                 logs.print_error(f"al enviar oferta oro por recurso a {alias}: {e}")
@@ -155,7 +160,9 @@ def broadcast_offers(
     elif state.needs and state.surplus:
         offer_pairs = [(n, s) for n in state.needs.keys() for s in state.surplus.keys()]
         if offer_pairs:
-            msg = f"{prefix}Enviando {offers_per_person} ofertas aleatorias por persona."
+            msg = (
+                f"{prefix}Enviando {offers_per_person} ofertas aleatorias por persona."
+            )
             logs.print_bot(msg.strip(), success=True)
             k = min(offers_per_person, len(offer_pairs))
             for alias, _ in _iter_other_people(people, state.alias):
@@ -167,7 +174,11 @@ def broadcast_offers(
                     )
                     subject = f"propuesta intercambio"
                     try:
-                        logs.print_kv("Enviando mini oferta a", f"{alias} -> {subject}", color=logs.GREEN)
+                        logs.print_kv(
+                            "Enviando mini oferta a",
+                            f"{alias} -> {subject}",
+                            color=logs.GREEN,
+                        )
                         api.send_letter(alias, subject, body)
                     except Exception as e:
                         logs.print_error(f"al enviar mini oferta a {alias}: {e}")

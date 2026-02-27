@@ -40,7 +40,9 @@ def get_people() -> Any:
 
 def set_alias(name: str) -> Any:
     """Configura nuestro alias en el servidor (POST /alias/{nombre})."""
-    r = requests.post(f"{API_BASE}/alias/{name}", params=_params(), timeout=REQUEST_TIMEOUT)
+    r = requests.post(
+        f"{API_BASE}/alias/{name}", params=_params(), timeout=REQUEST_TIMEOUT
+    )
     r.raise_for_status()
     return r.json()
 
@@ -89,7 +91,9 @@ def send_letter(to_alias: str, subject: str, body: str) -> Any:
         "id": str(uuid4()),
         "fecha": datetime.utcnow().isoformat(),
     }
-    r = requests.post(LETTER_ENDPOINT, json=payload, params=_params(), timeout=REQUEST_TIMEOUT)
+    r = requests.post(
+        LETTER_ENDPOINT, json=payload, params=_params(), timeout=REQUEST_TIMEOUT
+    )
     r.raise_for_status()
     return r.json()
 
@@ -103,7 +107,9 @@ def get_mailbox() -> Any:
 
 def delete_letter(uid: str) -> Any:
     """Elimina una carta del buzón (DELETE /mail/{uid})."""
-    r = requests.delete(f"{API_BASE}/mail/{uid}", params=_params(), timeout=REQUEST_TIMEOUT)
+    r = requests.delete(
+        f"{API_BASE}/mail/{uid}", params=_params(), timeout=REQUEST_TIMEOUT
+    )
     r.raise_for_status()
     return r.json()
 
