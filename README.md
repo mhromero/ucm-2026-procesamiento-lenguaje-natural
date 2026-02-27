@@ -125,16 +125,16 @@ src/
 
 ## Pruebas con cartas de prueba
 Puedes inyectar cartas manuales sin levantar un tercer agente con:
-`scripts/send_test_letter.sh`
+`send_test_letter.sh`
 
 Ayuda:
 ```bash
-scripts/send_test_letter.sh --help
+send_test_letter.sh --help
 ```
 
 Ejemplo básico:
 ```bash
-scripts/send_test_letter.sh \
+send_test_letter.sh \
   --dest ag002 \
   --from ag001 \
   --subject "propuesta intercambio" \
