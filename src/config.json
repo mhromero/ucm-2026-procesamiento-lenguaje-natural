@@ -6,8 +6,9 @@
   "mailbox_endpoint": "/buzon",
   "letter_endpoint": "/carta",
   "package_endpoint": "/paquete",
-  "alias": "agente2",
+  "alias": "burrito sabanero",
   "modo_monopuesto": true,
   "letters_before_rebroadcast": 5,
-  "offers_per_person": 2
+  "offers_per_person": 2,
+  "remitente_sistema": "Sistema"
 }

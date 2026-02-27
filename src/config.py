@@ -58,6 +58,7 @@ _EXPORTS = frozenset({
     "API_BASE", "OLLAMA_URL", "MODEL", "GOLD_RESOURCE_NAME",
     "MAILBOX_ENDPOINT", "LETTER_ENDPOINT", "PACKAGE_ENDPOINT",
     "ALIAS", "SINGLE_PLAYER_MODE", "LETTERS_BEFORE_REBROADCAST", "OFFERS_PER_PERSON",
+    "REMITENTE_SISTEMA",
 })
 
 
@@ -88,6 +89,9 @@ def __getattr__(name: str) -> Any:
 
     if name == "OFFERS_PER_PERSON":
         return _resolve("offers_per_person", "FDI_PLN__OFFERS_PER_PERSON", int)
+
+    if name == "REMITENTE_SISTEMA":
+        return _resolve("remitente_sistema", "FDI_PLN__REMITENTE_SISTEMA")
 
     base = __getattr__("API_BASE")
     if name == "MAILBOX_ENDPOINT":
@@ -154,6 +158,10 @@ def __getattr__(name: str) -> Any:
     type=int,
     help="Ofertas aleatorias por persona. Env: FDI_PLN__OFFERS_PER_PERSON.",
 )
+@click.option(
+    "--remitente-sistema",
+    help="Remitente de cartas del sistema que no se procesan (ej. Sistema). Env: FDI_PLN__REMITENTE_SISTEMA.",
+)
 def cli(
     api_base: str | None,
     ollama_url: str | None,
@@ -166,6 +174,7 @@ def cli(
     modo_monopuesto: bool | None,
     letters_before_rebroadcast: int | None,
     offers_per_person: int | None,
+    remitente_sistema: str | None,
 ) -> None:
     """Ejecuta el bot de negociación. Prioridad: env > args Click > config.json."""
     init_cli_overrides({
@@ -180,6 +189,7 @@ def cli(
         "modo_monopuesto": modo_monopuesto,
         "letters_before_rebroadcast": letters_before_rebroadcast,
         "offers_per_person": offers_per_person,
+        "remitente_sistema": remitente_sistema,
     })
     from .app import main
     main()

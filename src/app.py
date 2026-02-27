@@ -7,7 +7,7 @@ import time
 import requests
 
 from . import api
-from .config import ALIAS, LETTERS_BEFORE_REBROADCAST, OFFERS_PER_PERSON
+from .config import ALIAS, LETTERS_BEFORE_REBROADCAST, OFFERS_PER_PERSON, REMITENTE_SISTEMA
 from .game_state import State
 from .agent import parse_letter
 from .letters import broadcast_offers
@@ -138,6 +138,10 @@ def main() -> None:
         # 3) Procesar de más antigua a más nueva y eliminar del buzón
         for letter_id, content in sorted_letters:
             if content.get("remi") == state.alias:
+                api.delete_letter(letter_id)
+                continue
+            if content.get("remi") == REMITENTE_SISTEMA:
+                print_bot_dim(f"[BOT] Ignorando carta de {REMITENTE_SISTEMA} (no se procesa)")
                 api.delete_letter(letter_id)
                 continue
 
