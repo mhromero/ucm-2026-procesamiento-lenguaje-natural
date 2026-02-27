@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "fdi_pln_2611_p1"
 version = "1.0"
-description = "Add your description here"
+description = "Bot de negociación de recursos entre agentes para Butler."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
