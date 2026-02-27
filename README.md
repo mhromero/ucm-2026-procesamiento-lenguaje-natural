@@ -7,6 +7,7 @@
 - [Instrucciones de ejecución](#instrucciones-de-ejecución)
 - [Funcionamiento y lógica del bot](#funcionamiento-y-lógica-del-bot)
 - [Estructura del código](#estructura-del-código)
+- [Pruebas con cartas de prueba](#pruebas-con-cartas-de-prueba)
 - [Variables de entorno y opciones CLI](#variables-de-entorno-y-opciones-cli)
 - [Calidad y empaquetado](#calidad-y-empaquetado)
 
@@ -44,20 +45,20 @@ ollama pull <nombre-del-modelo>
 
 ### 4) Ejecutar agente
 ```bash
-cd /Users/maria/Dropbox/UCM/PLN/fdi-pln-2611
+cd ~/fdi-pln-2611
 FDI_PLN__BUTLER_ADDRESS=http://127.0.0.1:7719 uv run fdi-pln-2611-p1
 ```
 
 ### 5) Ejecutar dos agentes (modo monopuesto)
 Terminal A:
 ```bash
-cd /Users/maria/Dropbox/UCM/PLN/fdi-pln-2611
+cd ~/fdi-pln-2611
 FDI_PLN__MODO_MONOPUESTO=true FDI_PLN__ALIAS=ag001 FDI_PLN__BUTLER_ADDRESS=http://127.0.0.1:7719 uv run fdi-pln-2611-p1
 ```
 
 Terminal B:
 ```bash
-cd /Users/maria/Dropbox/UCM/PLN/fdi-pln-2611
+cd ~/fdi-pln-2611
 FDI_PLN__MODO_MONOPUESTO=true FDI_PLN__ALIAS=ag002 FDI_PLN__BUTLER_ADDRESS=http://127.0.0.1:7719 uv run fdi-pln-2611-p1
 ```
 
@@ -122,6 +123,24 @@ src/
 
 scripts/
 └── send_test_letter.sh  # Script para inyectar cartas de prueba
+```
+
+## Pruebas con cartas de prueba
+Puedes inyectar cartas manuales sin levantar un tercer agente con:
+`scripts/send_test_letter.sh`
+
+Ayuda:
+```bash
+scripts/send_test_letter.sh --help
+```
+
+Ejemplo básico:
+```bash
+scripts/send_test_letter.sh \
+  --dest ag002 \
+  --from ag001 \
+  --subject "propuesta intercambio" \
+  --body "Te ofrezo 1 arroz y tu me das 1 trigo."
 ```
 
 ## Variables de entorno y opciones CLI
