@@ -14,32 +14,33 @@ Salida: stdout (texto UTF-8 en decode, bytes PLNCG26 en encode, probabilidad en 
 - encode: UTF-8 (texto) -> PLNCG26 (bytes)
 - detect: probabilidad [0,1] de que el fichero contenga texto en PLNCG26
 """
+
 import sys
 from enum import Enum
 from pathlib import Path
 
 import typer
 
-BASE = 20               # a=20, b=21, ..., z=45
-ALPHABET_SIZE = 31      # 26 letras + 5 símbolos especiales de PLNCG26
-SPACE = 0x0B            # 11: espacio
-NEWLINE = 0x0A          # 10: salto de línea
-ACCENT_IDX = 30         # índice lógico del símbolo "acento" dentro del alfabeto
-ACCENT_BYTE = 50        # (30 + 20) índice 30 = acento sobre vocal anterior
-DIGIT_BASE = 60         # 60–69: dígitos '0'–'9'
-DIERESIS = 0x33         # 51: u -> ü
-ENYE = 0x34             # 52: ñ/Ñ
-MAYUSCULA = 0x35        # 53: mayúscula del carácter anterior
-PUNTO = 0x46            # 70: .
-COMA = 0x47             # 71: ,
-DOS_PUNTOS = 73         # 73: :
-GUION_LARGO = 78        # 78 78 ... 78 78 = —algo—
-COMILLAS = 80           # 80...80 = "texto"
-HEADER = 100            # 100 = #, 100 100 = ##, etc.
-ASTERISCO = 101         # 101: *
-PAREN_OPEN = 0x51       # 81: (
-PAREN_CLOSE = 0x52      # 82: )
-PUNTO_COMA = 0x48       # 72: ;
+BASE = 20  # a=20, b=21, ..., z=45
+ALPHABET_SIZE = 31  # 26 letras + 5 símbolos especiales de PLNCG26
+SPACE = 0x0B  # 11: espacio
+NEWLINE = 0x0A  # 10: salto de línea
+ACCENT_IDX = 30  # índice lógico del símbolo "acento" dentro del alfabeto
+ACCENT_BYTE = 50  # (30 + 20) índice 30 = acento sobre vocal anterior
+DIGIT_BASE = 60  # 60–69: dígitos '0'–'9'
+DIERESIS = 0x33  # 51: u -> ü
+ENYE = 0x34  # 52: ñ/Ñ
+MAYUSCULA = 0x35  # 53: mayúscula del carácter anterior
+PUNTO = 0x46  # 70: .
+COMA = 0x47  # 71: ,
+DOS_PUNTOS = 73  # 73: :
+GUION_LARGO = 78  # 78 78 ... 78 78 = —algo—
+COMILLAS = 80  # 80...80 = "texto"
+HEADER = 100  # 100 = #, 100 100 = ##, etc.
+ASTERISCO = 101  # 101: *
+PAREN_OPEN = 0x51  # 81: (
+PAREN_CLOSE = 0x52  # 82: )
+PUNTO_COMA = 0x48  # 72: ;
 
 
 class QuoteStyle(str, Enum):
@@ -80,30 +81,37 @@ CHAR_TO_BYTE = {v: k for k, v in BYTE_TO_CHAR.items()} | {
 }
 
 # Conjunto de bytes válidos en PLNCG26 (para detección)
-VALID_PLNCG26_BYTES = frozenset({
-    NEWLINE,
-    SPACE,
-    *range(BASE, BASE + 26),  # a-z
+VALID_PLNCG26_BYTES = frozenset(
+    {
+        NEWLINE,
+        SPACE,
+        *range(BASE, BASE + 26),  # a-z
+        ACCENT_BYTE,
+        DIERESIS,
+        ENYE,
+        MAYUSCULA,
+        *range(DIGIT_BASE, DIGIT_BASE + 10),  # 0-9
+        PUNTO,
+        COMA,
+        PUNTO_COMA,
+        DOS_PUNTOS,
+        GUION_LARGO,
+        COMILLAS,
+        PAREN_OPEN,
+        PAREN_CLOSE,
+        HEADER,
+        ASTERISCO,
+    }
+)
+
+VOWEL_BYTES = {BASE + (ord(v) - ord("a")) for v in "aeiou"}  # Vocales a, e, i, o, u
+LETTER_N_BYTE = BASE + (ord("n") - ord("a"))  # Letra n
+MODIFIER_BYTES = {
     ACCENT_BYTE,
     DIERESIS,
     ENYE,
     MAYUSCULA,
-    *range(DIGIT_BASE, DIGIT_BASE + 10),  # 0-9
-    PUNTO,
-    COMA,
-    PUNTO_COMA,
-    DOS_PUNTOS,
-    GUION_LARGO,
-    COMILLAS,
-    PAREN_OPEN,
-    PAREN_CLOSE,
-    HEADER,
-    ASTERISCO,
-})
-
-VOWEL_BYTES = {BASE + (ord(v) - ord("a")) for v in "aeiou"}     # Vocales a, e, i, o, u
-LETTER_N_BYTE = BASE + (ord("n") - ord("a"))                    # Letra n
-MODIFIER_BYTES = {ACCENT_BYTE, DIERESIS, ENYE, MAYUSCULA}       # Símbolos que modifican al anterior
+}  # Símbolos que modifican al anterior
 
 app = typer.Typer(help="Codificación/decodificación PLNCG26 <-> UTF-8.")
 
@@ -351,9 +359,7 @@ def plncg26_probability(data: bytes) -> float:
             elif b == DIERESIS:
                 # ü / Ü: u + [MAYUSCULA] + DIERESIS
                 u_byte = BASE + (ord("u") - ord("a"))
-                is_valid = prev == u_byte or (
-                    prev == MAYUSCULA and prev_prev == u_byte
-                )
+                is_valid = prev == u_byte or (prev == MAYUSCULA and prev_prev == u_byte)
             elif b == ENYE:
                 # ñ / Ñ: n + ENYE o n + MAYUSCULA + ENYE
                 is_valid = prev == LETTER_N_BYTE or (
