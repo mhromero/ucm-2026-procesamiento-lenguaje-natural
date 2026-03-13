@@ -1,0 +1,13 @@
+# Título de prueba
+
+Hola, mundo. Esto es un fichero UTF8 para probar el comando encode.
+
+Caracteres especiales: ñ (Ñandú), vocales con tilde (á, é, í, ó, ú), y la u con diéresis: ü.
+
+Números: 0 1 2 3 4 5 6 7 8 9
+
+Puntuación: punto. coma, dos puntos: punto y coma; paréntesis (así). Comillas "texto entre comillas". Asterisco *cursiva*.
+
+Guion largo —así— en el texto.
+
+Fin de la prueba.
