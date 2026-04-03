@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import sys
 from typing import Any, Literal
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header, Input, Static
 
-from busqueda_clasica import buscar_frase, cargar_json, destacar
+from .busqueda_clasica import buscar_frase, cargar_json, destacar
 
 ModoBusqueda = Literal["clasica", "semantica", "rag"]
 
@@ -52,7 +51,9 @@ class Buscador(App):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Static("Modos de búsqueda: [1] Clásica  [2] Semántica  [3] RAG", id="modos")
+        yield Static(
+            "Modos de búsqueda: [1] Clásica  [2] Semántica  [3] RAG", id="modos"
+        )
         yield Input(placeholder="Buscar palabra o frase...", id="busqueda")
         yield Static(
             "Modo actual: Clásica (1/2/3 para cambiar). Introduce un término o frase.",
@@ -63,7 +64,6 @@ class Buscador(App):
 
     def _set_modo(self, modo: ModoBusqueda) -> None:
         self._modo = modo
-
         self._resultados = []
         self._claves = set()
         self._pos = 0
@@ -118,7 +118,9 @@ class Buscador(App):
     def _mostrar(self) -> None:
         estado = self.query_one("#estado", Static)
         contenedor = self.query_one("#resultado", Static)
-        prefijo = f"Modo actual: {self._modo_label()} (1/2/3 para cambiar, / para buscar)"
+        prefijo = (
+            f"Modo actual: {self._modo_label()} (1/2/3 para cambiar, / para buscar)"
+        )
 
         if not self._query:
             estado.update(f"{prefijo}. Introduce un término o frase.")
@@ -160,16 +162,3 @@ class Buscador(App):
             f"[b cyan]Párrafo {parrafo_id}[/]\n[dim]{meta_str}[/]\n\n"
             + destacar(texto, self._claves)
         )
-
-
-def main() -> None:
-    if len(sys.argv) != 3:
-        print("Uso: python buscador_textual.py indice.json parrafos.json")
-        sys.exit(1)
-
-    app = Buscador(sys.argv[1], sys.argv[2])
-    app.run()
-
-
-if __name__ == "__main__":
-    main()

@@ -12,7 +12,9 @@ _nlp = spacy.load("es_core_news_sm", disable=["parser", "ner"])
 
 def sin_tildes(texto: str) -> str:
     return "".join(
-        c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn"
+        c
+        for c in unicodedata.normalize("NFD", texto)
+        if unicodedata.category(c) != "Mn"
     )
 
 
@@ -31,7 +33,11 @@ def buscar_frase(
 
     claves: list[str] = []
     for token in content_tokens:
-        for clave in [token.lemma_.lower(), token.text.lower(), sin_tildes(token.text.lower())]:
+        for clave in [
+            token.lemma_.lower(),
+            token.text.lower(),
+            sin_tildes(token.text.lower()),
+        ]:
             if clave in indice:
                 claves.append(clave)
                 break

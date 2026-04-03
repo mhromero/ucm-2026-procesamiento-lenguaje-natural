@@ -1,13 +1,9 @@
-#!/usr/bin/env python3
 """Indexa párrafos HTML y crea un vocabulario invertido con puntuaciones TF-IDF.
 
 Formato del vocabulario: { term: [[párrafo_id, tfidf], ...] } ordenado por TF-IDF desc.
   - TF(t, d)  = ocurrencias(t, d) / tokens_no_stop(d)
   - IDF(t)    = log(N / df(t))   donde N = nº párrafos, df = nº párrafos con t
   - TF-IDF    = TF * IDF
-
-Uso:
-    python3 indexar_parrafos.py input.html
 """
 
 from __future__ import annotations
@@ -22,7 +18,6 @@ from typing import Dict, List
 
 import spacy
 from bs4 import BeautifulSoup, NavigableString, Tag
-
 
 CHAPTER_RE = re.compile(
     r"^\s*(cap[ií]tulo|primera parte|segunda parte|tercera parte|cuarta parte)\b",
@@ -53,9 +48,7 @@ def index_html(input_html: Path) -> tuple[list[dict], dict[str, list]]:
     current_headings: Dict[int, str] = {}
     paragraphs: List[dict] = []
 
-    # counts[term][párrafo_id] = nº de veces que aparece term en ese párrafo
     counts: Dict[str, Dict[int, int]] = defaultdict(lambda: defaultdict(int))
-    # longitud de cada párrafo en tokens no-stop para normalizar TF
     par_lengths: Dict[int, int] = {}
 
     body = soup.body or soup
@@ -82,11 +75,13 @@ def index_html(input_html: Path) -> tuple[list[dict], dict[str, list]]:
         if CHAPTER_RE.match(text):
             update_heading_path(current_headings, 6, text)
 
-        paragraphs.append({
-            "index": current_paragraph_index,
-            "headings": heading_list(current_headings),
-            "text": text,
-        })
+        paragraphs.append(
+            {
+                "index": current_paragraph_index,
+                "headings": heading_list(current_headings),
+                "text": text,
+            }
+        )
 
         doc = nlp(text)
         valid_tokens = [t for t in doc if t.is_alpha and not t.is_stop]
@@ -98,7 +93,6 @@ def index_html(input_html: Path) -> tuple[list[dict], dict[str, list]]:
 
         current_paragraph_index += 1
 
-    # Calcular TF-IDF
     N = len(paragraphs)
     vocabulary: Dict[str, list] = {}
     for term, doc_counts in sorted(counts.items()):
@@ -119,8 +113,12 @@ def parse_args() -> argparse.Namespace:
         description="Genera índice de párrafos y vocabulario invertido con TF-IDF."
     )
     parser.add_argument("input_html", type=Path)
-    parser.add_argument("--out-parrafos", type=Path, default=Path("parrafos_index.json"))
-    parser.add_argument("--out-vocabulario", type=Path, default=Path("vocabulario_index.json"))
+    parser.add_argument(
+        "--out-parrafos", type=Path, default=Path("parrafos_index.json")
+    )
+    parser.add_argument(
+        "--out-vocabulario", type=Path, default=Path("vocabulario_index.json")
+    )
     return parser.parse_args()
 
 
