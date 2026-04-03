@@ -1,88 +1,15 @@
-import json
-import sys
-import unicodedata
-from collections import defaultdict
-from pathlib import Path
-from typing import Any
+from __future__ import annotations
 
-import spacy
+import sys
+from typing import Any, Literal
+
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Header, Footer, Input, Static
+from textual.widgets import Footer, Header, Input, Static
 
-_nlp = spacy.load("es_core_news_sm", disable=["parser", "ner"])
+from busqueda_clasica import buscar_frase, cargar_json, destacar
 
-
-def sin_tildes(texto: str) -> str:
-    return "".join(
-        c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn"
-    )
-
-
-def buscar_frase(
-    query: str, indice: dict[str, list]
-) -> tuple[list[tuple[int, float, int]], set[str]]:
-    """Busca una frase en el índice TF-IDF.
-
-    Para cada token de contenido (sin stopwords) de la query, localiza su mejor
-    clave en el índice (lema → forma literal → sin tildes) y acumula los scores
-    por párrafo.
-
-    Devuelve:
-        resultados : lista de (párrafo_id, tfidf_total, n_términos_matched)
-                     ordenada por (n_términos desc, tfidf desc)
-        claves     : conjunto de claves encontradas, para resaltar en pantalla
-    """
-    doc = _nlp(query.strip())
-    content_tokens = [t for t in doc if t.is_alpha and not t.is_stop]
-    if not content_tokens:
-        return [], set()
-
-    # Para cada token de contenido, buscar la mejor clave disponible en el índice
-    claves: list[str] = []
-    for token in content_tokens:
-        for clave in [token.lemma_.lower(), token.text.lower(), sin_tildes(token.text.lower())]:
-            if clave in indice:
-                claves.append(clave)
-                break
-
-    if not claves:
-        return [], set()
-
-    # Acumular TF-IDF por párrafo y contar cuántas claves distintas matchean
-    scores: dict[int, float] = defaultdict(float)
-    hits: dict[int, set] = defaultdict(set)  # qué claves matchean en cada párrafo
-
-    for clave in claves:
-        for pid, tfidf in indice[clave]:
-            scores[pid] += tfidf
-            hits[pid].add(clave)
-
-    resultados = [(pid, scores[pid], len(hits[pid])) for pid in scores]
-    resultados.sort(key=lambda x: (x[2], x[1]), reverse=True)
-
-    return resultados, set(claves)
-
-
-def destacar(texto: str, claves: set[str]) -> str:
-    """Resalta en amarillo las palabras cuyo lema o forma literal están en claves."""
-    doc = _nlp(texto)
-    partes = []
-    ultimo = 0
-    for token in doc:
-        if token.is_alpha and (
-            token.lemma_.lower() in claves or token.text.lower() in claves
-        ):
-            partes.append(texto[ultimo : token.idx])
-            partes.append(f"[b yellow]{token.text}[/]")
-            ultimo = token.idx + len(token.text)
-    partes.append(texto[ultimo:])
-    return "".join(partes)
-
-
-def cargar_json(ruta: str) -> Any:
-    with open(ruta, "r", encoding="utf-8") as f:
-        return json.load(f)
+ModoBusqueda = Literal["clasica", "semantica", "rag"]
 
 
 class Buscador(App):
@@ -90,10 +17,14 @@ class Buscador(App):
         Binding("left,p", "anterior", "← Anterior"),
         Binding("right,n", "siguiente", "→ Siguiente"),
         Binding("slash", "enfocar_busqueda", "/ Buscar"),
+        Binding("1", "modo_clasica", "1 Clásica"),
+        Binding("2", "modo_semantica", "2 Semántica"),
+        Binding("3", "modo_rag", "3 RAG"),
     ]
 
     CSS = """
     Screen { layout: vertical; }
+    #modos { margin: 0 1; color: $text-muted; }
     #busqueda { margin: 1; }
     #estado { margin: 0 1; color: $text-muted; }
     #resultado {
@@ -113,56 +44,104 @@ class Buscador(App):
             int(p["index"]): p for p in lista_parrafos if "index" in p
         }
 
-        self._resultados: list[tuple[int, float, int]] = []  # (pid, tfidf, n_matched)
+        self._modo: ModoBusqueda = "clasica"
+        self._resultados: list[tuple[int, float, int]] = []
         self._claves: set[str] = set()
         self._pos: int = 0
         self._query: str = ""
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield Static("Modos de búsqueda: [1] Clásica  [2] Semántica  [3] RAG", id="modos")
         yield Input(placeholder="Buscar palabra o frase...", id="busqueda")
-        yield Static("Introduce un término o frase.", id="estado")
+        yield Static(
+            "Modo actual: Clásica (1/2/3 para cambiar). Introduce un término o frase.",
+            id="estado",
+        )
         yield Static("", id="resultado")
         yield Footer()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        self._query = event.value.strip()
-        self._resultados, self._claves = buscar_frase(self._query, self.indice)
+    def _set_modo(self, modo: ModoBusqueda) -> None:
+        self._modo = modo
+
+        self._resultados = []
+        self._claves = set()
         self._pos = 0
-        self.query_one("#busqueda", Input).blur()
         self._mostrar()
+
+    def action_modo_clasica(self) -> None:
+        self._set_modo("clasica")
+
+    def action_modo_semantica(self) -> None:
+        self._set_modo("semantica")
+
+    def action_modo_rag(self) -> None:
+        self._set_modo("rag")
 
     def action_enfocar_busqueda(self) -> None:
         self.query_one("#busqueda", Input).focus()
 
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        self._query = event.value.strip()
+        self._pos = 0
+        self.query_one("#busqueda", Input).blur()
+
+        if self._modo == "clasica":
+            self._resultados, self._claves = buscar_frase(self._query, self.indice)
+        else:
+            self._resultados = []
+            self._claves = set()
+
+        self._mostrar()
+
     def action_siguiente(self) -> None:
+        if self._modo != "clasica":
+            return
         if self._resultados and self._pos < len(self._resultados) - 1:
             self._pos += 1
             self._mostrar()
 
     def action_anterior(self) -> None:
+        if self._modo != "clasica":
+            return
         if self._resultados and self._pos > 0:
             self._pos -= 1
             self._mostrar()
 
+    def _modo_label(self) -> str:
+        if self._modo == "clasica":
+            return "Clásica"
+        if self._modo == "semantica":
+            return "Semántica"
+        return "RAG"
+
     def _mostrar(self) -> None:
         estado = self.query_one("#estado", Static)
         contenedor = self.query_one("#resultado", Static)
+        prefijo = f"Modo actual: {self._modo_label()} (1/2/3 para cambiar, / para buscar)"
 
         if not self._query:
-            estado.update("Introduce un término o frase.")
+            estado.update(f"{prefijo}. Introduce un término o frase.")
             contenedor.update("")
             return
 
+        if self._modo != "clasica":
+            estado.update(f"{prefijo}. '{self._query}'")
+            contenedor.update(
+                "[yellow]Este modo está pendiente de implementar.[/]\n"
+                "Por ahora solo está implementada la búsqueda clásica."
+            )
+            return
+
         if not self._resultados:
-            estado.update(f"Sin resultados para '{self._query}'.")
+            estado.update(f"{prefijo}. Sin resultados para '{self._query}'.")
             contenedor.update("")
             return
 
         pid, tfidf, n_matched = self._resultados[self._pos]
         n_terminos = len(self._claves)
         estado.update(
-            f"[b]{self._pos + 1}[/] / {len(self._resultados)}  "
+            f"{prefijo}. [b]{self._pos + 1}[/] / {len(self._resultados)}  "
             f"[dim]términos: {n_matched}/{n_terminos}  "
             f"TF-IDF: {tfidf:.4f}  (← → navegar)[/]"
         )
