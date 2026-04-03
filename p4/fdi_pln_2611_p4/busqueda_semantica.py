@@ -15,9 +15,7 @@ def _get_nlp() -> spacy.language.Language:
 
 def _vectorizar(texto: str, nlp: spacy.language.Language) -> np.ndarray | None:
     doc = nlp(texto)
-    vectores = [
-        t.vector for t in doc if t.is_alpha and not t.is_stop and t.has_vector
-    ]
+    vectores = [t.vector for t in doc if t.is_alpha and not t.is_stop and t.has_vector]
     if not vectores:
         return None
     vec = np.mean(vectores, axis=0)
@@ -48,9 +46,7 @@ def guardar_embeddings(
     np.save(path_ids, ids)
 
 
-def cargar_embeddings(
-    path_emb: str, path_ids: str
-) -> tuple[np.ndarray, np.ndarray]:
+def cargar_embeddings(path_emb: str, path_ids: str) -> tuple[np.ndarray, np.ndarray]:
     return np.load(path_emb), np.load(path_ids)
 
 

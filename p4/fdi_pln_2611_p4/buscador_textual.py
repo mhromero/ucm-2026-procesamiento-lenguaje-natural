@@ -149,10 +149,30 @@ class Buscador(App):
             return "Semántica"
         return "RAG"
 
+    def _render_chunk(self, chunk: dict[str, Any], texto_renderizado: str) -> str:
+        headings = chunk.get("headings", [])
+        meta_str = " > ".join(headings) if headings else ""
+        cid = chunk.get("index", "?")
+
+        sent_start = chunk.get("sent_start", 0)
+        sent_end = chunk.get("sent_end", 0)
+        n_total = chunk.get("n_sents_total", 1)
+        prefijo_texto = "[dim]…[/] " if sent_start > 0 else ""
+        sufijo_texto = " [dim]…[/]" if sent_end < n_total - 1 else ""
+
+        return (
+            f"[b cyan]Chunk {cid}[/]\n[dim]{meta_str}[/]\n\n"
+            + prefijo_texto
+            + texto_renderizado
+            + sufijo_texto
+        )
+
     def _mostrar(self) -> None:
         estado = self.query_one("#estado", Static)
         contenedor = self.query_one("#resultado", Static)
-        prefijo = f"Modo actual: {self._modo_label()} (1/2/3 para cambiar, / para buscar)"
+        prefijo = (
+            f"Modo actual: {self._modo_label()} (1/2/3 para cambiar, / para buscar)"
+        )
 
         if not self._query:
             estado.update(f"{prefijo}. Introduce un término o frase.")
@@ -180,14 +200,12 @@ class Buscador(App):
             )
             parrafo = self.parrafos.get(pid)
             if parrafo is None:
-                contenedor.update("[red]Párrafo no encontrado.[/]")
+                contenedor.update("[red]Chunk no encontrado.[/]")
                 return
-            texto = parrafo.get("text", parrafo.get("texto", ""))
-            headings = parrafo.get("headings", [])
-            meta_str = " > ".join(headings) if headings else ""
             contenedor.update(
-                f"[b cyan]Párrafo {pid}[/]\n[dim]{meta_str}[/]\n\n"
-                + destacar(texto, self._claves)
+                self._render_chunk(
+                    parrafo, destacar(parrafo.get("text", ""), self._claves)
+                )
             )
 
         elif self._modo == "semantica":
@@ -198,11 +216,6 @@ class Buscador(App):
             )
             parrafo = self.parrafos.get(pid)
             if parrafo is None:
-                contenedor.update("[red]Párrafo no encontrado.[/]")
+                contenedor.update("[red]Chunk no encontrado.[/]")
                 return
-            texto = parrafo.get("text", parrafo.get("texto", ""))
-            headings = parrafo.get("headings", [])
-            meta_str = " > ".join(headings) if headings else ""
-            contenedor.update(
-                f"[b cyan]Párrafo {pid}[/]\n[dim]{meta_str}[/]\n\n{texto}"
-            )
+            contenedor.update(self._render_chunk(parrafo, parrafo.get("text", "")))
