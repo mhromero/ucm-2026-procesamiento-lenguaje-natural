@@ -25,30 +25,41 @@ def _regenerar_indices() -> None:
     print(f"Índices generados: {len(paragraphs)} párrafos, {len(vocabulary)} términos.")
 
 
-def _regenerar_embeddings() -> None:
+def _regenerar_embeddings() -> bool:
+    """Devuelve True si los embeddings se generaron correctamente, False si ollama no está disponible."""
     from .busqueda_semantica import calcular_embeddings, guardar_embeddings
 
     print("Generando embeddings con ollama (puede tardar varios minutos)...")
-    parrafos = json.loads(PARRAFOS_PATH.read_text(encoding="utf-8"))
-    embeddings, ids = calcular_embeddings(parrafos)
-    guardar_embeddings(str(EMBEDDINGS_PATH), str(EMBEDDINGS_IDS_PATH), embeddings, ids)
-    print(f"Embeddings generados: {len(ids)} chunks.")
+    try:
+        parrafos = json.loads(PARRAFOS_PATH.read_text(encoding="utf-8"))
+        embeddings, ids = calcular_embeddings(parrafos)
+        guardar_embeddings(
+            str(EMBEDDINGS_PATH), str(EMBEDDINGS_IDS_PATH), embeddings, ids
+        )
+        print(f"Embeddings generados: {len(ids)} chunks.")
+        return True
+    except Exception as e:
+        print(f"Aviso: no se pudieron generar los embeddings ({e}).")
+        print("La búsqueda semántica y el RAG no estarán disponibles.")
+        print("Asegúrate de que ollama está en ejecución: ollama serve")
+        return False
 
 
 def main() -> None:
     if not PARRAFOS_PATH.exists() or not INDICE_PATH.exists():
         _regenerar_indices()
 
-    if not EMBEDDINGS_PATH.exists() or not EMBEDDINGS_IDS_PATH.exists():
-        _regenerar_embeddings()
+    embeddings_disponibles = EMBEDDINGS_PATH.exists() and EMBEDDINGS_IDS_PATH.exists()
+    if not embeddings_disponibles:
+        embeddings_disponibles = _regenerar_embeddings()
 
     from .buscador_textual import Buscador
 
     app = Buscador(
         str(INDICE_PATH),
         str(PARRAFOS_PATH),
-        str(EMBEDDINGS_PATH),
-        str(EMBEDDINGS_IDS_PATH),
+        str(EMBEDDINGS_PATH) if embeddings_disponibles else None,
+        str(EMBEDDINGS_IDS_PATH) if embeddings_disponibles else None,
     )
     app.run()
 

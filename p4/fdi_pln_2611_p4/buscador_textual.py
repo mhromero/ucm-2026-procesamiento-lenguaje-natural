@@ -42,8 +42,8 @@ class Buscador(App):
         self,
         indice_path: str,
         parrafos_path: str,
-        embeddings_path: str,
-        embeddings_ids_path: str,
+        embeddings_path: str | None,
+        embeddings_ids_path: str | None,
     ) -> None:
         super().__init__()
         self.indice: dict[str, list] = cargar_json(indice_path)
@@ -52,9 +52,14 @@ class Buscador(App):
             int(p["index"]): p for p in lista_parrafos if "index" in p
         }
 
-        self.embeddings, self.embeddings_ids = cargar_embeddings(
-            embeddings_path, embeddings_ids_path
-        )
+        self._embeddings_disponibles = embeddings_path is not None
+        if self._embeddings_disponibles:
+            self.embeddings, self.embeddings_ids = cargar_embeddings(
+                embeddings_path, embeddings_ids_path
+            )
+        else:
+            self.embeddings = None
+            self.embeddings_ids = None
 
         self._modo: ModoBusqueda = "clasica"
         self._resultados_clasica: list[tuple[int, float, int]] = []
@@ -107,12 +112,18 @@ class Buscador(App):
             )
             self._resultados_semantica = []
         elif self._modo == "semantica":
+            if not self._embeddings_disponibles:
+                self._mostrar()
+                return
             self._resultados_semantica = buscar_semantica(
                 self._query, self.embeddings, self.embeddings_ids
             )
             self._resultados_clasica = []
             self._claves = set()
         elif self._modo == "rag":
+            if not self._embeddings_disponibles:
+                self._mostrar()
+                return
             self._resultados_clasica, self._claves = buscar_frase(
                 self._query, self.indice
             )
@@ -205,6 +216,16 @@ class Buscador(App):
         if not self._query:
             estado.update(f"{prefijo}. Introduce un término o frase.")
             contenedor.update("")
+            return
+
+        if self._modo in ("semantica", "rag") and not self._embeddings_disponibles:
+            estado.update(f"{prefijo}.")
+            contenedor.update(
+                "[red]ollama no está disponible.[/]\n"
+                "Asegúrate de que ollama está en ejecución y vuelve a arrancar la aplicación:\n"
+                "  ollama serve\n"
+                "  ollama pull nomic-embed-text"
+            )
             return
 
         if self._modo == "rag":
