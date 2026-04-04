@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-import spacy
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header, Input, Static
@@ -53,9 +52,6 @@ class Buscador(App):
 
         self.embeddings, self.embeddings_ids = cargar_embeddings(
             embeddings_path, embeddings_ids_path
-        )
-        self._nlp_md: spacy.language.Language = spacy.load(
-            "es_core_news_md", disable=["parser", "ner"]
         )
 
         self._modo: ModoBusqueda = "clasica"

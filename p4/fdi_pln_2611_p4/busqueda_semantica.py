@@ -1,41 +1,35 @@
 from __future__ import annotations
 
 import numpy as np
-import spacy
+import ollama
 
-_nlp_md: spacy.language.Language | None = None
-
-
-def _get_nlp() -> spacy.language.Language:
-    global _nlp_md
-    if _nlp_md is None:
-        _nlp_md = spacy.load("es_core_news_md", disable=["parser", "ner"])
-    return _nlp_md
+MODEL = "nomic-embed-text"
+BATCH = 32
 
 
-def _vectorizar(texto: str, nlp: spacy.language.Language) -> np.ndarray | None:
-    doc = nlp(texto)
-    vectores = [t.vector for t in doc if t.is_alpha and not t.is_stop and t.has_vector]
-    if not vectores:
-        return None
-    vec = np.mean(vectores, axis=0)
-    norma = np.linalg.norm(vec)
-    if norma == 0:
-        return None
-    return vec / norma
+def _embed_batch(textos: list[str]) -> list[np.ndarray | None]:
+    response = ollama.embed(model=MODEL, input=textos)
+    result = []
+    for emb in response.embeddings:
+        vec = np.array(emb, dtype=np.float32)
+        norma = np.linalg.norm(vec)
+        result.append(None if norma == 0 else vec / norma)
+    return result
 
 
-def calcular_embeddings(
-    parrafos: list[dict], nlp: spacy.language.Language
-) -> tuple[np.ndarray, np.ndarray]:
+def calcular_embeddings(parrafos: list[dict]) -> tuple[np.ndarray, np.ndarray]:
     ids = []
     embeddings = []
-    for p in parrafos:
-        texto = p.get("text", p.get("texto", ""))
-        vec = _vectorizar(texto, nlp)
-        if vec is not None:
-            ids.append(p["index"])
-            embeddings.append(vec)
+    n = len(parrafos)
+    for i in range(0, n, BATCH):
+        batch = parrafos[i : i + BATCH]
+        textos = [p.get("text", p.get("texto", "")) for p in batch]
+        vecs = _embed_batch(textos)
+        for p, vec in zip(batch, vecs):
+            if vec is not None:
+                ids.append(p["index"])
+                embeddings.append(vec)
+        print(f"  {min(i + BATCH, n)}/{n} chunks procesados...")
     return np.array(embeddings, dtype=np.float32), np.array(ids, dtype=np.int32)
 
 
@@ -53,8 +47,8 @@ def cargar_embeddings(path_emb: str, path_ids: str) -> tuple[np.ndarray, np.ndar
 def buscar_semantica(
     query: str, embeddings: np.ndarray, ids: np.ndarray, top_k: int = 20
 ) -> list[tuple[int, float]]:
-    nlp = _get_nlp()
-    vec = _vectorizar(query, nlp)
+    vecs = _embed_batch([query])
+    vec = vecs[0]
     if vec is None:
         return []
     scores = embeddings @ vec

@@ -26,16 +26,13 @@ def _regenerar_indices() -> None:
 
 
 def _regenerar_embeddings() -> None:
-    import spacy
-
     from .busqueda_semantica import calcular_embeddings, guardar_embeddings
 
-    print("Generando embeddings (esto puede tardar unos segundos)...")
+    print("Generando embeddings con ollama (puede tardar varios minutos)...")
     parrafos = json.loads(PARRAFOS_PATH.read_text(encoding="utf-8"))
-    nlp = spacy.load("es_core_news_md", disable=["parser", "ner"])
-    embeddings, ids = calcular_embeddings(parrafos, nlp)
+    embeddings, ids = calcular_embeddings(parrafos)
     guardar_embeddings(str(EMBEDDINGS_PATH), str(EMBEDDINGS_IDS_PATH), embeddings, ids)
-    print(f"Embeddings generados: {len(ids)} párrafos.")
+    print(f"Embeddings generados: {len(ids)} chunks.")
 
 
 def main() -> None:
