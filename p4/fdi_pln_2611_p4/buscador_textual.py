@@ -5,8 +5,10 @@ from typing import Any, Literal
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header, Input, Static
+from textual.worker import work
 
 from .busqueda_clasica import buscar_frase, cargar_json, destacar
+from .busqueda_rag import buscar_rag
 from .busqueda_semantica import buscar_semantica, cargar_embeddings
 
 ModoBusqueda = Literal["clasica", "semantica", "rag"]
@@ -17,9 +19,9 @@ class Buscador(App):
         Binding("left,p", "anterior", "← Anterior"),
         Binding("right,n", "siguiente", "→ Siguiente"),
         Binding("slash", "enfocar_busqueda", "/ Buscar"),
-        Binding("1", "modo_clasica", "1 Clásica"),
-        Binding("2", "modo_semantica", "2 Semántica"),
-        Binding("3", "modo_rag", "3 RAG"),
+        Binding("ctrl+1", "modo_clasica", "^1 Clásica"),
+        Binding("ctrl+2", "modo_semantica", "^2 Semántica"),
+        Binding("ctrl+3", "modo_rag", "^3 RAG"),
     ]
 
     CSS = """
@@ -64,11 +66,11 @@ class Buscador(App):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Static(
-            "Modos de búsqueda: [1] Clásica  [2] Semántica  [3] RAG", id="modos"
+            "Modos de búsqueda: [^1] Clásica  [^2] Semántica  [^3] RAG", id="modos"
         )
         yield Input(placeholder="Buscar palabra o frase...", id="busqueda")
         yield Static(
-            "Modo actual: Clásica (1/2/3 para cambiar). Introduce un término o frase.",
+            "Modo actual: Clásica (^1/^2/^3 para cambiar). Introduce un término o frase.",
             id="estado",
         )
         yield Static("", id="resultado")
@@ -110,12 +112,42 @@ class Buscador(App):
             )
             self._resultados_clasica = []
             self._claves = set()
-        else:
-            self._resultados_clasica = []
-            self._resultados_semantica = []
-            self._claves = set()
+        elif self._modo == "rag":
+            self._resultados_clasica, self._claves = buscar_frase(
+                self._query, self.indice
+            )
+            self._resultados_semantica = buscar_semantica(
+                self._query, self.embeddings, self.embeddings_ids
+            )
+            self._mostrar_rag_cargando()
+            self._lanzar_rag(self._query)
+            return
 
         self._mostrar()
+
+    def _mostrar_rag_cargando(self) -> None:
+        estado = self.query_one("#estado", Static)
+        contenedor = self.query_one("#resultado", Static)
+        prefijo = "Modo actual: RAG (^1/^2/^3 para cambiar, / para buscar)"
+        estado.update(f"{prefijo}. Consultando al LLM...")
+        contenedor.update("[dim]Generando respuesta, por favor espera...[/]")
+
+    @work(thread=True)
+    def _lanzar_rag(self, query: str) -> None:
+        respuesta = buscar_rag(
+            query,
+            self.parrafos,
+            self._resultados_clasica,
+            self._resultados_semantica,
+        )
+        self.call_from_thread(self._mostrar_respuesta_rag, respuesta)
+
+    def _mostrar_respuesta_rag(self, respuesta: str) -> None:
+        estado = self.query_one("#estado", Static)
+        contenedor = self.query_one("#resultado", Static)
+        prefijo = "Modo actual: RAG (^1/^2/^3 para cambiar, / para buscar)"
+        estado.update(f"{prefijo}. '{self._query}'")
+        contenedor.update(respuesta)
 
     def _n_resultados(self) -> int:
         if self._modo == "clasica":
@@ -167,7 +199,7 @@ class Buscador(App):
         estado = self.query_one("#estado", Static)
         contenedor = self.query_one("#resultado", Static)
         prefijo = (
-            f"Modo actual: {self._modo_label()} (1/2/3 para cambiar, / para buscar)"
+            f"Modo actual: {self._modo_label()} (^1/^2/^3 para cambiar, / para buscar)"
         )
 
         if not self._query:
@@ -177,7 +209,7 @@ class Buscador(App):
 
         if self._modo == "rag":
             estado.update(f"{prefijo}. '{self._query}'")
-            contenedor.update("[yellow]RAG pendiente de implementar.[/]")
+            contenedor.update("[yellow]Introduce una pregunta y pulsa Enter.[/]")
             return
 
         n = self._n_resultados()
