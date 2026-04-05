@@ -3,7 +3,7 @@ from __future__ import annotations
 import ollama
 
 MODEL = "llama3.2"
-TOP_K_CADA = 3
+TOP_K_CADA = 5
 
 
 def _construir_contexto(
