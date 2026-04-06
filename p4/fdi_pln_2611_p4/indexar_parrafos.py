@@ -13,8 +13,6 @@ Formato del vocabulario: { term: [[chunk_id, tfidf], ...] } ordenado por TF-IDF 
 
 from __future__ import annotations
 
-import argparse
-import json
 import re
 from collections import defaultdict
 from math import log
@@ -148,40 +146,3 @@ def index_html(input_html: Path) -> tuple[list[dict], dict[str, list]]:
         vocabulary[term] = entries
 
     return chunks, vocabulary
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Genera índice de chunks y vocabulario invertido con TF-IDF."
-    )
-    parser.add_argument("input_html", type=Path)
-    parser.add_argument(
-        "--out-parrafos", type=Path, default=Path("parrafos_index.json")
-    )
-    parser.add_argument(
-        "--out-vocabulario", type=Path, default=Path("vocabulario_index.json")
-    )
-    return parser.parse_args()
-
-
-def main() -> None:
-    args = parse_args()
-    chunks, vocabulary = index_html(args.input_html)
-
-    args.out_parrafos.write_text(
-        json.dumps(chunks, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    args.out_vocabulario.write_text(
-        json.dumps(vocabulary, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    print(
-        f"Chunks generados: {len(chunks)}\n"
-        f"Vocabulario único: {len(vocabulary)}\n"
-        f"Archivo chunks: {args.out_parrafos}\n"
-        f"Archivo vocabulario: {args.out_vocabulario}"
-    )
-
-
-if __name__ == "__main__":
-    main()

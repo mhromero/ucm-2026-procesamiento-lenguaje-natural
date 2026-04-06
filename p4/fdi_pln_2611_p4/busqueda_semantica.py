@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import numpy as np
 import ollama
 
@@ -18,6 +20,12 @@ def _embed_batch(textos: list[str]) -> list[np.ndarray | None]:
 
 
 def calcular_embeddings(parrafos: list[dict]) -> tuple[np.ndarray, np.ndarray]:
+    return calcular_embeddings_con_progreso(parrafos, None)
+
+
+def calcular_embeddings_con_progreso(
+    parrafos: list[dict], progreso_cb: Callable[[int, int], None] | None
+) -> tuple[np.ndarray, np.ndarray]:
     ids = []
     embeddings = []
     n = len(parrafos)
@@ -29,7 +37,8 @@ def calcular_embeddings(parrafos: list[dict]) -> tuple[np.ndarray, np.ndarray]:
             if vec is not None:
                 ids.append(p["index"])
                 embeddings.append(vec)
-        print(f"  {min(i + BATCH, n)}/{n} chunks procesados...")
+        if progreso_cb is not None:
+            progreso_cb(min(i + BATCH, n), n)
     return np.array(embeddings, dtype=np.float32), np.array(ids, dtype=np.int32)
 
 
