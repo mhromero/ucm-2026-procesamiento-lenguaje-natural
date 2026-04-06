@@ -24,22 +24,27 @@ console = Console()
 
 
 def _info(msg: str) -> None:
+    """Muestra un mensaje informativo en consola."""
     console.print(f"[cyan]{msg}[/]")
 
 
 def _ok(msg: str) -> None:
+    """Muestra un mensaje de éxito en consola."""
     console.print(f"[green]{msg}[/]")
 
 
 def _warn(msg: str) -> None:
+    """Muestra una advertencia en consola."""
     console.print(f"[yellow]{msg}[/]")
 
 
 def _error(msg: str) -> None:
+    """Muestra un mensaje de error en consola."""
     console.print(f"[bold red]{msg}[/]")
 
 
 def _resolver_modelo_rag(modelo_solicitado: str) -> str:
+    """Valida el modelo RAG solicitado y aplica fallback si falla."""
     from .busqueda_rag import DEFAULT_MODEL
 
     modelo = modelo_solicitado.strip()
@@ -62,6 +67,7 @@ def _resolver_modelo_rag(modelo_solicitado: str) -> str:
 
 
 def _regenerar_indices() -> bool:
+    """Regenera chunks e índice invertido a partir del HTML del corpus."""
     from .indexar_parrafos import index_html
 
     if not HTML_PATH.exists():
@@ -151,6 +157,7 @@ def _run(
         help="Número de resultados devueltos por la búsqueda semántica.",
     ),
 ) -> None:
+    """Punto de entrada de CLI: valida opciones, prepara datos y lanza la TUI."""
     if top_k_rag < 1:
         typer.secho(
             "Error: --top-k-rag debe ser un entero mayor o igual que 1.",
@@ -208,6 +215,7 @@ def _run(
 
 
 def main() -> None:
+    """Ejecuta la aplicación CLI con Typer."""
     typer.run(_run)
 
 

@@ -10,6 +10,7 @@ BATCH = 32
 
 
 def _embed_batch(textos: list[str]) -> list[np.ndarray | None]:
+    """Calcula embeddings normalizados para una lista de textos."""
     response = ollama.embed(model=MODEL, input=textos)
     result = []
     for emb in response.embeddings:
@@ -20,12 +21,14 @@ def _embed_batch(textos: list[str]) -> list[np.ndarray | None]:
 
 
 def calcular_embeddings(parrafos: list[dict]) -> tuple[np.ndarray, np.ndarray]:
+    """Calcula embeddings de todos los párrafos sin callback de progreso."""
     return calcular_embeddings_con_progreso(parrafos, None)
 
 
 def calcular_embeddings_con_progreso(
     parrafos: list[dict], progreso_cb: Callable[[int, int], None] | None
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Calcula embeddings por lotes y notifica progreso opcionalmente."""
     ids = []
     embeddings = []
     n = len(parrafos)
@@ -45,17 +48,20 @@ def calcular_embeddings_con_progreso(
 def guardar_embeddings(
     path_emb: str, path_ids: str, embeddings: np.ndarray, ids: np.ndarray
 ) -> None:
+    """Guarda embeddings e IDs en ficheros NPY."""
     np.save(path_emb, embeddings)
     np.save(path_ids, ids)
 
 
 def cargar_embeddings(path_emb: str, path_ids: str) -> tuple[np.ndarray, np.ndarray]:
+    """Carga embeddings e IDs desde ficheros NPY."""
     return np.load(path_emb), np.load(path_ids)
 
 
 def buscar_semantica(
     query: str, embeddings: np.ndarray, ids: np.ndarray, top_k: int = 20
 ) -> list[tuple[int, float]]:
+    """Devuelve los top-k chunks más similares a la consulta."""
     vecs = _embed_batch([query])
     vec = vecs[0]
     if vec is None:

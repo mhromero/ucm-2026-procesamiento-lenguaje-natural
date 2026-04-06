@@ -11,6 +11,7 @@ _nlp = spacy.load("es_core_news_sm", disable=["parser", "ner"])
 
 
 def sin_tildes(texto: str) -> str:
+    """Devuelve el texto sin marcas diacríticas (tildes)."""
     return "".join(
         c
         for c in unicodedata.normalize("NFD", texto)
@@ -19,6 +20,7 @@ def sin_tildes(texto: str) -> str:
 
 
 def cargar_json(ruta: str) -> Any:
+    """Carga y devuelve el contenido JSON de una ruta."""
     with open(ruta, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -26,6 +28,7 @@ def cargar_json(ruta: str) -> Any:
 def buscar_frase(
     query: str, indice: dict[str, list]
 ) -> tuple[list[tuple[int, float, int]], set[str]]:
+    """Busca una consulta léxica y ordena chunks por cobertura y TF-IDF."""
     doc = _nlp(query.strip())
     content_tokens = [t for t in doc if t.is_alpha and not t.is_stop]
     if not content_tokens:
@@ -52,12 +55,14 @@ def buscar_frase(
             scores[pid] += tfidf
             hits[pid].add(clave)
 
+    # Priorizamos primero cobertura de términos y luego score acumulado.
     resultados = [(pid, scores[pid], len(hits[pid])) for pid in scores]
     resultados.sort(key=lambda x: (x[2], x[1]), reverse=True)
     return resultados, set(claves)
 
 
 def destacar(texto: str, claves: set[str]) -> str:
+    """Resalta en Rich los tokens del texto que coinciden con las claves."""
     doc = _nlp(texto)
     partes = []
     ultimo = 0

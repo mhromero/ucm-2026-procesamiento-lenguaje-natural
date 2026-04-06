@@ -35,16 +35,19 @@ nlp = spacy.load("es_core_news_sm", disable=["ner"])
 
 
 def text_from_tag(tag: Tag) -> str:
+    """Devuelve el texto visible de una etiqueta HTML."""
     return " ".join(tag.stripped_strings)
 
 
 def update_heading_path(path: Dict[int, str], level: int, text: str) -> None:
+    """Actualiza el heading actual y limpia niveles inferiores."""
     path[level] = text
     for lower in range(level + 1, 7):
         path.pop(lower, None)
 
 
 def heading_list(path: Dict[int, str]) -> List[str]:
+    """Devuelve la ruta de headings ordenada por nivel."""
     return [path[level] for level in sorted(path)]
 
 
@@ -118,6 +121,7 @@ def _build_chunks(
 
 
 def index_html(input_html: Path) -> tuple[list[dict], dict[str, list]]:
+    """Indexa un HTML y devuelve chunks más vocabulario invertido TF-IDF."""
     sentences = _extract_sentences(input_html)
     chunks = _build_chunks(sentences)
 

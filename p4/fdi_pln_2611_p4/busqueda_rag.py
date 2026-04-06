@@ -8,6 +8,7 @@ TOP_K_CADA = 5
 
 
 def _extraer_chunks_citados(respuesta: str) -> list[int]:
+    """Extrae IDs únicos citados con el formato [Chunk N]."""
     ids: list[int] = []
     vistos: set[int] = set()
     for match in re.findall(r"\[Chunk\s+(\d+)\]", respuesta):
@@ -19,6 +20,7 @@ def _extraer_chunks_citados(respuesta: str) -> list[int]:
 
 
 def _resaltar_citas_chunk(texto: str) -> str:
+    """Convierte citas [Chunk N] a formato resaltado de Rich."""
     return re.sub(
         r"\[Chunk\s+(\d+)\]",
         r"[b cyan]Chunk \1[/]",
@@ -31,6 +33,7 @@ def _bloque_referencias(
     ids: list[int],
     scores_por_chunk: dict[int, dict[str, float]],
 ) -> str:
+    """Construye el bloque final de referencias con texto y origen de score."""
     fragmentos: list[str] = []
     for cid in ids:
         chunk = chunks.get(cid)
@@ -60,6 +63,7 @@ def _construir_contexto(
     resultados_semantica: list[tuple[int, float]],
     top_k: int = TOP_K_CADA,
 ) -> tuple[str, list[int], dict[int, dict[str, float]]]:
+    """Combina resultados clásica/semántica y genera contexto para el LLM."""
     ids_clasica = [pid for pid, _, _ in resultados_clasica[:top_k]]
     ids_semantica = [pid for pid, _ in resultados_semantica[:top_k]]
     scores_por_chunk: dict[int, dict[str, float]] = {}
@@ -99,6 +103,7 @@ def buscar_rag(
     model: str = DEFAULT_MODEL,
     top_k_rag: int = TOP_K_CADA,
 ) -> str:
+    """Genera una respuesta RAG con citas inline y referencias finales."""
     contexto, ids_ordenados, scores_por_chunk = _construir_contexto(
         chunks, resultados_clasica, resultados_semantica, top_k=top_k_rag
     )
