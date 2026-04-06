@@ -82,6 +82,13 @@ uv run fdi-pln-2611-p4 --regenerate
 
 También puedes seleccionar el modo de búsqueda haciendo click en los botones `Clásica`, `Semántica` y `RAG`.
 
+### Ejemplos de consultas
+
+- **Búsqueda clásica**: `llevan` (útil para ver variantes/derivadas por lema).
+- **Búsqueda semántica**: `muerte`.
+- **Búsqueda RAG**: `amor`.
+- **Búsqueda RAG**: `¿Quién es Rocinante?`.
+
 ## 3. Preprocesamiento manual
 
 Antes de indexar, se limpió manualmente el HTML original para conservar solo el cuerpo narrativo de la obra.  
