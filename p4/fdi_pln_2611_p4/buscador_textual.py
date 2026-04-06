@@ -6,7 +6,8 @@ import threading
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Footer, Header, Input, Static
+from textual.containers import Horizontal
+from textual.widgets import Button, Footer, Header, Input, Static
 
 from .busqueda_clasica import buscar_frase, cargar_json, destacar
 from .busqueda_rag import buscar_rag
@@ -16,18 +17,37 @@ ModoBusqueda = Literal["clasica", "semantica", "rag"]
 
 
 class Buscador(App):
+    RAG_MAX_LINEAS_PAGINA = 28
+    TITLE = "Explorador del Quijote - Busqueda Clasica, Semantica y RAG"
+
     BINDINGS = [
-        Binding("left,p", "anterior", "← Anterior"),
-        Binding("right,n", "siguiente", "→ Siguiente"),
-        Binding("slash", "enfocar_busqueda", "/ Buscar"),
-        Binding("ctrl+1", "modo_clasica", "^1 Clásica"),
-        Binding("ctrl+2", "modo_semantica", "^2 Semántica"),
-        Binding("ctrl+3", "modo_rag", "^3 RAG"),
+        Binding("ctrl+1", "modo_clasica", "Clásica"),
+        Binding("ctrl+2", "modo_semantica", "Semántica"),
+        Binding("ctrl+3", "modo_rag", "RAG"),
+        Binding("left,p", "anterior", "Anterior página"),
+        Binding("right,n", "siguiente", "Siguiente página"),
+        Binding("slash", "enfocar_busqueda", "Buscar"),
     ]
 
     CSS = """
     Screen { layout: vertical; }
-    #modos { margin: 0 1; color: $text-muted; }
+    #barra_modo {
+        margin: 1 1 0 1;
+        height: auto;
+        align-vertical: bottom;
+    }
+    #modo_actual {
+        margin-left: 1;
+        color: $text-muted;
+        content-align: left bottom;
+        height: 3;
+        width: auto;
+    }
+    #barra_modo Button {
+        margin-right: 1;
+        min-width: 10;
+        padding: 0 1;
+    }
     #busqueda { margin: 1; }
     #estado { margin: 0 1; color: $text-muted; }
     #resultado {
@@ -45,6 +65,9 @@ class Buscador(App):
         parrafos_path: str,
         embeddings_path: str | None,
         embeddings_ids_path: str | None,
+        rag_model: str,
+        top_k_rag: int,
+        top_k_semantica: int,
     ) -> None:
         super().__init__()
         self.indice: dict[str, list] = cargar_json(indice_path)
@@ -54,6 +77,9 @@ class Buscador(App):
         }
 
         self._embeddings_disponibles = embeddings_path is not None
+        self._rag_model = rag_model
+        self._top_k_rag = top_k_rag
+        self._top_k_semantica = top_k_semantica
         if self._embeddings_disponibles:
             self.embeddings, self.embeddings_ids = cargar_embeddings(
                 embeddings_path, embeddings_ids_path
@@ -68,17 +94,18 @@ class Buscador(App):
         self._claves: set[str] = set()
         self._pos: int = 0
         self._query: str = ""
+        self._rag_paginas: list[str] = []
+        self._rag_pos: int = 0
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Static(
-            "Modos de búsqueda: [^1] Clásica  [^2] Semántica  [^3] RAG", id="modos"
-        )
+        with Horizontal(id="barra_modo"):
+            yield Button("Clásica", id="btn-clasica", variant="primary")
+            yield Button("Semántica", id="btn-semantica")
+            yield Button("RAG", id="btn-rag")
+            yield Static("", id="modo_actual")
         yield Input(placeholder="Buscar palabra o frase...", id="busqueda")
-        yield Static(
-            "Modo actual: Clásica. Introduce un término o frase.",
-            id="estado",
-        )
+        yield Static("Realice una consulta.", id="estado")
         yield Static("", id="resultado")
         yield Footer()
 
@@ -88,7 +115,38 @@ class Buscador(App):
         self._resultados_semantica = []
         self._claves = set()
         self._pos = 0
+        self._query = ""
+        self._rag_paginas = []
+        self._rag_pos = 0
+        self.query_one("#busqueda", Input).value = ""
+        self._actualizar_botones_modo()
+        self._actualizar_placeholder_busqueda()
         self._mostrar()
+
+    def on_mount(self) -> None:
+        self._actualizar_botones_modo()
+        self._actualizar_placeholder_busqueda()
+
+    def _actualizar_placeholder_busqueda(self) -> None:
+        input_busqueda = self.query_one("#busqueda", Input)
+        if self._modo == "rag":
+            input_busqueda.placeholder = (
+                "Buscar palabra o frase o realice una pregunta..."
+            )
+        else:
+            input_busqueda.placeholder = "Buscar palabra o frase..."
+
+    def _actualizar_botones_modo(self) -> None:
+        btn_clasica = self.query_one("#btn-clasica", Button)
+        btn_semantica = self.query_one("#btn-semantica", Button)
+        btn_rag = self.query_one("#btn-rag", Button)
+        modo_actual = self.query_one("#modo_actual", Static)
+        btn_clasica.variant = "primary" if self._modo == "clasica" else "default"
+        btn_semantica.variant = "primary" if self._modo == "semantica" else "default"
+        btn_rag.variant = "primary" if self._modo == "rag" else "default"
+        modo_actual.update(
+            f"Modo actual: [b]{self._modo_label()}[/]  [dim](click en los botones o comando)[/]"
+        )
 
     def action_modo_clasica(self) -> None:
         self._set_modo("clasica")
@@ -102,9 +160,19 @@ class Buscador(App):
     def action_enfocar_busqueda(self) -> None:
         self.query_one("#busqueda", Input).focus()
 
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "btn-clasica":
+            self._set_modo("clasica")
+        elif event.button.id == "btn-semantica":
+            self._set_modo("semantica")
+        elif event.button.id == "btn-rag":
+            self._set_modo("rag")
+
     def on_input_submitted(self, event: Input.Submitted) -> None:
         self._query = event.value.strip()
         self._pos = 0
+        self._rag_paginas = []
+        self._rag_pos = 0
         self.query_one("#busqueda", Input).blur()
 
         if self._modo == "clasica":
@@ -117,7 +185,10 @@ class Buscador(App):
                 self._mostrar()
                 return
             self._resultados_semantica = buscar_semantica(
-                self._query, self.embeddings, self.embeddings_ids
+                self._query,
+                self.embeddings,
+                self.embeddings_ids,
+                top_k=self._top_k_semantica,
             )
             self._resultados_clasica = []
             self._claves = set()
@@ -129,7 +200,10 @@ class Buscador(App):
                 self._query, self.indice
             )
             self._resultados_semantica = buscar_semantica(
-                self._query, self.embeddings, self.embeddings_ids
+                self._query,
+                self.embeddings,
+                self.embeddings_ids,
+                top_k=self._top_k_semantica,
             )
             self._mostrar_rag_cargando()
             self._lanzar_rag(self._query)
@@ -140,8 +214,17 @@ class Buscador(App):
     def _mostrar_rag_cargando(self) -> None:
         estado = self.query_one("#estado", Static)
         contenedor = self.query_one("#resultado", Static)
-        estado.update("Modo actual: RAG. Consultando al LLM...")
+        estado.update(f"Consultando al LLM ({self._rag_model})...")
         contenedor.update("[dim]Generando respuesta, por favor espera...[/]")
+
+    def _paginar_texto(self, texto: str) -> list[str]:
+        lineas = texto.splitlines()
+        if not lineas:
+            return [texto]
+        paginas = []
+        for i in range(0, len(lineas), self.RAG_MAX_LINEAS_PAGINA):
+            paginas.append("\n".join(lineas[i : i + self.RAG_MAX_LINEAS_PAGINA]))
+        return paginas or [texto]
 
     def _lanzar_rag(self, query: str) -> None:
         def _worker() -> None:
@@ -150,16 +233,33 @@ class Buscador(App):
                 self.parrafos,
                 self._resultados_clasica,
                 self._resultados_semantica,
+                self._rag_model,
+                self._top_k_rag,
             )
             self.call_from_thread(self._mostrar_respuesta_rag, respuesta)
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _mostrar_respuesta_rag(self, respuesta: str) -> None:
+        self._rag_paginas = self._paginar_texto(respuesta)
+        self._rag_pos = 0
+        self._mostrar()
+
+    def _n_paginas_rag(self) -> int:
+        return len(self._rag_paginas)
+
+    def _mostrar_pagina_rag(self) -> None:
         estado = self.query_one("#estado", Static)
         contenedor = self.query_one("#resultado", Static)
-        estado.update(f"Modo actual: RAG. '{self._query}'")
-        contenedor.update(respuesta)
+        if not self._rag_paginas:
+            estado.update("Introduce una pregunta y pulsa Enter.")
+            contenedor.update("[yellow]Introduce una pregunta y pulsa Enter.[/]")
+            return
+        n = self._n_paginas_rag()
+        estado.update(
+            f"Consulta: '{self._query}'  [dim]página: {self._rag_pos + 1}/{n}  (← → navegar)[/]"
+        )
+        contenedor.update(self._rag_paginas[self._rag_pos])
 
     def _n_resultados(self) -> int:
         if self._modo == "clasica":
@@ -170,6 +270,9 @@ class Buscador(App):
 
     def action_siguiente(self) -> None:
         if self._modo == "rag":
+            if self._rag_pos < self._n_paginas_rag() - 1:
+                self._rag_pos += 1
+                self._mostrar()
             return
         if self._pos < self._n_resultados() - 1:
             self._pos += 1
@@ -177,6 +280,9 @@ class Buscador(App):
 
     def action_anterior(self) -> None:
         if self._modo == "rag":
+            if self._rag_pos > 0:
+                self._rag_pos -= 1
+                self._mostrar()
             return
         if self._pos > 0:
             self._pos -= 1
@@ -189,9 +295,21 @@ class Buscador(App):
             return "Semántica"
         return "RAG"
 
+    def _normalizar_heading_visual(self, heading: str) -> str:
+        h = heading.strip()
+        h_lower = h.lower()
+        if "primera parte del ingenioso caballero don quijote de la mancha" in h_lower:
+            return "Primera Parte"
+        if "el ingenioso hidalgo don quijote de la mancha" in h_lower:
+            return "Primera Parte"
+        if "segunda parte del ingenioso caballero don quijote de la mancha" in h_lower:
+            return "Segunda Parte"
+        return h
+
     def _render_chunk(self, chunk: dict[str, Any], texto_renderizado: str) -> str:
         headings = chunk.get("headings", [])
-        meta_str = " > ".join(headings) if headings else ""
+        headings_vis = [self._normalizar_heading_visual(h) for h in headings]
+        meta_str = " > ".join(headings_vis) if headings_vis else ""
         cid = chunk.get("index", "?")
 
         sent_start = chunk.get("sent_start", 0)
@@ -210,15 +328,14 @@ class Buscador(App):
     def _mostrar(self) -> None:
         estado = self.query_one("#estado", Static)
         contenedor = self.query_one("#resultado", Static)
-        prefijo = f"Modo actual: {self._modo_label()}"
 
         if not self._query:
-            estado.update(f"{prefijo}. Introduce un término o frase.")
+            estado.update("Realice una consulta.")
             contenedor.update("")
             return
 
         if self._modo in ("semantica", "rag") and not self._embeddings_disponibles:
-            estado.update(f"{prefijo}.")
+            estado.update("No hay embeddings disponibles.")
             contenedor.update(
                 "[red]ollama no está disponible.[/]\n"
                 "Asegúrate de que ollama está en ejecución y vuelve a arrancar la aplicación:\n"
@@ -228,13 +345,12 @@ class Buscador(App):
             return
 
         if self._modo == "rag":
-            estado.update(f"{prefijo}. '{self._query}'")
-            contenedor.update("[yellow]Introduce una pregunta y pulsa Enter.[/]")
+            self._mostrar_pagina_rag()
             return
 
         n = self._n_resultados()
         if n == 0:
-            estado.update(f"{prefijo}. Sin resultados para '{self._query}'.")
+            estado.update(f"Sin resultados para '{self._query}'.")
             contenedor.update("")
             return
 
@@ -242,9 +358,9 @@ class Buscador(App):
             pid, tfidf, n_matched = self._resultados_clasica[self._pos]
             n_terminos = len(self._claves)
             estado.update(
-                f"{prefijo}. [b]{self._pos + 1}[/] / {n}  "
+                f"[b]{self._pos + 1}[/] / {n}  "
                 f"[dim]términos: {n_matched}/{n_terminos}  "
-                f"TF-IDF: {tfidf:.4f}  (← → navegar)[/]"
+                f"[b cyan]TF-IDF: {tfidf:.4f}[/]  (← → navegar)[/]"
             )
             parrafo = self.parrafos.get(pid)
             if parrafo is None:
@@ -259,8 +375,8 @@ class Buscador(App):
         elif self._modo == "semantica":
             pid, score = self._resultados_semantica[self._pos]
             estado.update(
-                f"{prefijo}. [b]{self._pos + 1}[/] / {n}  "
-                f"[dim]similitud: {score:.4f}  (← → navegar)[/]"
+                f"[b]{self._pos + 1}[/] / {n}  "
+                f"[b cyan]similitud: {score:.4f}[/]  (← → navegar)"
             )
             parrafo = self.parrafos.get(pid)
             if parrafo is None:
