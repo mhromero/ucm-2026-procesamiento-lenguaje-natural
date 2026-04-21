@@ -11,7 +11,7 @@ from p5.BPETokenizer import BPETokenizer
 from p5.LLM import LLM
 
 
-def concatenar_textos_data(data_dir: str | Path = "p5/data") -> str:
+def concatenar_archivos_txt(data_dir: str | Path) -> str:
     data_path = Path(data_dir)
     textos = []
 
@@ -157,11 +157,18 @@ def __main__():
     gen_cfg = config["generation"]
     print("Configuración cargada correctamente.")
 
-    print(f"Leyendo corpus desde: {corpus_cfg['data_dir']}")
-    textos = concatenar_textos_data(corpus_cfg["data_dir"])
-    print(f"Corpus cargado. Caracteres totales: {len(textos)}")
+    print(f"Leyendo corpus principal (Alice) desde: {corpus_cfg['data_dir']}")
+    alice_textos = concatenar_archivos_txt(corpus_cfg["data_dir"])
+    print(f"Corpus Alice cargado. Caracteres totales: {len(alice_textos)}")
+    print(f"Leyendo corpus extra (train-only) desde: {corpus_cfg['extra_data_dir']}")
+    extra_train_textos = concatenar_archivos_txt(corpus_cfg["extra_data_dir"]).lower()
+    print(
+        f"Corpus extra cargado (solo train). Caracteres totales: {len(extra_train_textos)}"
+    )
+    textos_train = alice_textos + "\n" + extra_train_textos
     tokenizer_path = Path(tokenizer_cfg["cache_path"])
-    tokens_path = Path(tokenizer_cfg["tokens_cache_path"])
+    train_tokens_path = Path(tokenizer_cfg["train_tokens_cache_path"])
+    test_tokens_path = Path(tokenizer_cfg["test_tokens_cache_path"])
 
     if tokenizer_cfg["use_cache"] and tokenizer_path.exists():
         print(f"Cargando tokenizador desde {tokenizer_path}...")
@@ -170,23 +177,34 @@ def __main__():
     else:
         print("Entrenando tokenizador...")
         tokenizer = BPETokenizer(
-            textos,
+            textos_train,
             vocab_size=tokenizer_cfg["vocab_size"],
         )
         tokenizer.save(str(tokenizer_path))
         print(f"Tokenizador guardado en {tokenizer_path}")
 
-    if tokenizer_cfg["use_cache"] and tokens_path.exists():
-        print(f"Cargando tokens desde {tokens_path}...")
-        texto_tokenizado = json.loads(tokens_path.read_text(encoding="utf-8"))
-        print("Tokens cargados desde caché.")
+    if (
+        tokenizer_cfg["use_cache"]
+        and train_tokens_path.exists()
+        and test_tokens_path.exists()
+    ):
+        print(f"Cargando tokens train desde {train_tokens_path}...")
+        train_tokenizado = json.loads(train_tokens_path.read_text(encoding="utf-8"))
+        print(f"Cargando tokens test desde {test_tokens_path}...")
+        test_tokenizado = json.loads(test_tokens_path.read_text(encoding="utf-8"))
+        print("Tokens train/test cargados desde caché.")
     else:
-        print("Generando tokens del corpus...")
-        texto_tokenizado = tokenizer.encode(textos)
-        tokens_path.write_text(json.dumps(texto_tokenizado), encoding="utf-8")
-        print(f"Tokens guardados en {tokens_path}")
+        print("Generando tokens de train (Alice + Harry Potter)...")
+        train_tokenizado = tokenizer.encode(textos_train)
+        train_tokens_path.write_text(json.dumps(train_tokenizado), encoding="utf-8")
+        print(f"Tokens train guardados en {train_tokens_path}")
+        print("Generando tokens de test (solo Alice)...")
+        test_tokenizado = tokenizer.encode(alice_textos)
+        test_tokens_path.write_text(json.dumps(test_tokenizado), encoding="utf-8")
+        print(f"Tokens test guardados en {test_tokens_path}")
 
-    print(f"Total de ids tokenizados: {len(texto_tokenizado)}")
+    print(f"Total de ids tokenizados (train): {len(train_tokenizado)}")
+    print(f"Total de ids tokenizados (test/Alice): {len(test_tokenizado)}")
     print(f"Tamano del vocabulario: {len(tokenizer.get_tokens())}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Dispositivo de entrenamiento: {device}")
@@ -206,16 +224,11 @@ def __main__():
     print("Modelo inicializado.")
 
     print("Construyendo ventanas deslizantes para entrenamiento...")
-    x, y = model.build_windows(texto_tokenizado)
-    print(f"Ventanas para entrenamiento: {x.size(0)}")
+    x_train, y_train = model.build_windows(train_tokenizado)
+    x_test, y_test = model.build_windows(test_tokenizado)
+    print(f"Ventanas para entrenamiento (Alice + HP): {x_train.size(0)}")
+    print(f"Ventanas para test (solo Alice): {x_test.size(0)}")
     print(f"Tamaño de ventana (D): {model_cfg['window_size']}")
-    split_idx = int(x.size(0) * train_cfg["train_split"])
-    x_train, y_train = x[:split_idx], y[:split_idx]
-    x_test, y_test = x[split_idx:], y[split_idx:]
-    print(
-        f"Split train/test: {x_train.size(0)} / {x_test.size(0)} ventanas "
-        f"(train_split={train_cfg['train_split']})"
-    )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=train_cfg["learning_rate"])
     start_epoch = 0
