@@ -110,7 +110,6 @@ def __main__():
         tokenizer = BPETokenizer(
             textos,
             vocab_size=tokenizer_cfg["vocab_size"],
-            show_progress=tokenizer_cfg["show_progress"],
         )
         tokenizer.save(str(tokenizer_path))
         print(f"Tokenizador guardado en {tokenizer_path}")
