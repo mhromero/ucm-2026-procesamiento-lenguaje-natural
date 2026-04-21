@@ -116,6 +116,7 @@ class LLM(nn.Module):
         self.eval()
         if temperature <= 0:
             raise ValueError("temperature debe ser mayor que 0.")
+        model_device = next(self.parameters()).device
 
         generated = self.text_to_tokens(prompt)
         if not generated:
@@ -123,7 +124,7 @@ class LLM(nn.Module):
 
         for _ in range(max_new_tokens):
             context = generated[-self.window_size :]
-            x = torch.tensor([context], dtype=torch.long)
+            x = torch.tensor([context], dtype=torch.long, device=model_device)
             logits = self.forward(x, causal=True)
             next_token_logits = logits[0, -1, :] / temperature
             probs = torch.softmax(next_token_logits, dim=-1)

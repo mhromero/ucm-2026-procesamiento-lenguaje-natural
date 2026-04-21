@@ -57,6 +57,13 @@ def cargar_checkpoint(
     return int(payload["epoch"]), float(payload.get("last_loss", 0.0))
 
 
+def mover_optimizador_a_dispositivo(optimizer: torch.optim.Optimizer, device: torch.device):
+    for state in optimizer.state.values():
+        for key, value in state.items():
+            if isinstance(value, torch.Tensor):
+                state[key] = value.to(device)
+
+
 def guardar_salida_epoch(
     output_path: Path,
     epoch: int,
@@ -126,6 +133,10 @@ def __main__():
 
     print(f"Total de ids tokenizados: {len(texto_tokenizado)}")
     print(f"Tamano del vocabulario: {len(tokenizer.get_tokens())}")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Dispositivo de entrenamiento: {device}")
+    if device.type == "cuda":
+        print(f"GPU activa: {torch.cuda.get_device_name(0)}")
     print("Construyendo modelo...")
 
     model = LLM(
@@ -136,6 +147,7 @@ def __main__():
         window_size=model_cfg["window_size"],
         dropout=model_cfg["dropout"],
     )
+    model.to(device)
     print("Modelo inicializado.")
 
     print("Construyendo ventanas deslizantes para entrenamiento...")
@@ -149,6 +161,7 @@ def __main__():
     if checkpoint_cfg["resume_if_exists"] and checkpoint_path.exists():
         print(f"Cargando checkpoint desde {checkpoint_path}...")
         start_epoch, last_loss = cargar_checkpoint(checkpoint_path, model, optimizer)
+        mover_optimizador_a_dispositivo(optimizer, device)
         print(
             f"Checkpoint cargado. Reanudando desde epoch {start_epoch + 1} "
             f"(ultima loss: {last_loss:.4f})"
@@ -173,6 +186,8 @@ def __main__():
             epoch_loss = 0.0
             steps = 0
             for x_batch, y_batch in iter_batches(x, y, train_cfg["batch_size"]):
+                x_batch = x_batch.to(device)
+                y_batch = y_batch.to(device)
                 loss = model.train_step(x_batch, y_batch, optimizer)
                 epoch_loss += loss
                 steps += 1
