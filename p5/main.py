@@ -1,7 +1,9 @@
 import json
 import math
+from csv import DictWriter
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import torch
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
@@ -67,7 +69,8 @@ def mover_optimizador_a_dispositivo(optimizer: torch.optim.Optimizer, device: to
 def guardar_salida_epoch(
     output_path: Path,
     epoch: int,
-    loss: float,
+    train_loss: float,
+    test_loss: float,
     generated_text: str,
 ):
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -79,7 +82,8 @@ def guardar_salida_epoch(
     history.append(
         {
             "epoch": epoch,
-            "loss": loss,
+            "train_loss": train_loss,
+            "test_loss": test_loss,
             "generated_text": generated_text,
         }
     )
@@ -87,6 +91,56 @@ def guardar_salida_epoch(
         json.dumps(history, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+
+
+@torch.no_grad()
+def evaluar_loss(
+    model: LLM,
+    x_data: torch.Tensor,
+    y_data: torch.Tensor,
+    batch_size: int,
+    device: torch.device,
+) -> float:
+    if x_data.size(0) == 0:
+        return 0.0
+    model.eval()
+    total_loss = 0.0
+    steps = 0
+    for x_batch, y_batch in iter_batches(x_data, y_data, batch_size):
+        x_batch = x_batch.to(device)
+        y_batch = y_batch.to(device)
+        logits = model(x_batch, causal=True)
+        loss = model.loss_fn(logits.reshape(-1, model.vocab_size), y_batch.reshape(-1))
+        total_loss += loss.item()
+        steps += 1
+    return total_loss / max(steps, 1)
+
+
+def guardar_losses_csv(output_path: Path, rows: list[dict]):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", newline="", encoding="utf-8") as f:
+        writer = DictWriter(f, fieldnames=["epoch", "train_loss", "test_loss"])
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def guardar_grafica_losses(output_path: Path, rows: list[dict]):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    epochs = [row["epoch"] for row in rows]
+    train_losses = [row["train_loss"] for row in rows]
+    test_losses = [row["test_loss"] for row in rows]
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(epochs, train_losses, marker="o", label="train_loss")
+    plt.plot(epochs, test_losses, marker="o", label="test_loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Evolucion de train/test loss")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=140)
+    plt.close()
 
 
 def __main__():
@@ -99,6 +153,7 @@ def __main__():
     train_cfg = config["training"]
     checkpoint_cfg = config["checkpoint"]
     epoch_output_cfg = config["epoch_output"]
+    metrics_cfg = config["metrics"]
     gen_cfg = config["generation"]
     print("Configuración cargada correctamente.")
 
@@ -154,6 +209,13 @@ def __main__():
     x, y = model.build_windows(texto_tokenizado)
     print(f"Ventanas para entrenamiento: {x.size(0)}")
     print(f"Tamaño de ventana (D): {model_cfg['window_size']}")
+    split_idx = int(x.size(0) * train_cfg["train_split"])
+    x_train, y_train = x[:split_idx], y[:split_idx]
+    x_test, y_test = x[split_idx:], y[split_idx:]
+    print(
+        f"Split train/test: {x_train.size(0)} / {x_test.size(0)} ventanas "
+        f"(train_split={train_cfg['train_split']})"
+    )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=train_cfg["learning_rate"])
     start_epoch = 0
@@ -167,9 +229,10 @@ def __main__():
             f"(ultima loss: {last_loss:.4f})"
         )
 
-    steps_per_epoch = math.ceil(x.size(0) / train_cfg["batch_size"])
+    steps_per_epoch = math.ceil(x_train.size(0) / train_cfg["batch_size"])
     remaining_epochs = max(train_cfg["epochs"] - start_epoch, 0)
     total_steps = steps_per_epoch * remaining_epochs
+    loss_rows = []
     print(
         f"Iniciando entrenamiento: epochs={train_cfg['epochs']}, "
         f"batch_size={train_cfg['batch_size']}, lr={train_cfg['learning_rate']}"
@@ -185,7 +248,7 @@ def __main__():
         for epoch in range(start_epoch, train_cfg["epochs"]):
             epoch_loss = 0.0
             steps = 0
-            for x_batch, y_batch in iter_batches(x, y, train_cfg["batch_size"]):
+            for x_batch, y_batch in iter_batches(x_train, y_train, train_cfg["batch_size"]):
                 x_batch = x_batch.to(device)
                 y_batch = y_batch.to(device)
                 loss = model.train_step(x_batch, y_batch, optimizer)
@@ -197,8 +260,26 @@ def __main__():
                     description=f"Entrenando LLM (epoch {epoch + 1}/{train_cfg['epochs']})",
                 )
 
-            avg_loss = epoch_loss / max(steps, 1)
-            print(f"Epoch {epoch + 1}/{train_cfg['epochs']} - loss: {avg_loss:.4f}")
+            train_loss = epoch_loss / max(steps, 1)
+            test_loss = evaluar_loss(
+                model=model,
+                x_data=x_test,
+                y_data=y_test,
+                batch_size=train_cfg["batch_size"],
+                device=device,
+            )
+            print(
+                f"Epoch {epoch + 1}/{train_cfg['epochs']} - "
+                f"train_loss: {train_loss:.4f} | test_loss: {test_loss:.4f}"
+            )
+            loss_rows.append(
+                {
+                    "epoch": epoch + 1,
+                    "train_loss": train_loss,
+                    "test_loss": test_loss,
+                }
+            )
+            guardar_losses_csv(Path(metrics_cfg["loss_csv_path"]), loss_rows)
             sample_text = model.generate(
                 prompt=gen_cfg["prompt"],
                 max_new_tokens=gen_cfg["max_new_tokens"],
@@ -207,7 +288,8 @@ def __main__():
             guardar_salida_epoch(
                 output_path=Path(epoch_output_cfg["path"]),
                 epoch=epoch + 1,
-                loss=avg_loss,
+                train_loss=train_loss,
+                test_loss=test_loss,
                 generated_text=sample_text,
             )
             print(
@@ -219,12 +301,12 @@ def __main__():
                     model=model,
                     optimizer=optimizer,
                     epoch=epoch + 1,
-                    last_loss=avg_loss,
+                    last_loss=train_loss,
                 )
                 print(f"Checkpoint guardado en epoch {epoch + 1}: {checkpoint_path}")
 
     if train_cfg["epochs"] > 0 and checkpoint_cfg["save_at_end"]:
-        final_loss = avg_loss if "avg_loss" in locals() else 0.0
+        final_loss = train_loss if "train_loss" in locals() else 0.0
         guardar_checkpoint(
             checkpoint_path=checkpoint_path,
             model=model,
@@ -233,6 +315,9 @@ def __main__():
             last_loss=final_loss,
         )
         print(f"Checkpoint final guardado: {checkpoint_path}")
+    guardar_grafica_losses(Path(metrics_cfg["loss_plot_path"]), loss_rows)
+    print(f"CSV de losses guardado en: {metrics_cfg['loss_csv_path']}")
+    print(f"Grafica de losses guardada en: {metrics_cfg['loss_plot_path']}")
 
     print("Entrenamiento finalizado.")
     print("Generando texto de ejemplo...")

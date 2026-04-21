@@ -117,10 +117,12 @@ class LLM(nn.Module):
         if temperature <= 0:
             raise ValueError("temperature debe ser mayor que 0.")
         model_device = next(self.parameters()).device
+        prompt = prompt.lower()
 
         generated = self.text_to_tokens(prompt)
         if not generated:
             raise ValueError("El prompt no puede ser vacio.")
+        new_token_ids = []
 
         for _ in range(max_new_tokens):
             context = generated[-self.window_size :]
@@ -130,5 +132,6 @@ class LLM(nn.Module):
             probs = torch.softmax(next_token_logits, dim=-1)
             next_token_id = torch.multinomial(probs, num_samples=1).item()
             generated.append(next_token_id)
+            new_token_ids.append(next_token_id)
 
-        return self.tokenizer.decode(generated)
+        return prompt + self.tokenizer.decode(new_token_ids)

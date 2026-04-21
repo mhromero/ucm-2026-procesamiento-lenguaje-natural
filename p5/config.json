@@ -19,7 +19,8 @@
   "training": {
     "epochs": 10,
     "batch_size": 16,
-    "learning_rate": 0.0003
+    "learning_rate": 0.0003,
+    "train_split": 0.9
   },
   "checkpoint": {
     "path": "p5/checkpoints/llm_checkpoint.pt",
@@ -29,6 +30,10 @@
   },
   "epoch_output": {
     "path": "p5/checkpoints/epoch_outputs.json"
+  },
+  "metrics": {
+    "loss_csv_path": "p5/checkpoints/losses.csv",
+    "loss_plot_path": "p5/checkpoints/losses.png"
   },
   "generation": {
     "prompt": "Alice",
