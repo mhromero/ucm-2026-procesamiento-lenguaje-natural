@@ -1,0 +1,38 @@
+{
+  "corpus": {
+    "data_dir": "p5/data"
+  },
+  "tokenizer": {
+    "vocab_size": 5000,
+    "show_progress": true,
+    "use_cache": true,
+    "cache_path": "p5/data/bpe_tokenizer.json",
+    "tokens_cache_path": "p5/data/tokens.json"
+  },
+  "model": {
+    "d_model": 192,
+    "n_blocks": 6,
+    "n_heads": 4,
+    "window_size": 64,
+    "dropout": 0.1
+  },
+  "training": {
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.0003
+  },
+  "checkpoint": {
+    "path": "p5/checkpoints/llm_checkpoint.pt",
+    "save_every_epochs": 5,
+    "save_at_end": true,
+    "resume_if_exists": true
+  },
+  "epoch_output": {
+    "path": "p5/checkpoints/epoch_outputs.json"
+  },
+  "generation": {
+    "prompt": "Alice",
+    "max_new_tokens": 100,
+    "temperature": 1.0
+  }
+}
