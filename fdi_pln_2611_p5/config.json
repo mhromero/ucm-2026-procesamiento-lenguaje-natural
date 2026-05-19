@@ -1,0 +1,56 @@
+{
+  "corpus": {
+    "data_dir": "data",
+    "extra_data_dir": "data/extra"
+  },
+  "tokenizer": {
+    "vocab_size": 300,
+    "show_progress": true,
+    "use_cache": true,
+    "cache_path": "data/bpe_tokenizer.json",
+    "train_tokens_cache_path": "data/train_tokens.json",
+    "test_tokens_cache_path": "data/test_tokens.json"
+  },
+  "model": {
+    "d_model": 128,
+    "n_blocks": 4,
+    "n_heads": 4,
+    "window_size": 128,
+    "dropout": 0.1
+  },
+  "training": {
+    "epochs": 10,
+    "batch_size": 64,
+    "learning_rate": 0.0003
+  },
+  "grid_search": {
+    "learning_rates": [0.0001, 0.0003, 0.001],
+    "batch_sizes": [32, 64, 128],
+    "epochs_per_run": 3,
+    "results_path": "data/grid_search_results.json"
+  },
+  "ner_training": {
+    "epochs": 15,
+    "batch_size": 16,
+    "learning_rate": 0.0003,
+    "val_ratio": 0.2
+  },
+  "checkpoint": {
+    "path": "checkpoints/llm_checkpoint.pt",
+    "save_every_epochs": 5,
+    "save_at_end": true,
+    "resume_if_exists": true
+  },
+  "epoch_output": {
+    "path": "checkpoints/epoch_outputs.json"
+  },
+  "metrics": {
+    "loss_csv_path": "checkpoints/losses.csv",
+    "loss_plot_path": "checkpoints/losses.png"
+  },
+  "generation": {
+    "prompt": "Alice",
+    "max_new_tokens": 100,
+    "temperature": 1.0
+  }
+}

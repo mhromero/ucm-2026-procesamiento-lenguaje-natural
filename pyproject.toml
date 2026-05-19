@@ -1,37 +1,30 @@
 [project]
-name = "fdi-pln-2611-p4"
+name = "fdi-pln-2611-p5"
 version = "1.0"
-description = "Buscador de texto sobre corpus en español con búsqueda clásica y semántica"
+description = "LM causal y NER sobre Alice in Wonderland (PLN 26/27 UCM)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "beautifulsoup4>=4.14.3",
-    "es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl",
-    "matplotlib>=3.10.0",
-    "ollama>=0.4",
+    "click>=8.1",
+    "dynaconf>=3.2",
+    "loguru>=0.7",
     "numpy>=2.0",
-    "rich>=14.0.0",
-    "spacy>=3.8.11",
-    "textual>=8.1.1",
+    "python-dotenv>=1.0",
+    "rich>=14.0",
     "torch==2.3.1",
-    "torchvision==0.18.1",
-    "torchaudio==2.3.1",
     "typer>=0.15",
 ]
 
 [project.scripts]
-fdi-pln-2611-p4 = "fdi_pln_2611_p4.main:main"
-p5 = "p5.main:__main__"
+fdi-pln-2611-p5 = "fdi_pln_2611_p5.main:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["fdi_pln_2611_p4", "p5"]
+packages = ["fdi_pln_2611_p5"]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.ruff.lint]
-select = ["E", "F", "I"]
+[tool.hatch.build.targets.wheel.force-include]
+"fdi_pln_2611_p5/data" = "fdi_pln_2611_p5/data"
+"fdi_pln_2611_p5/config.json" = "fdi_pln_2611_p5/config.json"
