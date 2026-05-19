@@ -30,7 +30,7 @@ def generate_text(
     )
 
 
-def extract_entities_from_file(weights_path: Path, text_path: Path) -> list[dict]:
+def _load_ner_model(weights_path: Path) -> tuple[NERModel, BPETokenizer]:
     payload = torch.load(weights_path, map_location="cpu", weights_only=False)
     config = load_config()
     tokenizer = BPETokenizer.load(
@@ -43,7 +43,14 @@ def extract_entities_from_file(weights_path: Path, text_path: Path) -> list[dict
     ner_model.load_state_dict(payload["model_state_dict"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ner_model.to(device)
+    return ner_model, tokenizer
 
-    text = text_path.read_text(encoding="utf-8")
+
+def extract_entities_from_text(weights_path: Path, text: str) -> list[dict]:
+    ner_model, tokenizer = _load_ner_model(weights_path)
     label_ids = ner_model.predict_label_ids(text)
     return labels_to_entities(text, label_ids, tokenizer)
+
+
+def extract_entities_from_file(weights_path: Path, text_path: Path) -> list[dict]:
+    return extract_entities_from_text(weights_path, text_path.read_text(encoding="utf-8"))

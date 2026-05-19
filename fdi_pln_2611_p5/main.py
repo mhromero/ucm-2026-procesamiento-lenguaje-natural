@@ -9,7 +9,7 @@ from fdi_pln_2611_p5.annotations.etiquetados import merge_etiquetados
 from fdi_pln_2611_p5.annotations.merge import merge_annotations
 from fdi_pln_2611_p5.annotations.report import generate_annotation_report
 from fdi_pln_2611_p5.config import DEFAULT_CONFIG_PATH, package_path
-from fdi_pln_2611_p5.inference import extract_entities_from_file, generate_text
+from fdi_pln_2611_p5.inference import extract_entities_from_file, extract_entities_from_text, generate_text
 from fdi_pln_2611_p5.training.causal import train_causal, train_tokenizer
 from fdi_pln_2611_p5.training.ner_train import train_ner
 
@@ -76,10 +76,26 @@ def cmd_generate(
 @app.command("ner")
 def cmd_ner(
     weights: Annotated[Path, typer.Option("--weights", help="Pesos NER (.pth).")],
-    text_file: Annotated[Path, typer.Argument(help="Fichero de texto a etiquetar.")],
+    text_file: Annotated[
+        Optional[Path], typer.Argument(help="Fichero de texto a etiquetar.")
+    ] = None,
+    text: Annotated[
+        Optional[str], typer.Option("--text", "-t", help="Texto directo a etiquetar.")
+    ] = None,
 ):
-    """Lista entidades nombradas detectadas en un fichero."""
-    entities = extract_entities_from_file(weights, text_file)
+    """Lista entidades nombradas detectadas en un fichero o en texto directo."""
+    if text_file is not None and text is not None:
+        typer.echo("Error: usa --text O un fichero, no los dos a la vez.", err=True)
+        raise typer.Exit(code=1)
+    if text_file is None and text is None:
+        typer.echo("Error: proporciona un fichero o usa --text.", err=True)
+        raise typer.Exit(code=1)
+
+    entities = (
+        extract_entities_from_file(weights, text_file)
+        if text_file is not None
+        else extract_entities_from_text(weights, text)
+    )
     if not entities:
         typer.echo("No se encontraron entidades.")
         raise typer.Exit(code=0)
