@@ -14,6 +14,27 @@ from fdi_pln_2611_p5.training.causal import build_model
 from fdi_pln_2611_p5.training.utils import evaluar_loss_ner, iter_batches
 
 
+def _stratified_sentence_split(
+    sentences: list[dict], val_ratio: float
+) -> tuple[list[dict], list[dict]]:
+    """Divide frases en train/val manteniendo la proporción de frases con entidades."""
+    with_entities = [s for s in sentences if any(l != "o" for l in s.get("labels", []))]
+    without_entities = [s for s in sentences if all(l == "o" for l in s.get("labels", []))]
+
+    def take_val(group: list[dict]) -> tuple[list[dict], list[dict]]:
+        n_val = max(1, round(len(group) * val_ratio)) if len(group) > 1 else 0
+        # tomar cada Nth para que val esté distribuido por todo el dataset
+        step = max(1, len(group) // max(n_val, 1))
+        val_idx = set(range(0, len(group), step)[:n_val])
+        val = [s for i, s in enumerate(group) if i in val_idx]
+        train = [s for i, s in enumerate(group) if i not in val_idx]
+        return train, val
+
+    train_w, val_w = take_val(with_entities)
+    train_wo, val_wo = take_val(without_entities)
+    return train_w + train_wo, val_w + val_wo
+
+
 def _init_ner_from_causal(ner_model: NERModel, causal_state: dict):
     backbone_state = {
         key: value
@@ -53,10 +74,14 @@ def train_ner(
             "No hay frases anotadas fusionadas. Ejecuta merge-annotations y completa más JSON."
         )
 
-    x_data, y_data = build_ner_windows(sentences, tokenizer, model_cfg["window_size"])
-    split = max(1, int(x_data.size(0) * ner_cfg["val_ratio"]))
-    x_train, y_train = x_data[:-split], y_data[:-split]
-    x_val, y_val = x_data[-split:], y_data[-split:]
+    train_sentences, val_sentences = _stratified_sentence_split(
+        sentences, val_ratio=ner_cfg["val_ratio"]
+    )
+    logger.info(
+        "Split NER: {} frases train, {} frases val", len(train_sentences), len(val_sentences)
+    )
+    x_train, y_train = build_ner_windows(train_sentences, tokenizer, model_cfg["window_size"])
+    x_val, y_val = build_ner_windows(val_sentences, tokenizer, model_cfg["window_size"])
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ner_model.to(device)
@@ -90,4 +115,4 @@ def train_ner(
         package_path(config["tokenizer"]["cache_path"]),
         extra={"val_loss": val_loss},
     )
-    return {"val_loss": val_loss, "n_windows": x_data.size(0)}
+    return {"val_loss": val_loss, "n_train_windows": x_train.size(0), "n_val_windows": x_val.size(0)}
