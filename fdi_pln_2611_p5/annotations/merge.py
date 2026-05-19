@@ -79,18 +79,6 @@ def records_to_word_labels(records: list[dict]) -> tuple[str, list[str], list[st
     return text, tokens, labels
 
 
-def word_labels_to_char_labels(tokens: list[str], labels: list[str]) -> tuple[str, list[str]]:
-    if len(tokens) != len(labels):
-        raise ValueError("tokens y labels deben tener la misma longitud.")
-    text = "".join(tokens)
-    char_labels: list[str] = []
-    for token, label in zip(tokens, labels):
-        char_labels.extend([label] * len(token))
-    if len(char_labels) != len(text):
-        raise ValueError("Longitud de etiquetas por carácter inconsistente.")
-    return text, char_labels
-
-
 def cohen_kappa(labels_a: list[str], labels_b: list[str]) -> float:
     if len(labels_a) != len(labels_b):
         raise ValueError("Las secuencias deben tener la misma longitud.")
@@ -181,10 +169,9 @@ def extract_frase_records(records: list[dict], frase_text: str) -> list[dict] | 
         chunk.append(record)
         cursor = piece_end
     rebuilt, _ = records_to_text_and_labels(chunk)
-    if (
-        rebuilt != frase_text
-        and normalize_annotation_text(rebuilt) != normalize_annotation_text(frase_text)
-    ):
+    if rebuilt != frase_text and normalize_annotation_text(
+        rebuilt
+    ) != normalize_annotation_text(frase_text):
         logger.warning(
             "Segmento parcial no coincide exactamente con la frase objetivo."
         )

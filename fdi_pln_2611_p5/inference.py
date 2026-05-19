@@ -6,7 +6,6 @@ import torch
 
 from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
 from fdi_pln_2611_p5.config import load_config, package_path
-from fdi_pln_2611_p5.LLM import LLM
 from fdi_pln_2611_p5.ner import NERModel, labels_to_entities
 from fdi_pln_2611_p5.training.causal import build_model
 
@@ -53,4 +52,6 @@ def extract_entities_from_text(weights_path: Path, text: str) -> list[dict]:
 
 
 def extract_entities_from_file(weights_path: Path, text_path: Path) -> list[dict]:
-    return extract_entities_from_text(weights_path, text_path.read_text(encoding="utf-8"))
+    return extract_entities_from_text(
+        weights_path, text_path.read_text(encoding="utf-8")
+    )

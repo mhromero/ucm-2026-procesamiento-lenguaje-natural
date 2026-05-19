@@ -80,7 +80,12 @@ def evaluar_metricas_ner(
 ) -> dict:
     """Calcula accuracy global y recall de entidades en validación, excluyendo padding."""
     if x_val.size(0) == 0:
-        return {"overall_acc": 0.0, "entity_recall": 0.0, "n_pred_entities": 0, "n_gold_entities": 0}
+        return {
+            "overall_acc": 0.0,
+            "entity_recall": 0.0,
+            "n_pred_entities": 0,
+            "n_gold_entities": 0,
+        }
     model.eval()
     all_preds, all_labels = [], []
     for x_batch, y_batch in iter_batches(x_val, y_val, batch_size):
@@ -96,7 +101,11 @@ def evaluar_metricas_ner(
     overall_acc = (preds == labels).float().mean().item()
     entity_mask = labels != 0
     n_gold = entity_mask.sum().item()
-    entity_recall = (preds[entity_mask] == labels[entity_mask]).float().mean().item() if n_gold > 0 else 0.0
+    entity_recall = (
+        (preds[entity_mask] == labels[entity_mask]).float().mean().item()
+        if n_gold > 0
+        else 0.0
+    )
     return {
         "overall_acc": overall_acc,
         "entity_recall": entity_recall,

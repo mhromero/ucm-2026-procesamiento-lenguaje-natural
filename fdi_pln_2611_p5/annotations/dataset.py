@@ -6,17 +6,11 @@ from pathlib import Path
 import torch
 
 from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
-from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID, label_to_id
-
-
-def word_labels_to_char_labels(tokens: list[str], labels: list[str]) -> tuple[str, list[str]]:
-    if len(tokens) != len(labels):
-        raise ValueError("tokens y labels deben tener la misma longitud.")
-    text = "".join(tokens)
-    char_labels: list[str] = []
-    for token, label in zip(tokens, labels):
-        char_labels.extend([label] * len(token))
-    return text, char_labels
+from fdi_pln_2611_p5.labels import (
+    IGNORE_LABEL_ID,
+    label_to_id,
+    word_labels_to_char_labels,
+)
 
 
 def char_labels_from_merged(sentence: dict) -> tuple[str, list[int]]:

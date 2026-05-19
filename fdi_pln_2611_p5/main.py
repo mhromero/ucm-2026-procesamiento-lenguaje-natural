@@ -8,8 +8,12 @@ import typer
 from fdi_pln_2611_p5.annotations.etiquetados import merge_etiquetados
 from fdi_pln_2611_p5.annotations.merge import merge_annotations
 from fdi_pln_2611_p5.annotations.report import generate_annotation_report
-from fdi_pln_2611_p5.config import DEFAULT_CONFIG_PATH, package_path
-from fdi_pln_2611_p5.inference import extract_entities_from_file, extract_entities_from_text, generate_text
+from fdi_pln_2611_p5.config import package_path
+from fdi_pln_2611_p5.inference import (
+    extract_entities_from_file,
+    extract_entities_from_text,
+    generate_text,
+)
 from fdi_pln_2611_p5.training.causal import train_causal, train_tokenizer
 from fdi_pln_2611_p5.training.ner_train import train_ner
 
@@ -295,7 +299,10 @@ def cmd_grid_search_report(
     from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html
 
     if not results_json.exists():
-        typer.echo(f"No existe {results_json}. Ejecuta primero train-causal --grid-search.", err=True)
+        typer.echo(
+            f"No existe {results_json}. Ejecuta primero train-causal --grid-search.",
+            err=True,
+        )
         raise typer.Exit(code=1)
     path = generate_grid_search_html(results_json, output_html)
     typer.echo(f"Informe guardado en {path}")

@@ -62,13 +62,19 @@ def train_tokenizer(config_path: Path | None = None) -> BPETokenizer:
     tokenizer_cfg = config["tokenizer"]
 
     alice_textos = concatenar_archivos_txt(package_path(corpus_cfg["data_dir"])).lower()
-    extra_textos = concatenar_archivos_txt(package_path(corpus_cfg["extra_data_dir"])).lower()
+    extra_textos = concatenar_archivos_txt(
+        package_path(corpus_cfg["extra_data_dir"])
+    ).lower()
     texto_completo = alice_textos + "\n" + extra_textos
 
     tokenizer = BPETokenizer(texto_completo, vocab_size=tokenizer_cfg["vocab_size"])
     tokenizer_path = package_path(tokenizer_cfg["cache_path"])
     tokenizer.save(str(tokenizer_path))
-    logger.info("Tokenizador BPE guardado en {} (vocab_size={})", tokenizer_path, len(tokenizer.tok2id))
+    logger.info(
+        "Tokenizador BPE guardado en {} (vocab_size={})",
+        tokenizer_path,
+        len(tokenizer.tok2id),
+    )
     return tokenizer
 
 

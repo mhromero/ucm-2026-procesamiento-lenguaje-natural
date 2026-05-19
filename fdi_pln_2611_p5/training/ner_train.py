@@ -13,7 +13,11 @@ from fdi_pln_2611_p5.config import load_config, package_path
 from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID, LABEL2ID
 from fdi_pln_2611_p5.ner import NERModel
 from fdi_pln_2611_p5.training.causal import build_model
-from fdi_pln_2611_p5.training.utils import evaluar_loss_ner, evaluar_metricas_ner, iter_batches
+from fdi_pln_2611_p5.training.utils import (
+    evaluar_loss_ner,
+    evaluar_metricas_ner,
+    iter_batches,
+)
 
 
 def _stratified_sentence_split(
@@ -21,7 +25,9 @@ def _stratified_sentence_split(
 ) -> tuple[list[dict], list[dict]]:
     """Divide frases en train/val manteniendo la proporción de frases con entidades."""
     with_entities = [s for s in sentences if any(l != "o" for l in s.get("labels", []))]
-    without_entities = [s for s in sentences if all(l == "o" for l in s.get("labels", []))]
+    without_entities = [
+        s for s in sentences if all(l == "o" for l in s.get("labels", []))
+    ]
 
     def take_val(group: list[dict]) -> tuple[list[dict], list[dict]]:
         n_val = max(1, round(len(group) * val_ratio)) if len(group) > 1 else 0
@@ -97,14 +103,21 @@ def train_ner(
         sentences, val_ratio=ner_cfg["val_ratio"]
     )
     logger.info(
-        "Split NER: {} frases train, {} frases val", len(train_sentences), len(val_sentences)
+        "Split NER: {} frases train, {} frases val",
+        len(train_sentences),
+        len(val_sentences),
     )
-    x_train, y_train = build_ner_windows(train_sentences, tokenizer, model_cfg["window_size"])
+    x_train, y_train = build_ner_windows(
+        train_sentences, tokenizer, model_cfg["window_size"]
+    )
     x_val, y_val = build_ner_windows(val_sentences, tokenizer, model_cfg["window_size"])
     logger.info("Ventanas NER: {} train, {} val", x_train.size(0), x_val.size(0))
 
     class_weights = _compute_class_weights(y_train, len(LABEL2ID))
-    logger.info("Pesos de clase: {}", {k: f"{v:.2f}" for k, v in zip(LABEL2ID, class_weights.tolist())})
+    logger.info(
+        "Pesos de clase: {}",
+        {k: f"{v:.2f}" for k, v in zip(LABEL2ID, class_weights.tolist())},
+    )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ner_model = NERModel(llm, class_weights=class_weights.to(device))
@@ -122,8 +135,12 @@ def train_ner(
             )
             epoch_loss += loss
             steps += 1
-        val_loss = evaluar_loss_ner(ner_model, x_val, y_val, ner_cfg["batch_size"], device)
-        metricas = evaluar_metricas_ner(ner_model, x_val, y_val, ner_cfg["batch_size"], device)
+        val_loss = evaluar_loss_ner(
+            ner_model, x_val, y_val, ner_cfg["batch_size"], device
+        )
+        metricas = evaluar_metricas_ner(
+            ner_model, x_val, y_val, ner_cfg["batch_size"], device
+        )
         logger.info(
             "NER epoch {}/{} train_loss={:.4f} val_loss={:.4f} acc={:.1%} entity_recall={:.1%} pred_ent={} gold_ent={}",
             epoch + 1,
@@ -143,4 +160,8 @@ def train_ner(
         package_path(config["tokenizer"]["cache_path"]),
         extra={"val_loss": val_loss},
     )
-    return {"val_loss": val_loss, "n_train_windows": x_train.size(0), "n_val_windows": x_val.size(0)}
+    return {
+        "val_loss": val_loss,
+        "n_train_windows": x_train.size(0),
+        "n_val_windows": x_val.size(0),
+    }

@@ -29,6 +29,21 @@ def entity_type_from_label(label: str) -> str | None:
     return PREFIX_TO_ENTITY_TYPE.get(label[0])
 
 
+def word_labels_to_char_labels(
+    tokens: list[str], labels: list[str]
+) -> tuple[str, list[str]]:
+    """Expande etiquetas por palabra a etiquetas por carácter."""
+    if len(tokens) != len(labels):
+        raise ValueError("tokens y labels deben tener la misma longitud.")
+    text = "".join(tokens)
+    char_labels: list[str] = []
+    for token, label in zip(tokens, labels):
+        char_labels.extend([label] * len(token))
+    if len(char_labels) != len(text):
+        raise ValueError("Longitud de etiquetas por carácter inconsistente.")
+    return text, char_labels
+
+
 def merge_subword_labels(left: int, right: int) -> int:
     """Combina etiquetas al fusionar dos subpalabras BPE."""
     if left == right:

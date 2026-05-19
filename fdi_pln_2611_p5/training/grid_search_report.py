@@ -20,7 +20,9 @@ def generate_grid_search_html(results_path: Path, output_path: Path) -> Path:
     best_lr = min(lr_avg, key=lr_avg.get)
     best_bs = min(bs_avg, key=bs_avg.get)
 
-    html = _build_html(sorted_results, best, min_loss, max_loss, lr_avg, bs_avg, best_lr, best_bs)
+    html = _build_html(
+        sorted_results, best, min_loss, max_loss, lr_avg, bs_avg, best_lr, best_bs
+    )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html, encoding="utf-8")
     return output_path
@@ -66,7 +68,10 @@ def _build_html(
 ) -> str:
     rows = ""
     for i, r in enumerate(sorted_results):
-        is_best = r["learning_rate"] == best["learning_rate"] and r["batch_size"] == best["batch_size"]
+        is_best = (
+            r["learning_rate"] == best["learning_rate"]
+            and r["batch_size"] == best["batch_size"]
+        )
         bg = "#e8f5e9" if is_best else ("#f9f9f9" if i % 2 == 0 else "#ffffff")
         marker = " ★" if is_best else ""
         bar = _bar(r["test_loss"], min_loss, max_loss)
