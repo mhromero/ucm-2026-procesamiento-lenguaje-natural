@@ -36,18 +36,29 @@ def build_ner_windows(
     tokenizer: BPETokenizer,
     window_size: int,
 ) -> tuple[torch.Tensor, torch.Tensor]:
+    """Construye ventanas de tokens y etiquetas para entrenamiento NER.
+
+    Frases más cortas que window_size se incluyen como ventana única con padding
+    (token 0, etiqueta IGNORE_LABEL_ID) para no perder datos anotados.
+    Frases más largas generan ventanas deslizantes de tamaño window_size.
+    """
     x_windows: list[list[int]] = []
     y_windows: list[list[int]] = []
 
     for sentence in sentences:
         text, char_label_ids = char_labels_from_merged(sentence)
         token_ids, label_ids = tokenizer.encode_with_labels(text, char_label_ids)
-        if len(token_ids) <= window_size:
+        if not token_ids:
             continue
-        for start in range(0, len(token_ids) - window_size):
-            end = start + window_size
-            x_windows.append(token_ids[start:end])
-            y_windows.append(label_ids[start:end])
+        if len(token_ids) <= window_size:
+            pad_len = window_size - len(token_ids)
+            x_windows.append(token_ids + [0] * pad_len)
+            y_windows.append(label_ids + [IGNORE_LABEL_ID] * pad_len)
+        else:
+            for start in range(0, len(token_ids) - window_size):
+                end = start + window_size
+                x_windows.append(token_ids[start:end])
+                y_windows.append(label_ids[start:end])
 
     if not x_windows:
         raise ValueError("No hay ventanas NER; revisa las anotaciones fusionadas.")
