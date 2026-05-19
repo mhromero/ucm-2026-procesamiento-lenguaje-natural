@@ -6,6 +6,8 @@ from pathlib import Path
 
 import torch
 from loguru import logger
+from rich.console import Console
+from rich.table import Table
 
 from fdi_pln_2611_p5.config import package_path
 from fdi_pln_2611_p5.LLM import LLM
@@ -60,7 +62,9 @@ def run_grid_search(
         json.dumps({"results": results, "best": best}, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    logger.info("Mejor combinación: {}", best)
+
+    _print_grid_table(results, best)
+    logger.info("Resultados guardados en {}", output_path)
     return {
         "params": {
             "learning_rate": best["learning_rate"],
@@ -68,3 +72,31 @@ def run_grid_search(
         },
         "best": best,
     }
+
+
+def _print_grid_table(results: list[dict], best: dict) -> None:
+    sorted_results = sorted(results, key=lambda r: r["test_loss"])
+    table = Table(title="Resultados Grid Search", show_lines=True)
+    table.add_column("lr", style="cyan", justify="right")
+    table.add_column("batch", style="cyan", justify="right")
+    table.add_column("train_loss", justify="right")
+    table.add_column("test_loss", justify="right")
+    table.add_column("", justify="center")
+
+    for row in sorted_results:
+        is_best = (
+            row["learning_rate"] == best["learning_rate"]
+            and row["batch_size"] == best["batch_size"]
+        )
+        style = "bold green" if is_best else ""
+        marker = "★ mejor" if is_best else ""
+        table.add_row(
+            str(row["learning_rate"]),
+            str(row["batch_size"]),
+            f"{row['train_loss']:.4f}",
+            f"{row['test_loss']:.4f}",
+            marker,
+            style=style,
+        )
+
+    Console().print(table)
