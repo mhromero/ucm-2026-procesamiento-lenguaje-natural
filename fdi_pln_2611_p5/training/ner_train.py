@@ -10,9 +10,10 @@ from fdi_pln_2611_p5.annotations.dataset import build_ner_windows, load_merged_d
 from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
 from fdi_pln_2611_p5.checkpoints import save_ner_checkpoint
 from fdi_pln_2611_p5.config import load_config, package_path
+from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID, LABEL2ID
 from fdi_pln_2611_p5.ner import NERModel
 from fdi_pln_2611_p5.training.causal import build_model
-from fdi_pln_2611_p5.training.utils import evaluar_loss_ner, iter_batches
+from fdi_pln_2611_p5.training.utils import evaluar_loss_ner, evaluar_metricas_ner, iter_batches
 
 
 def _stratified_sentence_split(
@@ -34,6 +35,14 @@ def _stratified_sentence_split(
     train_w, val_w = take_val(with_entities)
     train_wo, val_wo = take_val(without_entities)
     return train_w + train_wo, val_w + val_wo
+
+
+def _compute_class_weights(y_train: torch.Tensor, num_labels: int) -> torch.Tensor:
+    """Pesos inversamente proporcionales a la frecuencia de cada clase, excluyendo padding."""
+    flat = y_train.view(-1)
+    flat = flat[flat != IGNORE_LABEL_ID]
+    counts = torch.bincount(flat, minlength=num_labels).float().clamp(min=1)
+    return flat.numel() / (num_labels * counts)
 
 
 def _init_ner_from_causal(ner_model: NERModel, causal_state: dict):
@@ -71,8 +80,6 @@ def train_ner(
 
     llm = build_model(config, tokenizer)
     llm.load_state_dict(causal_payload["model_state_dict"], strict=True)
-    ner_model = NERModel(llm)
-    _init_ner_from_causal(ner_model, causal_payload["model_state_dict"])
 
     sentences = load_merged_dataset(merged_annotations_path)
     if not sentences:
@@ -88,8 +95,14 @@ def train_ner(
     )
     x_train, y_train = build_ner_windows(train_sentences, tokenizer, model_cfg["window_size"])
     x_val, y_val = build_ner_windows(val_sentences, tokenizer, model_cfg["window_size"])
+    logger.info("Ventanas NER: {} train, {} val", x_train.size(0), x_val.size(0))
+
+    class_weights = _compute_class_weights(y_train, len(LABEL2ID))
+    logger.info("Pesos de clase: {}", {k: f"{v:.2f}" for k, v in zip(LABEL2ID, class_weights.tolist())})
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ner_model = NERModel(llm, class_weights=class_weights.to(device))
+    _init_ner_from_causal(ner_model, causal_payload["model_state_dict"])
     ner_model.to(device)
     optimizer = torch.optim.Adam(ner_model.parameters(), lr=ner_cfg["learning_rate"])
 
@@ -103,15 +116,18 @@ def train_ner(
             )
             epoch_loss += loss
             steps += 1
-        val_loss = evaluar_loss_ner(
-            ner_model, x_val, y_val, ner_cfg["batch_size"], device
-        )
+        val_loss = evaluar_loss_ner(ner_model, x_val, y_val, ner_cfg["batch_size"], device)
+        metricas = evaluar_metricas_ner(ner_model, x_val, y_val, ner_cfg["batch_size"], device)
         logger.info(
-            "NER epoch {}/{} train_loss={:.4f} val_loss={:.4f}",
+            "NER epoch {}/{} train_loss={:.4f} val_loss={:.4f} acc={:.1%} entity_recall={:.1%} pred_ent={} gold_ent={}",
             epoch + 1,
             ner_cfg["epochs"],
             epoch_loss / max(steps, 1),
             val_loss,
+            metricas["overall_acc"],
+            metricas["entity_recall"],
+            metricas["n_pred_entities"],
+            metricas["n_gold_entities"],
         )
 
     save_ner_checkpoint(

@@ -5,6 +5,7 @@ import math
 import torch
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
+from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID
 from fdi_pln_2611_p5.LLM import LLM
 
 
@@ -67,6 +68,41 @@ def evaluar_loss_ner(
         total_loss += loss.item()
         steps += 1
     return total_loss / max(steps, 1)
+
+
+@torch.no_grad()
+def evaluar_metricas_ner(
+    model,
+    x_val: torch.Tensor,
+    y_val: torch.Tensor,
+    batch_size: int,
+    device: torch.device,
+) -> dict:
+    """Calcula accuracy global y recall de entidades en validación, excluyendo padding."""
+    if x_val.size(0) == 0:
+        return {"overall_acc": 0.0, "entity_recall": 0.0, "n_pred_entities": 0, "n_gold_entities": 0}
+    model.eval()
+    all_preds, all_labels = [], []
+    for x_batch, y_batch in iter_batches(x_val, y_val, batch_size):
+        logits = model(x_batch.to(device))
+        all_preds.append(logits.argmax(dim=-1).cpu())
+        all_labels.append(y_batch)
+
+    preds = torch.cat(all_preds).view(-1)
+    labels = torch.cat(all_labels).view(-1)
+    mask = labels != IGNORE_LABEL_ID
+    preds, labels = preds[mask], labels[mask]
+
+    overall_acc = (preds == labels).float().mean().item()
+    entity_mask = labels != 0
+    n_gold = entity_mask.sum().item()
+    entity_recall = (preds[entity_mask] == labels[entity_mask]).float().mean().item() if n_gold > 0 else 0.0
+    return {
+        "overall_acc": overall_acc,
+        "entity_recall": entity_recall,
+        "n_pred_entities": (preds != 0).sum().item(),
+        "n_gold_entities": n_gold,
+    }
 
 
 def entrenar_epochs_causal(

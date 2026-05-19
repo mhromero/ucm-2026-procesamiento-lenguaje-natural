@@ -10,12 +10,17 @@ from fdi_pln_2611_p5.LLM import LLM
 class NERModel(nn.Module):
     """Cabezal de NER sobre el backbone del LLM causal preentrenado."""
 
-    def __init__(self, backbone: LLM, num_labels: int | None = None):
+    def __init__(
+        self,
+        backbone: LLM,
+        num_labels: int | None = None,
+        class_weights: torch.Tensor | None = None,
+    ):
         super().__init__()
         self.backbone = backbone
         self.num_labels = num_labels or len(LABEL2ID)
         self.label_projection = nn.Linear(backbone.d_model, self.num_labels)
-        self.loss_fn = nn.CrossEntropyLoss(ignore_index=-1)
+        self.loss_fn = nn.CrossEntropyLoss(weight=class_weights, ignore_index=-1)
 
     def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
         hidden = self.backbone.encode_tokens(token_ids, causal=False)
