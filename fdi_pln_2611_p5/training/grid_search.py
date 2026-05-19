@@ -11,6 +11,7 @@ from rich.table import Table
 
 from fdi_pln_2611_p5.config import package_path
 from fdi_pln_2611_p5.LLM import LLM
+from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html
 from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
 
 
@@ -65,6 +66,10 @@ def run_grid_search(
 
     _print_grid_table(results, best)
     logger.info("Resultados guardados en {}", output_path)
+
+    report_path = output_path.parent / "informe_grid_search.html"
+    generate_grid_search_html(output_path, report_path)
+    logger.info("Informe HTML guardado en {}", report_path)
     return {
         "params": {
             "learning_rate": best["learning_rate"],

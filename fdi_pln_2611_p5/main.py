@@ -282,6 +282,25 @@ def cmd_annotation_report(
     typer.echo(f"Informe guardado en {path}")
 
 
+@app.command("grid-search-report")
+def cmd_grid_search_report(
+    results_json: Annotated[
+        Path, typer.Option("--results-json", help="JSON de resultados del grid search.")
+    ] = package_path("data/grid_search_results.json"),
+    output_html: Annotated[
+        Path, typer.Option("--output-html", help="Ruta del informe HTML de salida.")
+    ] = package_path("data/informe_grid_search.html"),
+):
+    """Genera (o regenera) el informe HTML de exploración de hiperparámetros."""
+    from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html
+
+    if not results_json.exists():
+        typer.echo(f"No existe {results_json}. Ejecuta primero train-causal --grid-search.", err=True)
+        raise typer.Exit(code=1)
+    path = generate_grid_search_html(results_json, output_html)
+    typer.echo(f"Informe guardado en {path}")
+
+
 def main():
     app()
 
