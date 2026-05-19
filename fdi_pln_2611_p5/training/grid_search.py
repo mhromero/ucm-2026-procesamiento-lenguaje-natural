@@ -35,7 +35,7 @@ def run_grid_search(
             model = build_model()
             model.to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-            train_loss, test_loss = entrenar_epochs_causal(
+            train_loss, test_loss, _history = entrenar_epochs_causal(
                 model=model,
                 x_train=x_train,
                 y_train=y_train,

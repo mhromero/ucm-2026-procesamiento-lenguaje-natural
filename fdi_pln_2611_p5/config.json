@@ -47,7 +47,9 @@
   },
   "metrics": {
     "loss_csv_path": "checkpoints/losses.csv",
-    "loss_plot_path": "checkpoints/losses.png"
+    "causal_history_csv_path": "checkpoints/causal_history.csv",
+    "ner_history_csv_path": "checkpoints/ner_history.csv",
+    "ner_report_path": "checkpoints/ner_report.html"
   },
   "generation": {
     "prompt": "Alice",

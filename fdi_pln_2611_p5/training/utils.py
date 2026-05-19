@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import copy
 import math
 
 import torch
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID
+from fdi_pln_2611_p5.labels import ID2LABEL, IGNORE_LABEL_ID, LABEL2ID
 from fdi_pln_2611_p5.LLM import LLM
 
 
@@ -125,10 +126,13 @@ def entrenar_epochs_causal(
     epochs: int,
     batch_size: int,
     description: str = "Entrenando LLM",
-) -> tuple[float, float]:
+) -> tuple[float, float, list[dict]]:
     steps_per_epoch = math.ceil(x_train.size(0) / batch_size)
     total_steps = steps_per_epoch * epochs
     train_loss = 0.0
+    best_val_loss = float("inf")
+    best_state: dict | None = None
+    history: list[dict] = []
 
     with Progress(
         TextColumn(f"[bold green]{description}"),
@@ -137,7 +141,7 @@ def entrenar_epochs_causal(
         TimeElapsedColumn(),
     ) as progress:
         task = progress.add_task("train", total=total_steps)
-        for _epoch in range(epochs):
+        for epoch in range(epochs):
             epoch_loss = 0.0
             steps = 0
             for x_batch, y_batch in iter_batches(x_train, y_train, batch_size):
@@ -148,6 +152,59 @@ def entrenar_epochs_causal(
                 steps += 1
                 progress.advance(task)
             train_loss = epoch_loss / max(steps, 1)
+            val_loss = evaluar_loss_causal(model, x_val, y_val, batch_size, device)
+            history.append({"epoch": epoch + 1, "train_loss": train_loss, "val_loss": val_loss})
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                best_state = copy.deepcopy(model.state_dict())
 
-    test_loss = evaluar_loss_causal(model, x_val, y_val, batch_size, device)
-    return train_loss, test_loss
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    return train_loss, best_val_loss, history
+
+
+@torch.no_grad()
+def evaluar_confusion_ner(
+    model,
+    x_val: torch.Tensor,
+    y_val: torch.Tensor,
+    batch_size: int,
+    device: torch.device,
+) -> dict:
+    """Calcula la matriz de confusión y métricas por clase (precision/recall/F1)."""
+    num_labels = len(LABEL2ID)
+    if x_val.size(0) == 0:
+        return {"matrix": [[0] * num_labels] * num_labels, "per_class": {}}
+    model.eval()
+    all_preds, all_labels = [], []
+    for x_batch, y_batch in iter_batches(x_val, y_val, batch_size):
+        logits = model(x_batch.to(device))
+        all_preds.append(logits.argmax(dim=-1).cpu())
+        all_labels.append(y_batch)
+
+    preds = torch.cat(all_preds).view(-1)
+    labels = torch.cat(all_labels).view(-1)
+    mask = labels != IGNORE_LABEL_ID
+    preds_list = preds[mask].tolist()
+    labels_list = labels[mask].tolist()
+
+    matrix = [[0] * num_labels for _ in range(num_labels)]
+    for true, pred in zip(labels_list, preds_list):
+        matrix[true][pred] += 1
+
+    per_class: dict[str, dict] = {}
+    for i in range(num_labels):
+        tp = matrix[i][i]
+        fp = sum(matrix[j][i] for j in range(num_labels)) - tp
+        fn = sum(matrix[i][j] for j in range(num_labels)) - tp
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+        per_class[ID2LABEL[i]] = {
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "support": tp + fn,
+        }
+
+    return {"matrix": matrix, "per_class": per_class, "labels": [ID2LABEL[i] for i in range(num_labels)]}

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import copy
 import random
+from csv import DictWriter
 from pathlib import Path
 
 import torch
@@ -13,7 +15,9 @@ from fdi_pln_2611_p5.config import load_config, package_path
 from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID, LABEL2ID
 from fdi_pln_2611_p5.ner import NERModel
 from fdi_pln_2611_p5.training.causal import build_model
+from fdi_pln_2611_p5.training.ner_report import generate_ner_report
 from fdi_pln_2611_p5.training.utils import (
+    evaluar_confusion_ner,
     evaluar_loss_ner,
     evaluar_metricas_ner,
     iter_batches,
@@ -125,6 +129,11 @@ def train_ner(
     ner_model.to(device)
     optimizer = torch.optim.Adam(ner_model.parameters(), lr=ner_cfg["learning_rate"])
 
+    best_val_loss = float("inf")
+    best_state: dict | None = None
+    best_epoch = 0
+    ner_history: list[dict] = []
+
     for epoch in range(ner_cfg["epochs"]):
         ner_model.train()
         epoch_loss = 0.0
@@ -135,33 +144,81 @@ def train_ner(
             )
             epoch_loss += loss
             steps += 1
+        train_loss_epoch = epoch_loss / max(steps, 1)
         val_loss = evaluar_loss_ner(
             ner_model, x_val, y_val, ner_cfg["batch_size"], device
         )
         metricas = evaluar_metricas_ner(
             ner_model, x_val, y_val, ner_cfg["batch_size"], device
         )
+        improved = ""
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_state = copy.deepcopy(ner_model.state_dict())
+            best_epoch = epoch + 1
+            improved = " ★"
         logger.info(
-            "NER epoch {}/{} train_loss={:.4f} val_loss={:.4f} acc={:.1%} entity_recall={:.1%} pred_ent={} gold_ent={}",
+            "NER epoch {}/{} train_loss={:.4f} val_loss={:.4f} acc={:.1%} entity_recall={:.1%} pred_ent={} gold_ent={}{}",
             epoch + 1,
             ner_cfg["epochs"],
-            epoch_loss / max(steps, 1),
+            train_loss_epoch,
             val_loss,
             metricas["overall_acc"],
             metricas["entity_recall"],
             metricas["n_pred_entities"],
             metricas["n_gold_entities"],
+            improved,
         )
+        ner_history.append({
+            "epoch": epoch + 1,
+            "train_loss": train_loss_epoch,
+            "val_loss": val_loss,
+            "overall_acc": metricas["overall_acc"],
+            "entity_recall": metricas["entity_recall"],
+            "n_pred_entities": metricas["n_pred_entities"],
+            "n_gold_entities": metricas["n_gold_entities"],
+        })
+
+    if best_state is not None:
+        ner_model.load_state_dict(best_state)
+    logger.info("Mejor epoch NER: {} (val_loss={:.4f})", best_epoch, best_val_loss)
+
+    history_path = package_path(config["metrics"]["ner_history_csv_path"])
+    history_path.parent.mkdir(parents=True, exist_ok=True)
+    with history_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = DictWriter(
+            handle,
+            fieldnames=["epoch", "train_loss", "val_loss", "overall_acc", "entity_recall", "n_pred_entities", "n_gold_entities"],
+        )
+        writer.writeheader()
+        writer.writerows(ner_history)
+
+    confusion = evaluar_confusion_ner(
+        ner_model, x_val, y_val, ner_cfg["batch_size"], device
+    )
 
     save_ner_checkpoint(
         weights_path,
         ner_model,
         model_cfg,
         package_path(config["tokenizer"]["cache_path"]),
-        extra={"val_loss": val_loss},
+        extra={"val_loss": best_val_loss},
     )
+
+    report_path = package_path(config["metrics"]["ner_report_path"])
+    generate_ner_report(
+        history=ner_history,
+        confusion=confusion,
+        model_cfg=model_cfg,
+        ner_cfg=ner_cfg,
+        best_epoch=best_epoch,
+        output_path=report_path,
+    )
+    logger.info("Informe NER guardado en {}", report_path)
+
     return {
-        "val_loss": val_loss,
+        "val_loss": best_val_loss,
+        "best_epoch": best_epoch,
         "n_train_windows": x_train.size(0),
         "n_val_windows": x_val.size(0),
     }

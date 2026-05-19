@@ -142,7 +142,7 @@ def train_causal(
         model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=train_cfg["learning_rate"])
-    train_loss, test_loss = entrenar_epochs_causal(
+    train_loss, test_loss, history = entrenar_epochs_causal(
         model=model,
         x_train=x_train,
         y_train=y_train,
@@ -183,6 +183,13 @@ def train_causal(
                 "batch_size": train_cfg["batch_size"],
             }
         )
+
+    history_path = package_path(config["metrics"]["causal_history_csv_path"])
+    history_path.parent.mkdir(parents=True, exist_ok=True)
+    with history_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = DictWriter(handle, fieldnames=["epoch", "train_loss", "val_loss"])
+        writer.writeheader()
+        writer.writerows(history)
 
     sample = model.generate(
         prompt=config["generation"]["prompt"],
