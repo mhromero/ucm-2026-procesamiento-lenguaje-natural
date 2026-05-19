@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from pathlib import Path
 
 import torch
@@ -51,6 +52,11 @@ def train_ner(
     config_path: Path | None = None,
 ) -> dict:
     config = load_config(config_path)
+    seed = config.get("seed", 42)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    logger.info("Semilla: {}", seed)
+
     ner_cfg = config["ner_training"]
     model_cfg = config["model"]
 

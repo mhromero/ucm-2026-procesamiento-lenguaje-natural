@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 from csv import DictWriter
 from pathlib import Path
 
@@ -72,6 +73,11 @@ def train_causal(
     grid_search: bool = False,
 ) -> dict:
     config = load_config(config_path)
+    seed = config.get("seed", 42)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    logger.info("Semilla: {}", seed)
+
     tokenizer, train_tokens, test_tokens = _prepare_tokenizer_and_tokens(config)
     model_cfg = config["model"]
     train_cfg = config["training"]

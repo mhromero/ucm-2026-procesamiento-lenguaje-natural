@@ -1,4 +1,5 @@
 {
+  "seed": 42,
   "corpus": {
     "data_dir": "data",
     "extra_data_dir": "data/extra"
