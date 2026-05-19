@@ -22,7 +22,7 @@ def _prepare_tokenizer_and_tokens(
     corpus_cfg = config["corpus"]
     tokenizer_cfg = config["tokenizer"]
 
-    alice_textos = concatenar_archivos_txt(package_path(corpus_cfg["data_dir"]))
+    alice_textos = concatenar_archivos_txt(package_path(corpus_cfg["data_dir"])).lower()
     extra_train_textos = concatenar_archivos_txt(
         package_path(corpus_cfg["extra_data_dir"])
     ).lower()
