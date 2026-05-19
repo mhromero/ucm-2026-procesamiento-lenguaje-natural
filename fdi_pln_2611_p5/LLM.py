@@ -6,6 +6,8 @@ from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
 
 
 class TransformerBlock(nn.Module):
+    """Un bloque Transformer: norma pre-atención + atención + norma pre-FFN + FFN con residuales."""
+
     def __init__(
         self, d_model: int, n_heads: int, max_seq_len: int, dropout: float = 0.1
     ):
@@ -29,6 +31,14 @@ class TransformerBlock(nn.Module):
 
 
 class LLM(nn.Module):
+    """Modelo de lenguaje causal basado en Transformer decoder-only.
+
+    Arquitectura: embedding de tokens + embedding posicional → N TransformerBlocks
+    con atención causal → FFN final → proyección al vocabulario.
+    Para NER se usa encode_tokens (causal=False) que devuelve representaciones
+    contextuales sin la cabeza de vocabulario.
+    """
+
     def __init__(
         self,
         tokenizer: BPETokenizer,

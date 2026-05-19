@@ -89,6 +89,11 @@ def train_causal(
     config_path: Path | None = None,
     grid_search: bool = False,
 ) -> dict:
+    """Entrena el LLM causal sobre Alice + Harry Potter y guarda el checkpoint.
+
+    Si grid_search=True ejecuta primero 9 combinaciones lr×batch y usa la mejor
+    configuración para el entrenamiento final.
+    """
     config = load_config(config_path)
     seed = config.get("seed", 42)
     random.seed(seed)

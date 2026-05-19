@@ -8,6 +8,14 @@ from fdi_pln_2611_p5.labels import label_to_id, merge_subword_labels
 
 
 class BPETokenizer:
+    """Tokenizador Byte Pair Encoding entrenado desde cero sobre el corpus.
+
+    Parte de caracteres individuales y fusiona iterativamente los pares más
+    frecuentes hasta alcanzar vocab_size. Soporta codificación con etiquetas
+    NER por carácter (encode_with_labels) para propagar etiquetas al nivel de
+    subpalabra mediante merge_subword_labels.
+    """
+
     def __init__(self, text: str, vocab_size: int = 5000):
         chars = sorted(set(text))
         self.tok2id = {c: i for i, c in enumerate(chars)}

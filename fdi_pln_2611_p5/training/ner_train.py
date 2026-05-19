@@ -60,6 +60,12 @@ def train_ner(
     merged_annotations_path: Path,
     config_path: Path | None = None,
 ) -> dict:
+    """Ajusta el cabezal NER sobre el backbone causal preentrenado.
+
+    Carga los pesos causales, sustituye la cabeza de vocabulario por una proyección
+    lineal a las etiquetas NER, y entrena con CrossEntropyLoss ponderado para
+    compensar el desbalance entre tokens 'o' y tokens de entidad.
+    """
     config = load_config(config_path)
     seed = config.get("seed", 42)
     random.seed(seed)
