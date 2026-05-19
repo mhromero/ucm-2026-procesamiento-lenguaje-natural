@@ -10,10 +10,20 @@ from fdi_pln_2611_p5.annotations.merge import merge_annotations
 from fdi_pln_2611_p5.annotations.report import generate_annotation_report
 from fdi_pln_2611_p5.config import DEFAULT_CONFIG_PATH, package_path
 from fdi_pln_2611_p5.inference import extract_entities_from_file, generate_text
-from fdi_pln_2611_p5.training.causal import train_causal
+from fdi_pln_2611_p5.training.causal import train_causal, train_tokenizer
 from fdi_pln_2611_p5.training.ner_train import train_ner
 
 app = typer.Typer(help="Práctica 5: LM causal + NER sobre Alice in Wonderland.")
+
+
+@app.command("train-tokenizer")
+def cmd_train_tokenizer(
+    config: Annotated[
+        Optional[Path], typer.Option("--config", help="Fichero de configuración JSON.")
+    ] = None,
+):
+    """Entrena el tokenizador BPE sobre el corpus completo y lo guarda en disco."""
+    train_tokenizer(config_path=config)
 
 
 @app.command("train-causal")
