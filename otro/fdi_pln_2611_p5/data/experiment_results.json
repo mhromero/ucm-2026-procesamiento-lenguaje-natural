@@ -1,0 +1,619 @@
+{
+  "generated_at": "2026-05-21T04:58:58.988165+00:00",
+  "methodology": {
+    "description": "Ocho configuraciones etiquetadas, con entrenamiento real solo cuando la combinación (corpus BPE, vocab, window, n_blocks) es nueva. Cada id tiene su carpeta en data/experiments/ con BPE, model.pth y experiment_config.json (solo Alice ≠ Alice+HP; vocab 200 ≠ 300). Ejes: corpus (solo Alice vs Alice+4HP), window_size (64 vs 128), vocab BPE (200 vs 300), n_blocks (2 vs 4). Misma lr, batch y épocas; validación siempre en Alice.",
+    "epochs_per_run": 5,
+    "metric_selection": "Menor val_loss por época (checkpoint implícito en entrenar_epochs_causal).",
+    "fixed_hyperparams": {
+      "corpus_train": "Alice + 4 libros HP",
+      "vocab_size": 300,
+      "n_blocks": 4,
+      "n_heads": 4,
+      "d_model": 128,
+      "window_size": 128,
+      "dropout": 0.1,
+      "extra_max_books": 4,
+      "learning_rate": 0.0003,
+      "batch_size": 64
+    }
+  },
+  "experiments": [
+    {
+      "id": "corpus_alice",
+      "name": "Solo Alice (sin Harry Potter)",
+      "variable": "corpus.extra_max_books",
+      "research_question": "¿Entrenar únicamente con Alice mejora la loss en validación (también Alice) frente a mezclar dominios con Harry Potter?",
+      "expected_insight": "Menos ventanas de train pero mayor homogeneidad de estilo/vocabulario con el test.",
+      "config": {
+        "corpus_train": "solo Alice",
+        "vocab_size": 300,
+        "n_blocks": 4,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 128,
+        "dropout": 0.1,
+        "extra_max_books": 0,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_only",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice/experiment_config.json",
+      "bpe_vocab_actual": 300,
+      "train_loss": 3.009849909823685,
+      "val_loss": 2.8557088639035584,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 3.009849909823685,
+        "val_loss": 2.8557088639035584
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 4.24155922978777,
+          "val_loss": 3.8743974095868086
+        },
+        {
+          "epoch": 2,
+          "train_loss": 3.77043795107709,
+          "val_loss": 3.6920254649768385
+        },
+        {
+          "epoch": 3,
+          "train_loss": 3.540705447316441,
+          "val_loss": 3.3459271828514567
+        },
+        {
+          "epoch": 4,
+          "train_loss": 3.23145975078157,
+          "val_loss": 3.055026035808485
+        },
+        {
+          "epoch": 5,
+          "train_loss": 3.009849909823685,
+          "val_loss": 2.8557088639035584
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 140584,
+        "test_tokens": 140584,
+        "train_windows": 140456,
+        "test_windows": 140456,
+        "steps_per_epoch": 2195,
+        "batches_total": 10975
+      }
+    },
+    {
+      "id": "corpus_alice_hp4",
+      "name": "Alice + 4 libros Harry Potter",
+      "variable": "corpus.extra_max_books",
+      "research_question": "¿Añadir los 4 primeros libros HP al train reduce val_loss en Alice por más datos o lo empeora por desalineación de dominio?",
+      "expected_insight": "Más tokens y ventanas; posible trade-off dominio literario vs. cantidad de datos.",
+      "config": {
+        "corpus_train": "Alice + 4 libros HP",
+        "vocab_size": 300,
+        "n_blocks": 4,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 128,
+        "dropout": 0.1,
+        "extra_max_books": 4,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_hp4",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice_hp4",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice_hp4/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice_hp4/experiment_config.json",
+      "bpe_vocab_actual": 300,
+      "train_loss": 2.578729139192527,
+      "val_loss": 4.9213629820263085,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 2.578729139192527,
+        "val_loss": 4.9213629820263085
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 3.400831604750482,
+          "val_loss": 5.794293631651722
+        },
+        {
+          "epoch": 2,
+          "train_loss": 2.853556856628348,
+          "val_loss": 5.354880719784201
+        },
+        {
+          "epoch": 3,
+          "train_loss": 2.7102590294877285,
+          "val_loss": 5.200263683542679
+        },
+        {
+          "epoch": 4,
+          "train_loss": 2.631820200690184,
+          "val_loss": 5.04880482687367
+        },
+        {
+          "epoch": 5,
+          "train_loss": 2.578729139192527,
+          "val_loss": 4.9213629820263085
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 1257082,
+        "test_tokens": 151308,
+        "train_windows": 1256954,
+        "test_windows": 151180,
+        "steps_per_epoch": 19640,
+        "batches_total": 98200
+      }
+    },
+    {
+      "id": "window_64",
+      "name": "Ventana 64 (Alice + 4 HP)",
+      "variable": "model.window_size",
+      "research_question": "Con el mismo corpus (Alice+4HP), ¿una ventana más corta (64) cambia el número de batches y la generalización en Alice?",
+      "expected_insight": "Más ventanas deslizantes y menos contexto por paso; comparar con corpus_alice_hp4.",
+      "config": {
+        "corpus_train": "Alice + 4 libros HP",
+        "vocab_size": 300,
+        "n_blocks": 4,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 64,
+        "dropout": 0.1,
+        "extra_max_books": 4,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_hp4",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_64",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_64/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_64/experiment_config.json",
+      "bpe_vocab_actual": 300,
+      "train_loss": 2.590710883482636,
+      "val_loss": 4.886263887894335,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 2.590710883482636,
+        "val_loss": 4.886263887894335
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 3.341610509754107,
+          "val_loss": 5.726795203693829
+        },
+        {
+          "epoch": 2,
+          "train_loss": 2.845466500362598,
+          "val_loss": 5.29288147246172
+        },
+        {
+          "epoch": 3,
+          "train_loss": 2.712839170729736,
+          "val_loss": 5.117128628058683
+        },
+        {
+          "epoch": 4,
+          "train_loss": 2.6398122617022266,
+          "val_loss": 4.9961120028382835
+        },
+        {
+          "epoch": 5,
+          "train_loss": 2.590710883482636,
+          "val_loss": 4.886263887894335
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 1257082,
+        "test_tokens": 151308,
+        "train_windows": 1257018,
+        "test_windows": 151244,
+        "steps_per_epoch": 19641,
+        "batches_total": 98205
+      }
+    },
+    {
+      "id": "window_128",
+      "name": "Ventana 128 (Alice + 4 HP, referencia)",
+      "variable": "model.window_size",
+      "research_question": "Línea base de ventana larga con Alice+4HP; comparación directa con window_64.",
+      "expected_insight": "Misma config que corpus_alice_hp4; aísla el efecto de window_size frente a window_64.",
+      "config": {
+        "corpus_train": "Alice + 4 libros HP",
+        "vocab_size": 300,
+        "n_blocks": 4,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 128,
+        "dropout": 0.1,
+        "extra_max_books": 4,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_hp4",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_128",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_128/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_128/experiment_config.json",
+      "bpe_vocab_actual": 300,
+      "train_loss": 2.578729139192527,
+      "val_loss": 4.9213629820263085,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 2.578729139192527,
+        "val_loss": 4.9213629820263085
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 3.400831604750482,
+          "val_loss": 5.794293631651722
+        },
+        {
+          "epoch": 2,
+          "train_loss": 2.853556856628348,
+          "val_loss": 5.354880719784201
+        },
+        {
+          "epoch": 3,
+          "train_loss": 2.7102590294877285,
+          "val_loss": 5.200263683542679
+        },
+        {
+          "epoch": 4,
+          "train_loss": 2.631820200690184,
+          "val_loss": 5.04880482687367
+        },
+        {
+          "epoch": 5,
+          "train_loss": 2.578729139192527,
+          "val_loss": 4.9213629820263085
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 1257082,
+        "test_tokens": 151308,
+        "train_windows": 1256954,
+        "test_windows": 151180,
+        "steps_per_epoch": 19640,
+        "batches_total": 98200
+      },
+      "reused_from": "corpus_alice_hp4"
+    },
+    {
+      "id": "vocab_200",
+      "name": "Vocabulario BPE = 200",
+      "variable": "tokenizer.vocab_size",
+      "research_question": "¿Un vocabulario más pequeño (más merges, secuencias más largas) empeora o mejora la loss en validación (Alice)?",
+      "expected_insight": "Relación entre granularidad BPE, número de ventanas y capacidad del modelo.",
+      "config": {
+        "corpus_train": "Alice + 4 libros HP",
+        "vocab_size": 200,
+        "n_blocks": 4,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 128,
+        "dropout": 0.1,
+        "extra_max_books": 4,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_hp4",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_200",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_200/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_200/experiment_config.json",
+      "bpe_vocab_actual": 200,
+      "train_loss": 2.275586636922217,
+      "val_loss": 4.706330732825269,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 2.275586636922217,
+        "val_loss": 4.706330732825269
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 2.9885322473808853,
+          "val_loss": 5.666591381010988
+        },
+        {
+          "epoch": 2,
+          "train_loss": 2.515940012684433,
+          "val_loss": 5.190122955672232
+        },
+        {
+          "epoch": 3,
+          "train_loss": 2.3902185126764155,
+          "val_loss": 5.0026158780438665
+        },
+        {
+          "epoch": 4,
+          "train_loss": 2.3216837976988054,
+          "val_loss": 4.84309217070963
+        },
+        {
+          "epoch": 5,
+          "train_loss": 2.275586636922217,
+          "val_loss": 4.706330732825269
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 1437207,
+        "test_tokens": 171329,
+        "train_windows": 1437079,
+        "test_windows": 171201,
+        "steps_per_epoch": 22455,
+        "batches_total": 112275
+      }
+    },
+    {
+      "id": "vocab_300",
+      "name": "Vocabulario BPE = 300 (referencia)",
+      "variable": "tokenizer.vocab_size",
+      "research_question": "Vocabulario intermedio del enunciado con Alice+4HP y ventana 128.",
+      "expected_insight": "Punto de comparación para vocab_200 y para depth_2/depth_4.",
+      "config": {
+        "corpus_train": "Alice + 4 libros HP",
+        "vocab_size": 300,
+        "n_blocks": 4,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 128,
+        "dropout": 0.1,
+        "extra_max_books": 4,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_hp4",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_300",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_300/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_300/experiment_config.json",
+      "bpe_vocab_actual": 300,
+      "train_loss": 2.578729139192527,
+      "val_loss": 4.9213629820263085,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 2.578729139192527,
+        "val_loss": 4.9213629820263085
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 3.400831604750482,
+          "val_loss": 5.794293631651722
+        },
+        {
+          "epoch": 2,
+          "train_loss": 2.853556856628348,
+          "val_loss": 5.354880719784201
+        },
+        {
+          "epoch": 3,
+          "train_loss": 2.7102590294877285,
+          "val_loss": 5.200263683542679
+        },
+        {
+          "epoch": 4,
+          "train_loss": 2.631820200690184,
+          "val_loss": 5.04880482687367
+        },
+        {
+          "epoch": 5,
+          "train_loss": 2.578729139192527,
+          "val_loss": 4.9213629820263085
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 1257082,
+        "test_tokens": 151308,
+        "train_windows": 1256954,
+        "test_windows": 151180,
+        "steps_per_epoch": 19640,
+        "batches_total": 98200
+      },
+      "reused_from": "corpus_alice_hp4"
+    },
+    {
+      "id": "depth_2",
+      "name": "Profundidad = 2 bloques Transformer",
+      "variable": "model.n_blocks",
+      "research_question": "¿Un modelo más superficial alcanza loss similar con menos capacidad o queda corto frente al corpus combinado?",
+      "expected_insight": "Trade-off capacidad vs. sobreajuste con pocos bloques.",
+      "config": {
+        "corpus_train": "Alice + 4 libros HP",
+        "vocab_size": 300,
+        "n_blocks": 2,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 128,
+        "dropout": 0.1,
+        "extra_max_books": 4,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_hp4",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_2",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_2/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_2/experiment_config.json",
+      "bpe_vocab_actual": 300,
+      "train_loss": 2.692610115960028,
+      "val_loss": 4.962774221240289,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 2.692610115960028,
+        "val_loss": 4.962774221240289
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 3.4603619812462334,
+          "val_loss": 5.7486183032916855
+        },
+        {
+          "epoch": 2,
+          "train_loss": 2.9457091471631753,
+          "val_loss": 5.323083475087086
+        },
+        {
+          "epoch": 3,
+          "train_loss": 2.808439011802013,
+          "val_loss": 5.181190947683191
+        },
+        {
+          "epoch": 4,
+          "train_loss": 2.73818216249195,
+          "val_loss": 5.051204498370119
+        },
+        {
+          "epoch": 5,
+          "train_loss": 2.692610115960028,
+          "val_loss": 4.962774221240289
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 1257082,
+        "test_tokens": 151308,
+        "train_windows": 1256954,
+        "test_windows": 151180,
+        "steps_per_epoch": 19640,
+        "batches_total": 98200
+      }
+    },
+    {
+      "id": "depth_4",
+      "name": "Profundidad = 4 bloques (referencia)",
+      "variable": "model.n_blocks",
+      "research_question": "Configuración por defecto del enunciado (4 bloques, 4 cabezas).",
+      "expected_insight": "Punto de comparación para depth_2; misma config que vocab_300.",
+      "config": {
+        "corpus_train": "Alice + 4 libros HP",
+        "vocab_size": 300,
+        "n_blocks": 4,
+        "n_heads": 4,
+        "d_model": 128,
+        "window_size": 128,
+        "dropout": 0.1,
+        "extra_max_books": 4,
+        "learning_rate": 0.0003,
+        "batch_size": 64
+      },
+      "tokenizer_corpus_key": "alice_hp4",
+      "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_4",
+      "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_4/model.pth",
+      "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_4/experiment_config.json",
+      "bpe_vocab_actual": 300,
+      "train_loss": 2.578729139192527,
+      "val_loss": 4.9213629820263085,
+      "best_epoch": {
+        "epoch": 5,
+        "train_loss": 2.578729139192527,
+        "val_loss": 4.9213629820263085
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 3.400831604750482,
+          "val_loss": 5.794293631651722
+        },
+        {
+          "epoch": 2,
+          "train_loss": 2.853556856628348,
+          "val_loss": 5.354880719784201
+        },
+        {
+          "epoch": 3,
+          "train_loss": 2.7102590294877285,
+          "val_loss": 5.200263683542679
+        },
+        {
+          "epoch": 4,
+          "train_loss": 2.631820200690184,
+          "val_loss": 5.04880482687367
+        },
+        {
+          "epoch": 5,
+          "train_loss": 2.578729139192527,
+          "val_loss": 4.9213629820263085
+        }
+      ],
+      "dataset_stats": {
+        "train_tokens": 1257082,
+        "test_tokens": 151308,
+        "train_windows": 1256954,
+        "test_windows": 151180,
+        "steps_per_epoch": 19640,
+        "batches_total": 98200
+      },
+      "reused_from": "corpus_alice_hp4"
+    }
+  ],
+  "best": {
+    "id": "corpus_alice",
+    "name": "Solo Alice (sin Harry Potter)",
+    "variable": "corpus.extra_max_books",
+    "research_question": "¿Entrenar únicamente con Alice mejora la loss en validación (también Alice) frente a mezclar dominios con Harry Potter?",
+    "expected_insight": "Menos ventanas de train pero mayor homogeneidad de estilo/vocabulario con el test.",
+    "config": {
+      "corpus_train": "solo Alice",
+      "vocab_size": 300,
+      "n_blocks": 4,
+      "n_heads": 4,
+      "d_model": 128,
+      "window_size": 128,
+      "dropout": 0.1,
+      "extra_max_books": 0,
+      "learning_rate": 0.0003,
+      "batch_size": 64
+    },
+    "tokenizer_corpus_key": "alice_only",
+    "tokenizer_cache_dir": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice",
+    "weights_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice/model.pth",
+    "config_path": "/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice/experiment_config.json",
+    "bpe_vocab_actual": 300,
+    "train_loss": 3.009849909823685,
+    "val_loss": 2.8557088639035584,
+    "best_epoch": {
+      "epoch": 5,
+      "train_loss": 3.009849909823685,
+      "val_loss": 2.8557088639035584
+    },
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 4.24155922978777,
+        "val_loss": 3.8743974095868086
+      },
+      {
+        "epoch": 2,
+        "train_loss": 3.77043795107709,
+        "val_loss": 3.6920254649768385
+      },
+      {
+        "epoch": 3,
+        "train_loss": 3.540705447316441,
+        "val_loss": 3.3459271828514567
+      },
+      {
+        "epoch": 4,
+        "train_loss": 3.23145975078157,
+        "val_loss": 3.055026035808485
+      },
+      {
+        "epoch": 5,
+        "train_loss": 3.009849909823685,
+        "val_loss": 2.8557088639035584
+      }
+    ],
+    "dataset_stats": {
+      "train_tokens": 140584,
+      "test_tokens": 140584,
+      "train_windows": 140456,
+      "test_windows": 140456,
+      "steps_per_epoch": 2195,
+      "batches_total": 10975
+    }
+  }
+}

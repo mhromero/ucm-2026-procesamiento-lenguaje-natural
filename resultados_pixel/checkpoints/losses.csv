@@ -1,0 +1,2 @@
+train_loss,test_loss,learning_rate,batch_size
+2.4879291339100256,3.9667380668991914,0.0003,128

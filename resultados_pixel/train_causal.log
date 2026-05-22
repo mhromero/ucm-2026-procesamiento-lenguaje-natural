@@ -1,0 +1,6 @@
+CUDA_VISIBLE_DEVICES=3 (GPU física 3)
+¿CUDA disponible?: True
+2026-05-20 02:06:57.135 | INFO     | fdi_pln_2611_p5.training.causal:train_causal:107 - Semilla: 42
+CUDA_VISIBLE_DEVICES=3 (GPU física 3)
+¿CUDA disponible?: True
+2026-05-20 02:08:06.482 | INFO     | fdi_pln_2611_p5.training.causal:train_causal:107 - Semilla: 42

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Exploración de experimentos — LM causal</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 980px; margin: 32px auto; padding: 0 20px; color: #222; line-height: 1.5; }
+  h1 { color: #1a237e; border-bottom: 3px solid #c5cae9; padding-bottom: 8px; }
+  h2 { color: #283593; margin-top: 2em; }
+  h3 { color: #3949ab; font-size: 1em; margin-top: 1.2em; }
+  .summary-box { background: #e8eaf6; border-left: 4px solid #3949ab; padding: 14px 18px; border-radius: 4px; margin: 20px 0; }
+  .method { background: #f5f5f5; padding: 14px 18px; border-radius: 4px; font-size: 0.95em; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.92em; }
+  th { background: #3949ab; color: #fff; padding: 8px 10px; text-align: left; }
+  td { border: 1px solid #e0e0e0; padding: 6px 10px; }
+  tr.best-row { background: #e8f5e9; }
+  .experiment { border: 1px solid #c5cae9; border-radius: 8px; padding: 16px 20px; margin: 28px 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+  .question { background: #fff8e1; padding: 10px 12px; border-radius: 4px; }
+  .hint { color: #555; font-size: 0.9em; }
+  .conclusions { background: #fffde7; border: 2px dashed #fbc02d; padding: 20px; min-height: 120px; margin-top: 32px; border-radius: 6px; }
+  .conclusions h2 { margin-top: 0; }
+  .chart-box { text-align: center; }
+  .meta { color: #666; font-size: 0.9em; }
+  .final { font-weight: 600; margin-top: 12px; }
+  table.hist { max-width: 360px; }
+  table.cfg td:first-child { font-weight: 500; width: 45%; }
+  footer { color: #888; font-size: 0.85em; margin-top: 48px; }
+</style>
+</head>
+<body>
+<h1>Exploración de hiperparámetros y arquitectura</h1>
+<p class="meta">Generado: 2026-05-21 04:58:58 UTC · 8 experimentos · 5 épocas por entrenamiento único</p>
+
+<div class="summary-box">
+  <strong>Mejor experimento:</strong> <code>corpus_alice</code> — Solo Alice (sin Harry Potter)<br>
+  <strong>Mejor val_loss:</strong> 2.8557 (época 5)<br>
+  <strong>Ventanas train:</strong> 140,456
+</div>
+
+<h2>Metodología</h2>
+<div class="method">
+  <p>Ocho configuraciones etiquetadas, con entrenamiento real solo cuando la combinación (corpus BPE, vocab, window, n_blocks) es nueva. Cada id tiene su carpeta en data/experiments/ con BPE, model.pth y experiment_config.json (solo Alice ≠ Alice+HP; vocab 200 ≠ 300). Ejes: corpus (solo Alice vs Alice+4HP), window_size (64 vs 128), vocab BPE (200 vs 300), n_blocks (2 vs 4). Misma lr, batch y épocas; validación siempre en Alice.</p>
+  <p><strong>Criterio de comparación:</strong> Menor val_loss por época (checkpoint implícito en entrenar_epochs_causal).</p>
+  <table>
+    <tr><th colspan="2">Hiperparámetros fijos (todos los experimentos)</th></tr>
+    <tr><td>corpus_train</td><td>Alice + 4 libros HP</td></tr><tr><td>vocab_size</td><td>300</td></tr><tr><td>n_blocks</td><td>4</td></tr><tr><td>n_heads</td><td>4</td></tr><tr><td>d_model</td><td>128</td></tr><tr><td>window_size</td><td>128</td></tr><tr><td>dropout</td><td>0.1</td></tr><tr><td>extra_max_books</td><td>4</td></tr><tr><td>learning_rate</td><td>0.0003</td></tr><tr><td>batch_size</td><td>64</td></tr>
+  </table>
+</div>
+
+<h2>Comparativa global</h2>
+<div style="text-align:center"><svg width="520" height="220" xmlns="http://www.w3.org/2000/svg">
+  <text x="48" y="14" font-size="12" fill="#333">Mejor val_loss por experimento</text>
+  <line x1="48" y1="200" x2="500" y2="200" stroke="#999"/>
+  <rect x="60.7" y="185.8" width="31.1" height="14.2" fill="#43a047" rx="3"/><text x="76.2" y="192" text-anchor="middle" font-size="9" fill="#333">corpus_alice</text><text x="76.2" y="181.8" text-anchor="middle" font-size="9" fill="#111">2.856</text><rect x="117.2" y="93.5" width="31.1" height="106.5" fill="#5c6bc0" rx="3"/><text x="132.8" y="192" text-anchor="middle" font-size="9" fill="#333">vocab_200</text><text x="132.8" y="89.5" text-anchor="middle" font-size="9" fill="#111">4.706</text><rect x="173.7" y="84.6" width="31.1" height="115.4" fill="#5c6bc0" rx="3"/><text x="189.2" y="192" text-anchor="middle" font-size="9" fill="#333">window_64</text><text x="189.2" y="80.6" text-anchor="middle" font-size="9" fill="#111">4.886</text><rect x="230.2" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="245.8" y="192" text-anchor="middle" font-size="9" fill="#333">corpus_alice_hp4</text><text x="245.8" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text><rect x="286.7" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="302.2" y="192" text-anchor="middle" font-size="9" fill="#333">window_128</text><text x="302.2" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text><rect x="343.2" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="358.8" y="192" text-anchor="middle" font-size="9" fill="#333">vocab_300</text><text x="358.8" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text><rect x="399.7" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="415.2" y="192" text-anchor="middle" font-size="9" fill="#333">depth_4</text><text x="415.2" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text><rect x="456.2" y="80.7" width="31.1" height="119.3" fill="#5c6bc0" rx="3"/><text x="471.8" y="192" text-anchor="middle" font-size="9" fill="#333">depth_2</text><text x="471.8" y="76.7" text-anchor="middle" font-size="9" fill="#111">4.963</text>
+</svg></div>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Nombre</th><th>Corpus train</th><th>Ventana</th>
+      <th>Ventanas train</th><th>Mejor val_loss</th><th>Época</th>
+    </tr>
+  </thead>
+  <tbody><tr class="best-row">
+          <td><strong>corpus_alice</strong> ★</td>
+          <td>Solo Alice (sin Harry Potter)</td>
+          <td>solo Alice</td>
+          <td>128</td>
+          <td>140,456</td>
+          <td>2.8557</td>
+          <td>5</td>
+        </tr><tr class="">
+          <td><strong>vocab_200</strong></td>
+          <td>Vocabulario BPE = 200</td>
+          <td>Alice + 4 libros HP</td>
+          <td>128</td>
+          <td>1,437,079</td>
+          <td>4.7063</td>
+          <td>5</td>
+        </tr><tr class="">
+          <td><strong>window_64</strong></td>
+          <td>Ventana 64 (Alice + 4 HP)</td>
+          <td>Alice + 4 libros HP</td>
+          <td>64</td>
+          <td>1,257,018</td>
+          <td>4.8863</td>
+          <td>5</td>
+        </tr><tr class="">
+          <td><strong>corpus_alice_hp4</strong></td>
+          <td>Alice + 4 libros Harry Potter</td>
+          <td>Alice + 4 libros HP</td>
+          <td>128</td>
+          <td>1,256,954</td>
+          <td>4.9214</td>
+          <td>5</td>
+        </tr><tr class="">
+          <td><strong>window_128</strong><br><span class='meta'>↳ mismos resultados que corpus_alice_hp4</span></td>
+          <td>Ventana 128 (Alice + 4 HP, referencia)</td>
+          <td>Alice + 4 libros HP</td>
+          <td>128</td>
+          <td>1,256,954</td>
+          <td>4.9214</td>
+          <td>5</td>
+        </tr><tr class="">
+          <td><strong>vocab_300</strong><br><span class='meta'>↳ mismos resultados que corpus_alice_hp4</span></td>
+          <td>Vocabulario BPE = 300 (referencia)</td>
+          <td>Alice + 4 libros HP</td>
+          <td>128</td>
+          <td>1,256,954</td>
+          <td>4.9214</td>
+          <td>5</td>
+        </tr><tr class="">
+          <td><strong>depth_4</strong><br><span class='meta'>↳ mismos resultados que corpus_alice_hp4</span></td>
+          <td>Profundidad = 4 bloques (referencia)</td>
+          <td>Alice + 4 libros HP</td>
+          <td>128</td>
+          <td>1,256,954</td>
+          <td>4.9214</td>
+          <td>5</td>
+        </tr><tr class="">
+          <td><strong>depth_2</strong></td>
+          <td>Profundidad = 2 bloques Transformer</td>
+          <td>Alice + 4 libros HP</td>
+          <td>128</td>
+          <td>1,256,954</td>
+          <td>4.9628</td>
+          <td>5</td>
+        </tr></tbody>
+</table>
+
+<h2>Detalle por experimento</h2>
+
+<section class="experiment">
+  <h2>Solo Alice (sin Harry Potter) <code>corpus_alice</code></h2>
+  <p class="meta"><strong>Variable:</strong> corpus.extra_max_books</p>
+  
+  <p class="question"><strong>Pregunta:</strong> ¿Entrenar únicamente con Alice mejora la loss en validación (también Alice) frente a mezclar dominios con Harry Potter?</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Menos ventanas de train pero mayor homogeneidad de estilo/vocabulario con el test.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>solo Alice</td></tr>
+        <tr><td>BPE vocab (real)</td><td>300</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>0</td></tr>
+        <tr><td>window_size</td><td>128</td></tr>
+        <tr><td>vocab_size</td><td>300</td></tr>
+        <tr><td>n_blocks</td><td>4</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>140,584</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>140,584</td></tr>
+        <tr><td>Ventanas train</td><td>140,456</td></tr>
+        <tr><td>Batches / época</td><td>2,195</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">4.45</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">4.02</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">3.58</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.15</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.71</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,31.0 134.0,73.2 224.0,93.8 314.0,121.5 404.0,141.4"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,63.9 134.0,80.3 224.0,111.3 314.0,137.3 404.0,155.2"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>4.2416</td><td>3.8744</td></tr><tr><td>2</td><td>3.7704</td><td>3.6920</td></tr><tr><td>3</td><td>3.5407</td><td>3.3459</td></tr><tr><td>4</td><td>3.2315</td><td>3.0550</td></tr><tr><td>5</td><td>3.0098</td><td>2.8557 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=3.0098, val=2.8557
+     · Mejor val=2.8557 (época 5)</p>
+</section>
+
+<section class="experiment">
+  <h2>Alice + 4 libros Harry Potter <code>corpus_alice_hp4</code></h2>
+  <p class="meta"><strong>Variable:</strong> corpus.extra_max_books</p>
+  
+  <p class="question"><strong>Pregunta:</strong> ¿Añadir los 4 primeros libros HP al train reduce val_loss en Alice por más datos o lo empeora por desalineación de dominio?</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Más tokens y ventanas; posible trade-off dominio literario vs. cantidad de datos.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>Alice + 4 libros HP</td></tr>
+        <tr><td>BPE vocab (real)</td><td>300</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/corpus_alice_hp4</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>4</td></tr>
+        <tr><td>window_size</td><td>128</td></tr>
+        <tr><td>vocab_size</td><td>300</td></tr>
+        <tr><td>n_blocks</td><td>4</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>1,257,082</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>151,308</td></tr>
+        <tr><td>Ventanas train</td><td>1,256,954</td></tr>
+        <tr><td>Batches / época</td><td>19,640</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">6.08</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">5.18</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">4.27</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.36</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.45</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,127.2 134.0,150.7 224.0,156.8 314.0,160.2 404.0,162.5"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,24.4 134.0,43.3 224.0,49.9 314.0,56.4 404.0,61.9"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>3.4008</td><td>5.7943</td></tr><tr><td>2</td><td>2.8536</td><td>5.3549</td></tr><tr><td>3</td><td>2.7103</td><td>5.2003</td></tr><tr><td>4</td><td>2.6318</td><td>5.0488</td></tr><tr><td>5</td><td>2.5787</td><td>4.9214 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=2.5787, val=4.9214
+     · Mejor val=4.9214 (época 5)</p>
+</section>
+
+<section class="experiment">
+  <h2>Ventana 64 (Alice + 4 HP) <code>window_64</code></h2>
+  <p class="meta"><strong>Variable:</strong> model.window_size</p>
+  
+  <p class="question"><strong>Pregunta:</strong> Con el mismo corpus (Alice+4HP), ¿una ventana más corta (64) cambia el número de batches y la generalización en Alice?</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Más ventanas deslizantes y menos contexto por paso; comparar con corpus_alice_hp4.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>Alice + 4 libros HP</td></tr>
+        <tr><td>BPE vocab (real)</td><td>300</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_64</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>4</td></tr>
+        <tr><td>window_size</td><td>64</td></tr>
+        <tr><td>vocab_size</td><td>300</td></tr>
+        <tr><td>n_blocks</td><td>4</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>1,257,082</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>151,308</td></tr>
+        <tr><td>Ventanas train</td><td>1,257,018</td></tr>
+        <tr><td>Batches / época</td><td>19,641</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">6.01</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">5.13</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">4.24</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.35</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.46</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,129.3 134.0,151.1 224.0,156.9 314.0,160.2 404.0,162.3"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,24.6 134.0,43.6 224.0,51.4 314.0,56.7 404.0,61.5"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>3.3416</td><td>5.7268</td></tr><tr><td>2</td><td>2.8455</td><td>5.2929</td></tr><tr><td>3</td><td>2.7128</td><td>5.1171</td></tr><tr><td>4</td><td>2.6398</td><td>4.9961</td></tr><tr><td>5</td><td>2.5907</td><td>4.8863 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=2.5907, val=4.8863
+     · Mejor val=4.8863 (época 5)</p>
+</section>
+
+<section class="experiment">
+  <h2>Ventana 128 (Alice + 4 HP, referencia) <code>window_128</code></h2>
+  <p class="meta"><strong>Variable:</strong> model.window_size</p>
+  <p class='meta'><strong>Nota:</strong> Resultados reutilizados de <code>corpus_alice_hp4</code> (config idéntica).</p>
+  <p class="question"><strong>Pregunta:</strong> Línea base de ventana larga con Alice+4HP; comparación directa con window_64.</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Misma config que corpus_alice_hp4; aísla el efecto de window_size frente a window_64.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>Alice + 4 libros HP</td></tr>
+        <tr><td>BPE vocab (real)</td><td>300</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/window_128</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>4</td></tr>
+        <tr><td>window_size</td><td>128</td></tr>
+        <tr><td>vocab_size</td><td>300</td></tr>
+        <tr><td>n_blocks</td><td>4</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>1,257,082</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>151,308</td></tr>
+        <tr><td>Ventanas train</td><td>1,256,954</td></tr>
+        <tr><td>Batches / época</td><td>19,640</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">6.08</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">5.18</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">4.27</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.36</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.45</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,127.2 134.0,150.7 224.0,156.8 314.0,160.2 404.0,162.5"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,24.4 134.0,43.3 224.0,49.9 314.0,56.4 404.0,61.9"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>3.4008</td><td>5.7943</td></tr><tr><td>2</td><td>2.8536</td><td>5.3549</td></tr><tr><td>3</td><td>2.7103</td><td>5.2003</td></tr><tr><td>4</td><td>2.6318</td><td>5.0488</td></tr><tr><td>5</td><td>2.5787</td><td>4.9214 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=2.5787, val=4.9214
+     · Mejor val=4.9214 (época 5)</p>
+</section>
+
+<section class="experiment">
+  <h2>Vocabulario BPE = 200 <code>vocab_200</code></h2>
+  <p class="meta"><strong>Variable:</strong> tokenizer.vocab_size</p>
+  
+  <p class="question"><strong>Pregunta:</strong> ¿Un vocabulario más pequeño (más merges, secuencias más largas) empeora o mejora la loss en validación (Alice)?</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Relación entre granularidad BPE, número de ventanas y capacidad del modelo.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>Alice + 4 libros HP</td></tr>
+        <tr><td>BPE vocab (real)</td><td>200</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_200</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>4</td></tr>
+        <tr><td>window_size</td><td>128</td></tr>
+        <tr><td>vocab_size</td><td>200</td></tr>
+        <tr><td>n_blocks</td><td>4</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>1,437,207</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>171,329</td></tr>
+        <tr><td>Ventanas train</td><td>1,437,079</td></tr>
+        <tr><td>Batches / época</td><td>22,455</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">5.95</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">5.00</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">4.06</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.11</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.16</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,134.0 134.0,153.4 224.0,158.6 314.0,161.4 404.0,163.3"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,23.7 134.0,43.3 224.0,51.0 314.0,57.6 404.0,63.2"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>2.9885</td><td>5.6666</td></tr><tr><td>2</td><td>2.5159</td><td>5.1901</td></tr><tr><td>3</td><td>2.3902</td><td>5.0026</td></tr><tr><td>4</td><td>2.3217</td><td>4.8431</td></tr><tr><td>5</td><td>2.2756</td><td>4.7063 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=2.2756, val=4.7063
+     · Mejor val=4.7063 (época 5)</p>
+</section>
+
+<section class="experiment">
+  <h2>Vocabulario BPE = 300 (referencia) <code>vocab_300</code></h2>
+  <p class="meta"><strong>Variable:</strong> tokenizer.vocab_size</p>
+  <p class='meta'><strong>Nota:</strong> Resultados reutilizados de <code>corpus_alice_hp4</code> (config idéntica).</p>
+  <p class="question"><strong>Pregunta:</strong> Vocabulario intermedio del enunciado con Alice+4HP y ventana 128.</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Punto de comparación para vocab_200 y para depth_2/depth_4.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>Alice + 4 libros HP</td></tr>
+        <tr><td>BPE vocab (real)</td><td>300</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/vocab_300</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>4</td></tr>
+        <tr><td>window_size</td><td>128</td></tr>
+        <tr><td>vocab_size</td><td>300</td></tr>
+        <tr><td>n_blocks</td><td>4</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>1,257,082</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>151,308</td></tr>
+        <tr><td>Ventanas train</td><td>1,256,954</td></tr>
+        <tr><td>Batches / época</td><td>19,640</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">6.08</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">5.18</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">4.27</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.36</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.45</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,127.2 134.0,150.7 224.0,156.8 314.0,160.2 404.0,162.5"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,24.4 134.0,43.3 224.0,49.9 314.0,56.4 404.0,61.9"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>3.4008</td><td>5.7943</td></tr><tr><td>2</td><td>2.8536</td><td>5.3549</td></tr><tr><td>3</td><td>2.7103</td><td>5.2003</td></tr><tr><td>4</td><td>2.6318</td><td>5.0488</td></tr><tr><td>5</td><td>2.5787</td><td>4.9214 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=2.5787, val=4.9214
+     · Mejor val=4.9214 (época 5)</p>
+</section>
+
+<section class="experiment">
+  <h2>Profundidad = 2 bloques Transformer <code>depth_2</code></h2>
+  <p class="meta"><strong>Variable:</strong> model.n_blocks</p>
+  
+  <p class="question"><strong>Pregunta:</strong> ¿Un modelo más superficial alcanza loss similar con menos capacidad o queda corto frente al corpus combinado?</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Trade-off capacidad vs. sobreajuste con pocos bloques.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>Alice + 4 libros HP</td></tr>
+        <tr><td>BPE vocab (real)</td><td>300</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_2</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>4</td></tr>
+        <tr><td>window_size</td><td>128</td></tr>
+        <tr><td>vocab_size</td><td>300</td></tr>
+        <tr><td>n_blocks</td><td>2</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>1,257,082</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>151,308</td></tr>
+        <tr><td>Ventanas train</td><td>1,256,954</td></tr>
+        <tr><td>Batches / época</td><td>19,640</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">6.04</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">5.17</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">4.30</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.43</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.56</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,127.5 134.0,150.6 224.0,156.8 314.0,159.9 404.0,162.0"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,24.9 134.0,44.0 224.0,50.3 314.0,56.2 404.0,60.1"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>3.4604</td><td>5.7486</td></tr><tr><td>2</td><td>2.9457</td><td>5.3231</td></tr><tr><td>3</td><td>2.8084</td><td>5.1812</td></tr><tr><td>4</td><td>2.7382</td><td>5.0512</td></tr><tr><td>5</td><td>2.6926</td><td>4.9628 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=2.6926, val=4.9628
+     · Mejor val=4.9628 (época 5)</p>
+</section>
+
+<section class="experiment">
+  <h2>Profundidad = 4 bloques (referencia) <code>depth_4</code></h2>
+  <p class="meta"><strong>Variable:</strong> model.n_blocks</p>
+  <p class='meta'><strong>Nota:</strong> Resultados reutilizados de <code>corpus_alice_hp4</code> (config idéntica).</p>
+  <p class="question"><strong>Pregunta:</strong> Configuración por defecto del enunciado (4 bloques, 4 cabezas).</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> Punto de comparación para depth_2; misma config que vocab_300.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Configuración</h3>
+      <table class="cfg">
+        <tr><td>corpus train (BPE)</td><td>Alice + 4 libros HP</td></tr>
+        <tr><td>BPE vocab (real)</td><td>300</td></tr>
+        <tr><td>caché / pesos</td><td><code>/scratch/javimartin/p5/fdi_pln_2611_p5/data/experiments/depth_4</code><br>
+            <span class="meta">model.pth · experiment_config.json</span></td></tr>
+        <tr><td>extra_max_books</td><td>4</td></tr>
+        <tr><td>window_size</td><td>128</td></tr>
+        <tr><td>vocab_size</td><td>300</td></tr>
+        <tr><td>n_blocks</td><td>4</td></tr>
+        <tr><td>n_heads</td><td>4</td></tr>
+        <tr><td>d_model</td><td>128</td></tr>
+        <tr><td>dropout</td><td>0.1</td></tr>
+        <tr><td>lr / batch</td><td>0.0003 / 64</td></tr>
+      </table>
+      <h3>Corpus → ventanas</h3>
+      <table class="cfg">
+        <tr><td>Tokens train</td><td>1,257,082</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>151,308</td></tr>
+        <tr><td>Ventanas train</td><td>1,256,954</td></tr>
+        <tr><td>Batches / época</td><td>19,640</td></tr>
+      </table>
+    </div>
+    <div class="chart-box">
+      <h3>Curvas de aprendizaje</h3>
+      <svg width="420" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+  <line x1="44" y1="12.0" x2="404" y2="12.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="16.0" text-anchor="end" font-size="10" fill="#666">6.08</text><line x1="44" y1="51.0" x2="404" y2="51.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="55.0" text-anchor="end" font-size="10" fill="#666">5.18</text><line x1="44" y1="90.0" x2="404" y2="90.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="94.0" text-anchor="end" font-size="10" fill="#666">4.27</text><line x1="44" y1="129.0" x2="404" y2="129.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="133.0" text-anchor="end" font-size="10" fill="#666">3.36</text><line x1="44" y1="168.0" x2="404" y2="168.0" stroke="#e0e0e0" stroke-width="1"/><text x="38" y="172.0" text-anchor="end" font-size="10" fill="#666">2.45</text>
+  <line x1="44" y1="168" x2="404" y2="168" stroke="#999"/>
+  <line x1="44" y1="12" x2="44" y2="168" stroke="#999"/>
+  <polyline fill="none" stroke="#1976d2" stroke-width="2.5" points="44.0,127.2 134.0,150.7 224.0,156.8 314.0,160.2 404.0,162.5"/>
+  <polyline fill="none" stroke="#e65100" stroke-width="2.5" points="44.0,24.4 134.0,43.3 224.0,49.9 314.0,56.4 404.0,61.9"/>
+  <text x="44.0" y="192" text-anchor="middle" font-size="10" fill="#666">1</text><text x="134.0" y="192" text-anchor="middle" font-size="10" fill="#666">2</text><text x="224.0" y="192" text-anchor="middle" font-size="10" fill="#666">3</text><text x="314.0" y="192" text-anchor="middle" font-size="10" fill="#666">4</text><text x="404.0" y="192" text-anchor="middle" font-size="10" fill="#666">5</text>
+  <text x="224" y="198" text-anchor="middle" font-size="11" fill="#333">Época</text>
+  <text x="12" y="90" transform="rotate(-90 12 90)" text-anchor="middle" font-size="11" fill="#333">Loss</text>
+  <rect x="284" y="16" width="110" height="36" fill="white" fill-opacity="0.85" stroke="#ccc"/>
+  <line x1="296" y1="28" x2="316" y2="28" stroke="#1976d2" stroke-width="2.5"/>
+  <text x="322" y="32" font-size="10">train</text>
+  <line x1="296" y1="42" x2="316" y2="42" stroke="#e65100" stroke-width="2.5"/>
+  <text x="322" y="46" font-size="10">val (Alice)</text>
+</svg>
+    </div>
+  </div>
+  <h3>Histórico por época</h3>
+  <table class="hist">
+      <thead><tr><th>Época</th><th>Train loss</th><th>Val loss</th></tr></thead>
+      <tbody><tr><td>1</td><td>3.4008</td><td>5.7943</td></tr><tr><td>2</td><td>2.8536</td><td>5.3549</td></tr><tr><td>3</td><td>2.7103</td><td>5.2003</td></tr><tr><td>4</td><td>2.6318</td><td>5.0488</td></tr><tr><td>5</td><td>2.5787</td><td>4.9214 ★</td></tr></tbody>
+    </table>
+  <p class="final">Loss final: train=2.5787, val=4.9214
+     · Mejor val=4.9214 (época 5)</p>
+</section>
+
+
+<div class="conclusions">
+  <h2>Conclusiones (completar manualmente)</h2>
+  <p><em>Espacio para el informe de la práctica. Sugerencias:</em></p>
+  <ul>
+    <li><strong>Corpus:</strong> ¿Mejor solo Alice o Alice+4HP?</li>
+    <li><strong>Ventana:</strong> ¿Efecto de 64 vs 128 (comparar window_64 con corpus_alice_hp4)?</li>
+    <li><strong>Vocab BPE:</strong> ¿200 vs 300 cambia ventanas y val_loss?</li>
+    <li><strong>Profundidad:</strong> ¿2 vs 4 bloques con el mismo corpus?</li>
+    <li>Filas con «reutiliza resultados»: misma config; no implica un segundo entrenamiento.</li>
+    <li>Limitaciones: épocas por run, misma lr/batch, test siempre Alice.</li>
+  </ul>
+</div>
+
+<footer>Práctica 5 — fdi-pln-2611 · JSON: <code>data/experiment_results.json</code></footer>
+</body>
+</html>

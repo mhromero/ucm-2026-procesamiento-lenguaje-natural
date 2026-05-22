@@ -1,0 +1,5 @@
+CUDA_VISIBLE_DEVICES=2 (GPU física 2)
+¿CUDA disponible?: False
+No se encontró /Users/javimartinfuentes/Documents/GitHub/fdi-pln2611/p5_causal_2611.pth
+Entrena antes el causal: ./cluster_pixel/run_train_causal.sh
+O copia el .pth desde local con fetch_results_pixel.sh (inverso: rsync subida).

@@ -1,2 +1,6 @@
 __pycache__/
 .DS_Store
+deploy_p5_pixel.sh
+
+cluster_pixel/
+otro/.venv/

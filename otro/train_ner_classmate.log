@@ -1,0 +1,37 @@
+CUDA_VISIBLE_DEVICES=2 (GPU física 2)
+¿CUDA disponible?: True
+→ Fusionando etiquetados...
+2026-05-21 01:23:28.164 | WARNING  | fdi_pln_2611_p5.annotations.etiquetados:merge_lote:135 - Frase 18 en parte2: tokens distintos entre anotadores.
+2026-05-21 01:23:28.172 | WARNING  | fdi_pln_2611_p5.annotations.etiquetados:merge_lote:135 - Frase 23 en parte2: tokens distintos entre anotadores.
+2026-05-21 01:23:28.221 | INFO     | fdi_pln_2611_p5.annotations.etiquetados:merge_etiquetados:244 - Lote 9 frases (json_14/json_15): 9 frases fusionadas
+2026-05-21 01:23:28.224 | INFO     | fdi_pln_2611_p5.annotations.etiquetados:merge_etiquetados:262 - Fusión etiquetados → /scratch/javimartin/p5/fdi_pln_2611_p5/data/annotations/merged.json
+2026-05-21 01:23:28.224 | INFO     | fdi_pln_2611_p5.annotations.etiquetados:merge_etiquetados:263 - Frases fusionadas: 68 (parte1=20, parte2=39)
+2026-05-21 01:23:28.224 | INFO     | fdi_pln_2611_p5.annotations.etiquetados:merge_etiquetados:269 - κ medio global: 0.857
+Fusionadas 68 frases → /scratch/javimartin/p5/fdi_pln_2611_p5/data/annotations/merged.json (κ=0.857)
+→ Entrenando NER (según config.json: loss, pesos, best_metric)...
+   Causal: /scratch/javimartin/p5/p5_causal_2611.pth
+   Anotaciones: /scratch/javimartin/p5/fdi_pln_2611_p5/data/annotations/merged.json
+   Salida: /scratch/javimartin/p5/p5_ner_2611.pth
+2026-05-21 01:23:29.512 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:99 - Semilla: 42
+2026-05-21 01:23:29.529 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:125 - Split NER: 54 frases train, 14 frases val
+2026-05-21 01:23:29.845 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:137 - Ventanas NER: 3527 train (1925 base × oversample 2), 189 val
+2026-05-21 01:23:29.847 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:151 - Pesos de clase (inverse): {'o': '0.00', 'pi': '0.25', 'pc': '1.31', 'li': '0.69', 'lc': '2.75'}
+2026-05-21 01:23:30.735 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:196 - Selección de checkpoint: max accuracy en tokens de entidad, con accuracy global ≥ 85%
+2026-05-21 01:23:33.916 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 1/15 train_loss=0.9098 val_loss=1.9938 acc=58.1% entity_acc=29.6% macro_f1=5.9% pred_ent=9821 gold_ent=1538 (acc global < 85%)
+2026-05-21 01:23:36.977 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 2/15 train_loss=0.5486 val_loss=2.0690 acc=65.7% entity_acc=31.4% macro_f1=6.2% pred_ent=7975 gold_ent=1538 (acc global < 85%)
+2026-05-21 01:23:40.034 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 3/15 train_loss=0.3568 val_loss=2.3789 acc=74.5% entity_acc=28.2% macro_f1=7.4% pred_ent=5757 gold_ent=1538 (acc global < 85%)
+2026-05-21 01:23:43.096 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 4/15 train_loss=0.1578 val_loss=3.0117 acc=78.3% entity_acc=19.3% macro_f1=6.4% pred_ent=4509 gold_ent=1538 (acc global < 85%)
+2026-05-21 01:23:46.149 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 5/15 train_loss=0.0717 val_loss=3.6250 acc=82.4% entity_acc=15.0% macro_f1=6.8% pred_ent=3273 gold_ent=1538 (acc global < 85%)
+2026-05-21 01:23:49.205 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 6/15 train_loss=0.0427 val_loss=4.7562 acc=86.8% entity_acc=12.9% macro_f1=8.0% pred_ent=2098 gold_ent=1538 ★
+2026-05-21 01:23:52.265 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 7/15 train_loss=0.0314 val_loss=5.1174 acc=87.2% entity_acc=12.0% macro_f1=8.7% pred_ent=1970 gold_ent=1538
+2026-05-21 01:23:55.325 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 8/15 train_loss=0.0233 val_loss=5.5216 acc=88.6% entity_acc=11.1% macro_f1=7.6% pred_ent=1617 gold_ent=1538
+2026-05-21 01:23:58.384 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 9/15 train_loss=0.0193 val_loss=5.8668 acc=89.2% entity_acc=11.8% macro_f1=10.3% pred_ent=1452 gold_ent=1538
+2026-05-21 01:24:01.446 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 10/15 train_loss=0.0169 val_loss=6.4518 acc=91.1% entity_acc=11.4% macro_f1=11.8% pred_ent=964 gold_ent=1538
+2026-05-21 01:24:04.511 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 11/15 train_loss=0.0151 val_loss=6.5169 acc=90.3% entity_acc=11.1% macro_f1=11.9% pred_ent=1162 gold_ent=1538
+2026-05-21 01:24:07.577 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 12/15 train_loss=0.0134 val_loss=6.8161 acc=90.6% entity_acc=11.3% macro_f1=11.7% pred_ent=1093 gold_ent=1538
+2026-05-21 01:24:10.642 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 13/15 train_loss=0.0108 val_loss=6.9662 acc=91.3% entity_acc=10.0% macro_f1=10.5% pred_ent=861 gold_ent=1538
+2026-05-21 01:24:13.707 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 14/15 train_loss=0.0098 val_loss=7.0379 acc=91.3% entity_acc=10.4% macro_f1=11.8% pred_ent=879 gold_ent=1538
+2026-05-21 01:24:16.773 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:237 - NER epoch 15/15 train_loss=0.0104 val_loss=6.7807 acc=90.8% entity_acc=10.7% macro_f1=11.6% pred_ent=1008 gold_ent=1538
+2026-05-21 01:24:17.501 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:285 - Umbral entidad en val: 0.75 → macro_f1=11.4% recall_ent=10.9% pred_ent=1362 gold_ent=1538
+2026-05-21 01:24:17.501 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:296 - Mejor epoch NER: 6 (entity_acc_constrained=0.1287, entity_threshold=0.75)
+2026-05-21 01:24:17.592 | INFO     | fdi_pln_2611_p5.training.ner_train:train_ner:351 - Informe NER guardado en /scratch/javimartin/p5/fdi_pln_2611_p5/checkpoints/ner_report.html
