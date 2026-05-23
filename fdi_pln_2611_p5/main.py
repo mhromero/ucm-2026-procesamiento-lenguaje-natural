@@ -370,7 +370,7 @@ def cmd_experiment_report(
     ] = package_path("data/experiment_results.json"),
     output_html: Annotated[
         Path, typer.Option("--output-html", help="Informe HTML de salida.")
-    ] = package_path("data/informe_experimentos.html"),
+    ] = package_path("informes/informe_experimentos.html"),
 ):
     """Regenera el informe HTML a partir de experiment_results.json."""
     from fdi_pln_2611_p5.training.experiment_report import (
@@ -394,7 +394,7 @@ def cmd_grid_search_report(
     ] = package_path("data/grid_search_results.json"),
     output_html: Annotated[
         Path, typer.Option("--output-html", help="Ruta del informe HTML de salida.")
-    ] = package_path("data/informe_grid_search.html"),
+    ] = package_path("informes/informe_grid_search.html"),
 ):
     """Genera (o regenera) el informe HTML de exploración de hiperparámetros."""
     from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html

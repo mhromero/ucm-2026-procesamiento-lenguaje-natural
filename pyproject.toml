@@ -27,4 +27,5 @@ packages = ["fdi_pln_2611_p5"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "fdi_pln_2611_p5/data" = "fdi_pln_2611_p5/data"
+"fdi_pln_2611_p5/informes" = "fdi_pln_2611_p5/informes"
 "fdi_pln_2611_p5/config.json" = "fdi_pln_2611_p5/config.json"

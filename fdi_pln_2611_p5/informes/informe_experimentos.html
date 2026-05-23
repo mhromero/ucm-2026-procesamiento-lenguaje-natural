@@ -19,8 +19,6 @@
   @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
   .question { background: #fff8e1; padding: 10px 12px; border-radius: 4px; }
   .hint { color: #555; font-size: 0.9em; }
-  .conclusions { background: #fffde7; border: 2px dashed #fbc02d; padding: 20px; min-height: 120px; margin-top: 32px; border-radius: 6px; }
-  .conclusions h2 { margin-top: 0; }
   .chart-box { text-align: center; }
   .meta { color: #666; font-size: 0.9em; }
   .final { font-weight: 600; margin-top: 12px; }
@@ -611,19 +609,6 @@
      · Mejor val=4.9214 (época 5)</p>
 </section>
 
-
-<div class="conclusions">
-  <h2>Conclusiones (completar manualmente)</h2>
-  <p><em>Espacio para el informe de la práctica. Sugerencias:</em></p>
-  <ul>
-    <li><strong>Corpus:</strong> ¿Mejor solo Alice o Alice+4HP?</li>
-    <li><strong>Ventana:</strong> ¿Efecto de 64 vs 128 (comparar window_64 con corpus_alice_hp4)?</li>
-    <li><strong>Vocab BPE:</strong> ¿200 vs 300 cambia ventanas y val_loss?</li>
-    <li><strong>Profundidad:</strong> ¿2 vs 4 bloques con el mismo corpus?</li>
-    <li>Filas con «reutiliza resultados»: misma config; no implica un segundo entrenamiento.</li>
-    <li>Limitaciones: épocas por run, misma lr/batch, test siempre Alice.</li>
-  </ul>
-</div>
 
 <footer>Práctica 5 — fdi-pln-2611 · JSON: <code>data/experiment_results.json</code></footer>
 </body>
