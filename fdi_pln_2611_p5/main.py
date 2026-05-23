@@ -131,7 +131,7 @@ def cmd_generate_templates_word(
     )
 
     info = crear_jsons_anotacion(
-        archivo_entrada=package_path("data/alice_in_wonderland.txt"),
+        archivo_entrada=package_path("data/corpus/alice_in_wonderland.txt"),
         directorio_salida=output_dir,
         tokenizar=tokenizar_palabras,
         granularidad="palabra",
@@ -162,7 +162,7 @@ def cmd_generate_templates_6frases(
     )
 
     info = crear_jsons_anotacion(
-        archivo_entrada=package_path("data/alice_in_wonderland.txt"),
+        archivo_entrada=package_path("data/corpus/alice_in_wonderland.txt"),
         directorio_salida=output_dir,
         tokenizar=tokenizar_palabras,
         granularidad="palabra",
@@ -194,7 +194,7 @@ def cmd_generate_templates_1json_9frases(
         tokenizar_palabras,
     )
 
-    entrada = package_path("data/alice_in_wonderland.txt")
+    entrada = package_path("data/corpus/alice_in_wonderland.txt")
     frases = seleccionar_frases_6frases_mas_extra(
         entrada,
         min_palabras=min_palabras,
@@ -241,7 +241,7 @@ def cmd_generate_templates_token(
         )
     tokenizer = BPETokenizer.load(str(tokenizer_path))
     crear_jsons_anotacion(
-        archivo_entrada=package_path("data/alice_in_wonderland.txt"),
+        archivo_entrada=package_path("data/corpus/alice_in_wonderland.txt"),
         directorio_salida=output_dir,
         tokenizar=lambda text: tokenizer.decode_tokens(tokenizer.encode(text)),
         granularidad="token",

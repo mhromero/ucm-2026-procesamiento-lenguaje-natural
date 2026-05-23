@@ -16,7 +16,7 @@ SEED = 46
 if __name__ == "__main__":
     base = Path(__file__).resolve().parent
     info = crear_jsons_anotacion(
-        archivo_entrada=base / "data" / "alice_in_wonderland.txt",
+        archivo_entrada=base / "data" / "corpus" / "alice_in_wonderland.txt",
         directorio_salida=base / "data" / "alice_jsons_6frases",
         tokenizar=tokenizar_palabras,
         granularidad="palabra",

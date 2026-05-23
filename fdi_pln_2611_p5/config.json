@@ -1,8 +1,8 @@
 {
   "seed": 42,
   "corpus": {
-    "data_dir": "data",
-    "extra_data_dir": "data/extra",
+    "data_dir": "data/corpus",
+    "extra_data_dir": "data/corpus/extra",
     "extra_max_books": 4
   },
   "tokenizer": {

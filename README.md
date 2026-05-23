@@ -55,7 +55,7 @@ uv run fdi-pln-2611-p5 train-ner --weights p5_ner_2611.pth --causal-weights p5_c
 uv run fdi-pln-2611-p5 generate --weights p5_causal_2611.pth --prompt "Alice"
 
 # Inferencia NER — desde fichero
-uv run fdi-pln-2611-p5 ner --weights p5_ner_2611.pth fdi_pln_2611_p5/data/alice_in_wonderland.txt
+uv run fdi-pln-2611-p5 ner --weights p5_ner_2611.pth fdi_pln_2611_p5/data/corpus/alice_in_wonderland.txt
 
 # Inferencia NER — texto directo
 uv run fdi-pln-2611-p5 ner --weights p5_ner_2611.pth --text "Alice met the Queen of Hearts"

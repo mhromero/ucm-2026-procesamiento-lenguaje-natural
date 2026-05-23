@@ -18,7 +18,7 @@ def main():
     tokenizer = BPETokenizer.load(str(tokenizer_path))
 
     crear_jsons_anotacion(
-        archivo_entrada=base / "data" / "alice_in_wonderland.txt",
+        archivo_entrada=base / "data" / "corpus" / "alice_in_wonderland.txt",
         directorio_salida=base / "data" / "alice_jsons_token",
         tokenizar=lambda text: tokenizer.decode_tokens(tokenizer.encode(text)),
         granularidad="token",
