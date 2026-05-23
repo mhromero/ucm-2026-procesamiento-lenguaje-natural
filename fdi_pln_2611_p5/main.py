@@ -328,9 +328,7 @@ def cmd_annotation_report(
         Path | None,
         typer.Option("--lote-9frases-assignments"),
     ] = package_path("data/asignaciones/alice_jsons_1json_9frases/asignaciones.json"),
-    sin_lote_9frases: Annotated[
-        bool, typer.Option("--sin-lote-9frases")
-    ] = False,
+    sin_lote_9frases: Annotated[bool, typer.Option("--sin-lote-9frases")] = False,
     skip_merge: Annotated[
         bool, typer.Option("--skip-merge", help="Usar merged.json existente.")
     ] = False,

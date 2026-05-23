@@ -17,7 +17,9 @@ def generate_experiment_html_from_json(results_path: Path, output_path: Path) ->
     return generate_experiment_html(payload, output_path)
 
 
-def _svg_learning_curve(history: list[dict], width: int = 420, height: int = 200) -> str:
+def _svg_learning_curve(
+    history: list[dict], width: int = 420, height: int = 200
+) -> str:
     if not history:
         return "<p>Sin historial.</p>"
     epochs = [h["epoch"] for h in history]
@@ -42,9 +44,7 @@ def _svg_learning_curve(history: list[dict], width: int = 420, height: int = 200
         return pad_t + (1 - (v - y_min) / (y_max - y_min)) * plot_h
 
     def polyline(vals: list[float], color: str) -> str:
-        pts = " ".join(
-            f"{x_pos(i):.1f},{y_pos(v):.1f}" for i, v in enumerate(vals)
-        )
+        pts = " ".join(f"{x_pos(i):.1f},{y_pos(v):.1f}" for i, v in enumerate(vals))
         return f'<polyline fill="none" stroke="{color}" stroke-width="2.5" points="{pts}"/>'
 
     grid = ""
@@ -144,14 +144,14 @@ def _build_html(payload: dict) -> str:
             if exp.get("reused_from")
             else ""
         )
-        summary_rows += f"""<tr class="{'best-row' if is_best else ''}">
-          <td><strong>{html.escape(exp['id'])}</strong>{" ★" if is_best else ""}{reused}</td>
-          <td>{html.escape(exp['name'])}</td>
-          <td>{html.escape(cfg.get('corpus_train', '—'))}</td>
-          <td>{cfg['window_size']}</td>
-          <td>{exp['dataset_stats']['train_windows']:,}</td>
-          <td>{exp['best_epoch']['val_loss']:.4f}</td>
-          <td>{exp['best_epoch']['epoch']}</td>
+        summary_rows += f"""<tr class="{"best-row" if is_best else ""}">
+          <td><strong>{html.escape(exp["id"])}</strong>{" ★" if is_best else ""}{reused}</td>
+          <td>{html.escape(exp["name"])}</td>
+          <td>{html.escape(cfg.get("corpus_train", "—"))}</td>
+          <td>{cfg["window_size"]}</td>
+          <td>{exp["dataset_stats"]["train_windows"]:,}</td>
+          <td>{exp["best_epoch"]["val_loss"]:.4f}</td>
+          <td>{exp["best_epoch"]["epoch"]}</td>
         </tr>"""
 
     exp_sections = ""
@@ -159,46 +159,46 @@ def _build_html(payload: dict) -> str:
         cfg = exp["config"]
         exp_sections += f"""
 <section class="experiment">
-  <h2>{html.escape(exp['name'])} <code>{html.escape(exp['id'])}</code></h2>
-  <p class="meta"><strong>Variable:</strong> {html.escape(exp['variable'])}</p>
-  {"<p class='meta'><strong>Nota:</strong> Resultados reutilizados de <code>" + html.escape(exp['reused_from']) + "</code> (config idéntica).</p>" if exp.get('reused_from') else ""}
-  <p class="question"><strong>Pregunta:</strong> {html.escape(exp['research_question'])}</p>
-  <p class="hint"><strong>Hipótesis / lectura posible:</strong> {html.escape(exp['expected_insight'])}</p>
+  <h2>{html.escape(exp["name"])} <code>{html.escape(exp["id"])}</code></h2>
+  <p class="meta"><strong>Variable:</strong> {html.escape(exp["variable"])}</p>
+  {"<p class='meta'><strong>Nota:</strong> Resultados reutilizados de <code>" + html.escape(exp["reused_from"]) + "</code> (config idéntica).</p>" if exp.get("reused_from") else ""}
+  <p class="question"><strong>Pregunta:</strong> {html.escape(exp["research_question"])}</p>
+  <p class="hint"><strong>Hipótesis / lectura posible:</strong> {html.escape(exp["expected_insight"])}</p>
 
   <div class="grid-2">
     <div>
       <h3>Configuración</h3>
       <table class="cfg">
-        <tr><td>corpus train (BPE)</td><td>{html.escape(cfg.get('corpus_train', '—'))}</td></tr>
-        <tr><td>BPE vocab (real)</td><td>{exp.get('bpe_vocab_actual', cfg['vocab_size'])}</td></tr>
-        <tr><td>caché / pesos</td><td><code>{html.escape(exp.get('tokenizer_cache_dir', '—'))}</code><br>
+        <tr><td>corpus train (BPE)</td><td>{html.escape(cfg.get("corpus_train", "—"))}</td></tr>
+        <tr><td>BPE vocab (real)</td><td>{exp.get("bpe_vocab_actual", cfg["vocab_size"])}</td></tr>
+        <tr><td>caché / pesos</td><td><code>{html.escape(exp.get("tokenizer_cache_dir", "—"))}</code><br>
             <span class="meta">model.pth · experiment_config.json</span></td></tr>
-        <tr><td>extra_max_books</td><td>{cfg.get('extra_max_books', '—')}</td></tr>
-        <tr><td>window_size</td><td>{cfg['window_size']}</td></tr>
-        <tr><td>vocab_size</td><td>{cfg['vocab_size']}</td></tr>
-        <tr><td>n_blocks</td><td>{cfg['n_blocks']}</td></tr>
-        <tr><td>n_heads</td><td>{cfg['n_heads']}</td></tr>
-        <tr><td>d_model</td><td>{cfg['d_model']}</td></tr>
-        <tr><td>dropout</td><td>{cfg['dropout']}</td></tr>
-        <tr><td>lr / batch</td><td>{cfg['learning_rate']} / {cfg['batch_size']}</td></tr>
+        <tr><td>extra_max_books</td><td>{cfg.get("extra_max_books", "—")}</td></tr>
+        <tr><td>window_size</td><td>{cfg["window_size"]}</td></tr>
+        <tr><td>vocab_size</td><td>{cfg["vocab_size"]}</td></tr>
+        <tr><td>n_blocks</td><td>{cfg["n_blocks"]}</td></tr>
+        <tr><td>n_heads</td><td>{cfg["n_heads"]}</td></tr>
+        <tr><td>d_model</td><td>{cfg["d_model"]}</td></tr>
+        <tr><td>dropout</td><td>{cfg["dropout"]}</td></tr>
+        <tr><td>lr / batch</td><td>{cfg["learning_rate"]} / {cfg["batch_size"]}</td></tr>
       </table>
       <h3>Corpus → ventanas</h3>
       <table class="cfg">
-        <tr><td>Tokens train</td><td>{exp['dataset_stats']['train_tokens']:,}</td></tr>
-        <tr><td>Tokens test (Alice)</td><td>{exp['dataset_stats']['test_tokens']:,}</td></tr>
-        <tr><td>Ventanas train</td><td>{exp['dataset_stats']['train_windows']:,}</td></tr>
-        <tr><td>Batches / época</td><td>{exp['dataset_stats']['steps_per_epoch']:,}</td></tr>
+        <tr><td>Tokens train</td><td>{exp["dataset_stats"]["train_tokens"]:,}</td></tr>
+        <tr><td>Tokens test (Alice)</td><td>{exp["dataset_stats"]["test_tokens"]:,}</td></tr>
+        <tr><td>Ventanas train</td><td>{exp["dataset_stats"]["train_windows"]:,}</td></tr>
+        <tr><td>Batches / época</td><td>{exp["dataset_stats"]["steps_per_epoch"]:,}</td></tr>
       </table>
     </div>
     <div class="chart-box">
       <h3>Curvas de aprendizaje</h3>
-      {_svg_learning_curve(exp['history'])}
+      {_svg_learning_curve(exp["history"])}
     </div>
   </div>
   <h3>Histórico por época</h3>
-  {_history_table(exp['history'])}
-  <p class="final">Loss final: train={exp['train_loss']:.4f}, val={exp['val_loss']:.4f}
-     · Mejor val={exp['best_epoch']['val_loss']:.4f} (época {exp['best_epoch']['epoch']})</p>
+  {_history_table(exp["history"])}
+  <p class="final">Loss final: train={exp["train_loss"]:.4f}, val={exp["val_loss"]:.4f}
+     · Mejor val={exp["best_epoch"]["val_loss"]:.4f} (época {exp["best_epoch"]["epoch"]})</p>
 </section>
 """
 
@@ -240,18 +240,18 @@ def _build_html(payload: dict) -> str:
 </head>
 <body>
 <h1>Exploración de hiperparámetros y arquitectura</h1>
-<p class="meta">Generado: {html.escape(date)} UTC · 8 experimentos · {methodology.get('epochs_per_run', '?')} épocas por entrenamiento único</p>
+<p class="meta">Generado: {html.escape(date)} UTC · 8 experimentos · {methodology.get("epochs_per_run", "?")} épocas por entrenamiento único</p>
 
 <div class="summary-box">
-  <strong>Mejor experimento:</strong> <code>{html.escape(best['id'])}</code> — {html.escape(best['name'])}<br>
-  <strong>Mejor val_loss:</strong> {best['best_epoch']['val_loss']:.4f} (época {best['best_epoch']['epoch']})<br>
-  <strong>Ventanas train:</strong> {best['dataset_stats']['train_windows']:,}
+  <strong>Mejor experimento:</strong> <code>{html.escape(best["id"])}</code> — {html.escape(best["name"])}<br>
+  <strong>Mejor val_loss:</strong> {best["best_epoch"]["val_loss"]:.4f} (época {best["best_epoch"]["epoch"]})<br>
+  <strong>Ventanas train:</strong> {best["dataset_stats"]["train_windows"]:,}
 </div>
 
 <h2>Metodología</h2>
 <div class="method">
-  <p>{html.escape(methodology.get('description', ''))}</p>
-  <p><strong>Criterio de comparación:</strong> {html.escape(methodology.get('metric_selection', ''))}</p>
+  <p>{html.escape(methodology.get("description", ""))}</p>
+  <p><strong>Criterio de comparación:</strong> {html.escape(methodology.get("metric_selection", ""))}</p>
   <table>
     <tr><th colspan="2">Hiperparámetros fijos (todos los experimentos)</th></tr>
     {fixed_rows}

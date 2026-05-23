@@ -31,7 +31,9 @@ def _harry_potter_book_starts(text: str) -> list[int]:
     for marker in _HARRY_POTTER_BOOK_MARKERS:
         idx = text.find(marker, search_from)
         if idx < 0:
-            raise ValueError(f"Marcador de libro Harry Potter no encontrado: {marker!r}")
+            raise ValueError(
+                f"Marcador de libro Harry Potter no encontrado: {marker!r}"
+            )
         starts.append(idx)
         search_from = idx + 1
     return starts

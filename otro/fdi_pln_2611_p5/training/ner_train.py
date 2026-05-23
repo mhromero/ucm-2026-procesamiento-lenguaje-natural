@@ -258,7 +258,9 @@ def train_ner(
             fallback_entity_acc = ent_acc
             fallback_state = copy.deepcopy(ner_model.state_dict())
             fallback_epoch = epoch + 1
-        constraint_mark = "" if eligible else " (acc global < {:.0%})".format(min_overall_acc)
+        constraint_mark = (
+            "" if eligible else " (acc global < {:.0%})".format(min_overall_acc)
+        )
         logger.info(
             "NER epoch {}/{} train_loss={:.4f} val_loss={:.4f} acc={:.1%} "
             "entity_acc={:.1%} macro_f1={:.1%} span_f1={:.1%} pred_ent={} gold_ent={}{}{}",
@@ -275,19 +277,21 @@ def train_ner(
             improved,
             constraint_mark,
         )
-        ner_history.append({
-            "epoch": epoch + 1,
-            "train_loss": train_loss_epoch,
-            "val_loss": val_loss,
-            "overall_acc": metricas["overall_acc"],
-            "entity_recall": metricas["entity_recall"],
-            "entity_token_acc": metricas["entity_token_acc"],
-            "macro_f1_non_o": metricas["macro_f1_non_o"],
-            "span_f1": metricas.get("span_f1", 0.0),
-            "n_pred_entities": metricas["n_pred_entities"],
-            "n_gold_entities": metricas["n_gold_entities"],
-            "meets_overall_acc": eligible,
-        })
+        ner_history.append(
+            {
+                "epoch": epoch + 1,
+                "train_loss": train_loss_epoch,
+                "val_loss": val_loss,
+                "overall_acc": metricas["overall_acc"],
+                "entity_recall": metricas["entity_recall"],
+                "entity_token_acc": metricas["entity_token_acc"],
+                "macro_f1_non_o": metricas["macro_f1_non_o"],
+                "span_f1": metricas.get("span_f1", 0.0),
+                "n_pred_entities": metricas["n_pred_entities"],
+                "n_gold_entities": metricas["n_gold_entities"],
+                "meets_overall_acc": eligible,
+            }
+        )
 
     if best_state is None and fallback_state is not None:
         logger.warning(

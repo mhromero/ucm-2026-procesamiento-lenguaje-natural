@@ -41,7 +41,9 @@ def prepare_tokenizer_and_tokens(
             len(extra_train_textos),
         )
     textos_train = (
-        alice_textos if not extra_train_textos else alice_textos + "\n" + extra_train_textos
+        alice_textos
+        if not extra_train_textos
+        else alice_textos + "\n" + extra_train_textos
     )
 
     if cache_dir is not None:

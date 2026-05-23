@@ -238,9 +238,7 @@ def predict_label_ids_for_tokens(
         chunk = token_ids[start : start + window_size]
         x = torch.tensor([chunk], dtype=torch.long, device=device)
         logits = model(x)
-        chunk_preds = logits_to_label_ids(
-            logits[0], entity_threshold=entity_threshold
-        )
+        chunk_preds = logits_to_label_ids(logits[0], entity_threshold=entity_threshold)
         for offset, pid in enumerate(chunk_preds[: len(chunk)]):
             votes[start + offset].append(pid)
 
@@ -329,7 +327,11 @@ def evaluar_confusion_ner_sentence_level(
         fn = sum(matrix[i][j] for j in range(num_labels)) - tp
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+        f1 = (
+            2 * precision * recall / (precision + recall)
+            if (precision + recall) > 0
+            else 0.0
+        )
         per_class[ID2LABEL[i]] = {
             "precision": precision,
             "recall": recall,
@@ -449,7 +451,9 @@ def entrenar_epochs_causal(
                 progress.advance(task)
             train_loss = epoch_loss / max(steps, 1)
             val_loss = evaluar_loss_causal(model, x_val, y_val, batch_size, device)
-            history.append({"epoch": epoch + 1, "train_loss": train_loss, "val_loss": val_loss})
+            history.append(
+                {"epoch": epoch + 1, "train_loss": train_loss, "val_loss": val_loss}
+            )
             logger.info(
                 "{} época {}/{} train_loss={:.4f} val_loss={:.4f} ({} batches)",
                 description,
@@ -544,7 +548,11 @@ def evaluar_confusion_ner(
         fn = sum(matrix[i][j] for j in range(num_labels)) - tp
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+        f1 = (
+            2 * precision * recall / (precision + recall)
+            if (precision + recall) > 0
+            else 0.0
+        )
         per_class[ID2LABEL[i]] = {
             "precision": precision,
             "recall": recall,
@@ -552,4 +560,8 @@ def evaluar_confusion_ner(
             "support": tp + fn,
         }
 
-    return {"matrix": matrix, "per_class": per_class, "labels": [ID2LABEL[i] for i in range(num_labels)]}
+    return {
+        "matrix": matrix,
+        "per_class": per_class,
+        "labels": [ID2LABEL[i] for i in range(num_labels)],
+    }

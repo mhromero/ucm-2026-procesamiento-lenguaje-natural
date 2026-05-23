@@ -134,11 +134,7 @@ EXPERIMENT_SPECS: list[dict] = [
 def _merge_config(base: dict, overrides: dict) -> dict:
     merged = copy.deepcopy(base)
     for key, value in overrides.items():
-        if (
-            key in merged
-            and isinstance(merged[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
             merged[key] = {**merged[key], **value}
         else:
             merged[key] = value
@@ -200,7 +196,10 @@ EXPERIMENT_CONFIG_NAME = "experiment_config.json"
 def _copy_experiment_artifacts(source_dir: Path, dest_dir: Path) -> None:
     """Copia BPE, tokens, pesos y config JSON al directorio del experimento."""
     dest_dir.mkdir(parents=True, exist_ok=True)
-    for name in _TOKENIZER_CACHE_FILES + (EXPERIMENT_WEIGHTS_NAME, EXPERIMENT_CONFIG_NAME):
+    for name in _TOKENIZER_CACHE_FILES + (
+        EXPERIMENT_WEIGHTS_NAME,
+        EXPERIMENT_CONFIG_NAME,
+    ):
         src = source_dir / name
         if src.exists():
             shutil.copy2(src, dest_dir / name)
@@ -392,7 +391,9 @@ def run_experiment_exploration(config_path: Path | None = None) -> dict:
     report_path = package_path(exp_cfg["report_path"])
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info("Exploración de experimentos · dispositivo={} · {} épocas/exp", device, epochs)
+    logger.info(
+        "Exploración de experimentos · dispositivo={} · {} épocas/exp", device, epochs
+    )
 
     results: list[dict] = []
     by_config_key: dict[tuple, dict] = {}

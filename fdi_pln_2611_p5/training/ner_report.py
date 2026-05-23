@@ -50,7 +50,7 @@ def _confusion_cell(count: int, row_total: int) -> str:
     else:
         bg = f"rgb({255 - intensity // 2},{255 - intensity},{255 - intensity // 2})"
         color = "#111" if ratio < 0.6 else "#fff"
-    return f'<td style="background:{bg};color:{color};text-align:center;padding:6px 10px;font-weight:{"bold" if ratio>0.5 else "normal"}">{count}</td>'
+    return f'<td style="background:{bg};color:{color};text-align:center;padding:6px 10px;font-weight:{"bold" if ratio > 0.5 else "normal"}">{count}</td>'
 
 
 def _build_html(
@@ -68,7 +68,9 @@ def _build_html(
     losses = [r["val_loss"] for r in history]
     min_loss = min(losses) if losses else 0.0
     max_loss = max(losses) if losses else 1.0
-    best_row = next((r for r in history if r["epoch"] == best_epoch), history[-1] if history else {})
+    best_row = next(
+        (r for r in history if r["epoch"] == best_epoch), history[-1] if history else {}
+    )
     best_metric = ner_cfg.get("best_metric", "val_loss")
     has_macro_f1 = any("macro_f1_non_o" in r for r in history)
     has_span_f1 = any("span_f1" in r for r in history)
@@ -84,13 +86,11 @@ def _build_html(
         macro_cell = ""
         if has_macro_f1:
             mf1 = r.get("macro_f1_non_o", 0.0)
-            macro_cell = (
-                f'<td>{_bar(mf1, 1.0, "rgb(120,80,180)")} {_pct(mf1)}</td>'
-            )
+            macro_cell = f"<td>{_bar(mf1, 1.0, 'rgb(120,80,180)')} {_pct(mf1)}</td>"
         span_cell = ""
         if has_span_f1:
             sf1 = r.get("span_f1", 0.0)
-            span_cell = f'<td>{_bar(sf1, 1.0, "rgb(80,140,200)")} {_pct(sf1)}</td>'
+            span_cell = f"<td>{_bar(sf1, 1.0, 'rgb(80,140,200)')} {_pct(sf1)}</td>"
         row_style = 'style="background:#fffde7"' if r["epoch"] == best_epoch else ""
         curve_rows += f"""<tr {row_style}>
           <td style="text-align:center">{r["epoch"]}{star}</td>
@@ -106,12 +106,15 @@ def _build_html(
 
     # --- confusion matrix ---
     header_cells = "".join(
-        f'<th style="padding:6px 10px;background:#e8f5e9">pred: {lbl}</th>' for lbl in labels
+        f'<th style="padding:6px 10px;background:#e8f5e9">pred: {lbl}</th>'
+        for lbl in labels
     )
     conf_rows = ""
     for i, lbl in enumerate(labels):
         row_total = sum(matrix[i]) if matrix else 0
-        cells = "".join(_confusion_cell(matrix[i][j], row_total) for j in range(len(labels)))
+        cells = "".join(
+            _confusion_cell(matrix[i][j], row_total) for j in range(len(labels))
+        )
         conf_rows += f'<tr><th style="padding:6px 10px;background:#e8f5e9;text-align:right">true: {lbl}</th>{cells}</tr>'
 
     # --- per-class metrics table ---
@@ -122,7 +125,7 @@ def _build_html(
         r = m.get("recall", 0.0)
         f = m.get("f1", 0.0)
         s = m.get("support", 0)
-        f1_color = f"rgb({int(220-160*f)},{int(80+140*f)},80)"
+        f1_color = f"rgb({int(220 - 160 * f)},{int(80 + 140 * f)},80)"
         class_rows += f"""<tr>
           <td style="font-weight:bold;padding:5px 10px">{lbl}</td>
           <td style="text-align:right;padding:5px 10px">{_pct(p)}</td>
@@ -158,10 +161,10 @@ def _build_html(
   <strong>Accuracy:</strong> {_pct(best_row.get("overall_acc", 0))} &nbsp;|&nbsp;
   <strong>Entity token accuracy:</strong> {_pct(best_row.get("entity_token_acc", best_row.get("entity_recall", 0)))} &nbsp;|&nbsp;
   <strong>Accuracy global:</strong> {_pct(best_row.get("overall_acc", 0))}
-  {f' &nbsp;|&nbsp; <strong>Macro F1 (sin o):</strong> {_pct(best_row.get("macro_f1_non_o", 0))}' if has_macro_f1 else ''}
-  {f' &nbsp;|&nbsp; <strong>Span F1:</strong> {_pct(best_row.get("span_f1", 0))}' if has_span_f1 else ''}
-  {f' &nbsp;|&nbsp; <strong>Span F1 (informe):</strong> {_pct(confusion.get("span_f1", 0))}' if confusion.get("span_f1") is not None else ''}
-  {f' &nbsp;|&nbsp; <strong>Restricción acc ≥</strong> {_pct(ner_cfg.get("min_overall_acc", 0))}' if ner_cfg.get("min_overall_acc") else ''}
+  {f" &nbsp;|&nbsp; <strong>Macro F1 (sin o):</strong> {_pct(best_row.get('macro_f1_non_o', 0))}" if has_macro_f1 else ""}
+  {f" &nbsp;|&nbsp; <strong>Span F1:</strong> {_pct(best_row.get('span_f1', 0))}" if has_span_f1 else ""}
+  {f" &nbsp;|&nbsp; <strong>Span F1 (informe):</strong> {_pct(confusion.get('span_f1', 0))}" if confusion.get("span_f1") is not None else ""}
+  {f" &nbsp;|&nbsp; <strong>Restricción acc ≥</strong> {_pct(ner_cfg.get('min_overall_acc', 0))}" if ner_cfg.get("min_overall_acc") else ""}
 </div>
 
 <h2>Configuración del modelo</h2>

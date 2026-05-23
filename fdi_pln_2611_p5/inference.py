@@ -37,7 +37,12 @@ def _load_ner_model(weights_path: Path) -> tuple[NERModel, BPETokenizer]:
     )
     llm = build_model(config, tokenizer)
     ner_model = NERModel(llm)
-    ner_model.load_state_dict(payload["model_state_dict"])
+    state = {
+        k: v
+        for k, v in payload["model_state_dict"].items()
+        if not k.startswith("loss_fn.")
+    }
+    ner_model.load_state_dict(state)
     ner_model.entity_threshold = float(payload.get("entity_threshold", 0.5))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ner_model.to(device)
