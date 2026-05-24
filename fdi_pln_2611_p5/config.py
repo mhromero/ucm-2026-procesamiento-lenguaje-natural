@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from fdi_pln_2611_p5.paths import require_file
+
 PACKAGE_DIR = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = PACKAGE_DIR / "config.json"
 
@@ -30,7 +32,7 @@ def load_config(path: Path | None = None) -> dict:
     Returns:
         Parsed configuration dictionary.
     """
-    config_path = path or DEFAULT_CONFIG_PATH
+    config_path = require_file(path or DEFAULT_CONFIG_PATH, label="config file")
     return json.loads(config_path.read_text(encoding="utf-8"))
 
 
@@ -95,6 +97,7 @@ def resolve_tokenizer_path(
 
     tried = ", ".join(str(p) for p in candidates)
     raise FileNotFoundError(
-        f"No se encontró bpe_tokenizer.json. Probado: {tried}. "
-        "Descarga con: ./cluster_pixel/fetch_results_pixel.sh"
+        f"BPE tokenizer not found (bpe_tokenizer.json).\n"
+        f"  Tried: {tried}\n"
+        f"  Hint: run ./cluster_pixel/fetch_results_pixel.sh"
     )

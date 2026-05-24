@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fdi_pln_2611_p5.config import package_path
+from fdi_pln_2611_p5.paths import require_dir
 
 # First-chapter markers for each Harry Potter book (lowercase; extra corpus is lowercased).
 _HARRY_POTTER_BOOK_MARKERS = (
@@ -28,7 +29,7 @@ def concatenar_archivos_txt(data_dir: str | Path) -> str:
     Returns:
         Combined corpus text.
     """
-    data_path = Path(data_dir)
+    data_path = require_dir(data_dir, label="corpus directory")
     textos = [
         archivo.read_text(encoding="utf-8")
         for archivo in sorted(data_path.glob("*.txt"))

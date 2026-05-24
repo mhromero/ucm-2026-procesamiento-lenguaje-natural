@@ -163,6 +163,31 @@
     border-radius: 0 10px 10px 0;
     margin: 20px 0;
   }
+  .entity-pred-table { max-width: 420px; margin: 16px 0; }
+  .entity-pred-table td:last-child { font-style: italic; color: #1e1b4b; }
+  .tag-per { color: #4338ca; font-weight: 600; }
+  .tag-loc { color: #0891b2; font-weight: 600; }
+  .pred-ok { font-size: 0.85em; color: #15803d; font-weight: 500; font-style: normal; }
+  .inference-note {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-left: 4px solid #6366f1;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.92em;
+    margin: 16px 0;
+  }
+  .explore-summary {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-left: 4px solid #7c3aed;
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 24px 0;
+  }
+  .explore-summary ol { margin: 12px 0 0 1.2em; padding: 0; }
+  .explore-summary li { margin-bottom: 10px; }
+  .explore-summary li:last-child { margin-bottom: 0; }
 
   footer {
     color: #9ca3af;
@@ -232,6 +257,8 @@
 
 <!-- ============================================================ -->
 <h2>2. Exploración de hiperparámetros del LM causal</h2>
+
+<p>Antes de fijar el modelo entregado, se hizo una exploración en dos capas: un <strong>grid search</strong> sobre el optimizador (learning rate × batch size) y una batería de <strong>ocho experimentos</strong> que varían de forma controlada el corpus, la ventana, el vocabulario BPE y la profundidad del Transformer. En ambos casos la métrica principal es la <code>val_loss</code> en Alice, de modo que las comparaciones tengan un criterio único y reproducible. No se trata de probar valores al azar: cada eje responde a una pregunta concreta (¿ayuda mezclar dominios?, ¿importa el batch?, ¿compensa un vocabulario más fino?) y los resultados se interpretan en función del algoritmo y de los datos disponibles.</p>
 
 <h3>2.1 Grid search: learning rate × batch size</h3>
 
@@ -317,6 +344,17 @@
 
 <h4>Efecto de la profundidad</h4>
 <p>Diferencia casi nula: depth_2 da 4.963 y depth_4 da 4.921. Con 5 épocas y este corpus, la capacidad extra de los 2 bloques adicionales no se aprovecha.</p>
+
+<h3>2.3 Síntesis: qué aporta la exploración</h3>
+
+<div class="explore-summary">
+  <p><strong>Tres conclusiones de la exploración</strong> (más allá de elegir números para el entrenamiento final):</p>
+  <ol>
+    <li><strong>Metodología de optimización.</strong> El grid search separa de forma clara el efecto del <em>batch size</em> (dominante: 128 &gt;&gt; 64 &gt; 32 en test_loss) del de la <em>learning rate</em> (casi plano con batch grande). Eso evita confundir “lr que converge rápido en train” con “mejor generalización en Alice” y justifica usar batch=128 en el entrenamiento final tras el barrido 3×3.</li>
+    <li><strong>Realidad del corpus.</strong> Los experimentos de corpus muestran que <em>más texto de entrenamiento no implica mejor loss en el dominio de test</em>: Alice+4HP empeora ~2 puntos frente a solo Alice cuando validamos siempre en Alice. La lección no es “HP es malo”, sino que hay que alinear train y evaluación: mezclar dominios literarios distintos diluye lo que el modelo debe aprender para predecir Alice.</li>
+    <li><strong>Realidad del algoritmo y del tokenizador.</strong> Ventana 64 vs 128 y 2 vs 4 bloques apenas mueven la aguja; en cambio el vocabulario BPE (200 vs 300) y el volumen de ventanas sí. Con un modelo pequeño y pocas épocas, el cuello de botella no es la profundidad del Transformer sino cuántas actualizaciones estables hace el optimizador y cuántos tokens/ventanas genera el BPE — decisiones que solo salen a la luz variando un eje cada vez.</li>
+  </ol>
+</div>
 
 <hr>
 
@@ -409,36 +447,46 @@
 
 <h3>3.1 Evaluación cualitativa y limitaciones</h3>
 
-<p>Ejemplo de predicción sobre frases extraídas del corpus:</p>
+<p>Ejemplo ejecutado con <code>inference-ner</code> sobre <code>data/sample_ner_test.txt</code> (8 frases de Alice), usando el checkpoint <code>p5_ner_2611.pth</code>:</p>
 
-<pre>Entrada:
+<pre>Entrada (extracto):
   alice was beginning to get very tired of sitting by her sister on the bank.
   the white rabbit ran close by her.
-  alice started to her feet and ran across the field after the rabbit.
-  the queen of hearts shouted off with her head.
-  alice met the cheshire cat sitting on a branch.
-  lewis carroll wrote alice's adventures in wonderland.
-  the mad hatter and the march hare were having a tea party.
-  alice found herself in the court of the king and queen of hearts.
+  ...
+  alice found herself in the court of the king and queen of hearts.</pre>
 
-Salida del modelo:
-  PER  ali
-  LOC  n
-  PER  k
-  PER  ali
-  PER  a
-  PER  ali
-  PER  alice
-  PER  a
-  LOC  p
-  PER  ali</pre>
+<div class="inference-note">
+  <strong>Postprocesado en inferencia:</strong> si el modelo marca <code>pi</code> o <code>li</code> en un subtoken BPE, la salida se expande a la <em>palabra completa</em> del texto y se elimina la puntuación en los bordes del span (<code>bank.</code> → <code>bank</code>). Esto no corrige errores del clasificador, solo mejora la legibilidad de la salida.
+</div>
 
-<p>Los resultados son claramente deficientes. El modelo detecta subtokens BPE aislados (<code>ali</code>, <code>a</code>, <code>k</code>, <code>n</code>, <code>p</code>) en lugar de los nombres completos, y no detecta ninguna entidad LOC correctamente (<code>wonderland</code> debería aparecer). Hay varias razones que se acumulan:</p>
+<p><strong>Entidades predichas (salida agrupada PER / LOC):</strong></p>
+<table class="entity-pred-table">
+  <thead><tr><th>Tipo</th><th>Texto</th></tr></thead>
+  <tbody>
+    <tr><td class="tag-per">PER</td><td>alice</td></tr>
+    <tr><td class="tag-loc">LOC</td><td>beginning</td></tr>
+    <tr><td class="tag-per">PER</td><td>bank</td></tr>
+    <tr><td class="tag-per">PER</td><td>alice</td></tr>
+    <tr><td class="tag-per">PER</td><td>after</td></tr>
+    <tr><td class="tag-per">PER</td><td>alice</td></tr>
+    <tr><td class="tag-loc">LOC</td><td>cat</td></tr>
+    <tr><td class="tag-per">PER</td><td>alice's</td></tr>
+    <tr><td class="tag-per">PER</td><td>adventures</td></tr>
+    <tr><td class="tag-loc">LOC</td><td>party <span class="pred-ok">(acorde con anotación)</span></td></tr>
+    <tr><td class="tag-per">PER</td><td>alice</td></tr>
+    <tr><td class="tag-loc">LOC</td><td>court <span class="pred-ok">(acorde con anotación)</span></td></tr>
+  </tbody>
+</table>
+
+<p>En las anotaciones manuales no solo se marcaron topónimos como <code>wonderland</code>, sino también <strong>lugares cotidianos o escenarios de escena</strong> (<em>tea party</em>, <em>court of the king</em>, etc.) como LOC, para tener más ejemplos de esa clase con un corpus tan pequeño. Hay que tenerlo en cuenta al juzgar la salida.</p>
+
+<p>Los resultados siguen siendo claramente deficientes en precisión global, aunque la forma de salida ya es más legible que mostrar subtokens sueltos (<code>ali</code>, <code>n</code>, etc.). Lo positivo: <code>alice</code> aparece varias veces como PER; <code>party</code> y <code>court</code> como LOC son <strong>aceptables</strong> respecto a nuestra guía (escena del té y tribunal). Lo negativo:</p>
 <ul>
-  <li><strong>BPE rompe los nombres propios:</strong> "alice" se tokeniza como <code>ali</code>+<code>ce</code>, "queen" como <code>q</code>+<code>ueen</code>, etc. El modelo puede aprender a marcar el primer subtoken como <code>pi</code> pero no aprende a encadenar los siguientes con <code>pc</code>, por lo que los spans quedan truncados a un solo subtoken.</li>
-  <li><strong>Dataset de anotaciones pequeño:</strong> pocas frases etiquetadas manualmente son insuficientes para aprender el etiquetado de continuación de forma fiable.</li>
-  <li><strong>Desequilibrio extremo de clases:</strong> la inmensa mayoría de tokens son <code>o</code>, lo que sesga el modelo hacia predecir <code>o</code> salvo señales muy claras.</li>
-  <li><strong>Dominio mixto del backbone:</strong> el tokenizador BPE fue entrenado con Alice+HP, por lo que los nombres propios de Alice no tienen representación propia clara en el vocabulario y se fragmentan más.</li>
+  <li><strong>Falsas alarmas:</strong> <code>beginning</code>, <code>bank</code>, <code>after</code> o <code>cat</code> se etiquetan como entidades sin respaldo en gold: el modelo dispara <code>pi</code>/<code>li</code> en un subtoken y el postprocesado expande la palabra entera.</li>
+  <li><strong>Omisiones graves:</strong> no aparecen entidades gold evidentes como <code>rabbit</code>, <code>queen</code>, <code>carroll</code> o <code>wonderland</code>.</li>
+  <li><strong>Confusión de tipo:</strong> <code>adventures</code> como PER o <code>cat</code> como LOC son errores claros; en cambio <code>party</code> y <code>court</code> como LOC encajan con el criterio ampliado de lugar que usamos al etiquetar.</li>
+  <li><strong>BPE + pocos datos:</strong> el modelo sigue aprendiendo mal las continuaciones (<code>pc</code>/<code>lc</code>) en entrenamiento (véase matriz de confusión); en inferencia solo se “maquilla” el inicio de entidad expandiendo la palabra.</li>
+  <li><strong>Desequilibrio de clases:</strong> la accuracy global (~86%) oculta que el modelo casi siempre predice <code>o</code> y solo activa entidad en un subtoken aislado de vez en cuando.</li>
 </ul>
 
 <hr>
@@ -472,9 +520,11 @@ him through the platform beetle .spun diggory and sprieked by haywi</pre>
 <!-- ============================================================ -->
 <h2>5. Conclusiones generales</h2>
 
-<p>Se eligió Harry Potter como corpus adicional por compartir características con Alice: ficción literaria en inglés, narración en tercera persona y público similar. El objetivo era ampliar el corpus manteniendo un registro coherente. Sin embargo, el experimento de corpus muestra que añadir HP empeora la val_loss en Alice (4.92 vs 2.86 entrenando solo en Alice), porque train y test dejan de coincidir en dominio. Para el modelo final de NER se optó igualmente por el backbone entrenado en Alice+HP, ya que un corpus mayor produce representaciones más ricas aunque la validación causal sea peor.</p>
+<p>La exploración de hiperparámetros (grid search + ocho experimentos) aportó tres lecciones claras: (1) en optimización, el <strong>batch size</strong> domina la generalización en Alice y la learning rate apenas importa con batches grandes; (2) en <strong>corpus</strong>, más datos de entrenamiento no mejoran el test si el dominio no coincide — Alice+HP empeora frente a solo Alice (val_loss 4.92 vs 2.86) al validar siempre en Alice; (3) en <strong>arquitectura y BPE</strong>, profundidad y ventana mueven poco el resultado, mientras que el tamaño del vocabulario y el número de ventanas sí. Esa búsqueda fue deliberada (un eje por experimento, misma métrica) y evitó fijar hiperparámetros sin evidencia.</p>
 
-<p>En NER el problema más importante es la falta de datos: con tan pocas frases anotadas manualmente, el modelo no tiene ejemplos suficientes para aprender el etiquetado de forma fiable. Hay que tener en cuenta además que el esquema interno usa etiquetas de inicio y continuación (<code>pi</code>, <code>pc</code>, <code>li</code>, <code>lc</code>), pero la salida al usuario agrupa esas etiquetas en tipos de entidad (<code>PER</code>, <code>LOC</code>): el modelo predice subtokens individuales con <code>pi</code> o <code>pc</code> y el postprocesado los une en un span con su tipo. Con pocos datos, el modelo aprende a emitir <code>pi</code> en algún subtoken pero raramente encadena <code>pc</code> correctamente, por lo que los spans quedan truncados a un solo subtoken.</p>
+<p>Se eligió Harry Potter como corpus adicional por afinidad con Alice (ficción en inglés, registro narrativo similar), pero los experimentos muestran que conviene separar el objetivo de generación —donde un backbone más grande en Alice+HP aporta fluidez— del de evaluar pérdida en Alice aislada. Para el modelo final de NER se mantuvo el backbone Alice+HP: encaja con <strong>pre-entrenamiento</strong> y <strong>fine-tuning</strong> vistos en clase, aunque hacen falta muchos más datos anotados para que el fine-tuning sea razonable.</p>
+
+<p>En NER el problema más importante es la falta de datos: con tan pocas frases anotadas manualmente, el modelo no tiene ejemplos suficientes para aprender el etiquetado de forma fiable. Ampliamos LOC a escenarios cotidianos (<em>party</em>, <em>court</em>, etc.) para equilibrar clases; por eso algunas predicciones LOC sobre sustantivos comunes no son necesariamente errores. Aun así, predominan falsos positivos no anotados (<code>beginning</code>, <code>bank</code>…) y faltan personajes y lugares clave (<code>rabbit</code>, <code>wonderland</code>…).</p>
 
 <footer>Práctica 5 — fdi-pln-2611 · UCM 2025/26</footer>
 </body>

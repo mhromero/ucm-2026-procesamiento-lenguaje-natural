@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
+import functools
 from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 from fdi_pln_2611_p5.annotations.merge_annotators import merge_annotations
-from fdi_pln_2611_p5.config import package_path
-from fdi_pln_2611_p5.inference import (
-    extract_entities_from_file,
-    extract_entities_from_text,
-    generate_text,
-)
+from fdi_pln_2611_p5.config import load_config, package_path
+from fdi_pln_2611_p5.inference import extract_entities_from_file, generate_text
+from fdi_pln_2611_p5.paths import PathNotFoundError, require_file
 from fdi_pln_2611_p5.training.causal import train_causal, train_tokenizer
 from fdi_pln_2611_p5.training.experiment_exploration import run_experiment_exploration
 from fdi_pln_2611_p5.training.ner_train import train_ner
@@ -22,8 +23,106 @@ app = typer.Typer(
     help="Practice 5: causal language model and NER on Alice in Wonderland."
 )
 
+_EXAMPLE_NER_PATH = package_path("data/sample_ner_test.txt")
+_STDERR_CONSOLE = Console(stderr=True)
+_STDOUT_CONSOLE = Console()
+
+
+def _echo_path_not_found(exc: FileNotFoundError) -> None:
+    """Print a styled path-not-found message on stderr."""
+    if isinstance(exc, PathNotFoundError):
+        title = "[bold red]File not found[/]"
+        if exc.kind == "directory":
+            title = "[bold red]Directory not found[/]"
+        body = f"[bold]{exc.label}[/]\n[dim]→[/] [cyan]{exc.path}[/]"
+    else:
+        title = "[bold red]File not found[/]"
+        lines = str(exc).splitlines()
+        if len(lines) == 1:
+            body = lines[0]
+        else:
+            body = lines[0] + "\n" + "\n".join(
+                f"[dim]→[/] {line.strip()}" for line in lines[1:]
+            )
+    _STDERR_CONSOLE.print(
+        Panel(body, title=title, border_style="red", padding=(0, 1))
+    )
+
+
+def _cli_file_not_found(fn):
+    """Convert ``FileNotFoundError`` into a clean CLI exit (code 1)."""
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except FileNotFoundError as exc:
+            _echo_path_not_found(exc)
+            raise typer.Exit(code=1) from exc
+
+    return wrapper
+
+
+def _echo_example_notice(
+    reason: str, value: str, *, max_display: int | None = 80
+) -> None:
+    """Print a styled stderr notice when default example input is used."""
+    if max_display is None or len(value) <= max_display:
+        display = value
+    else:
+        display = f"{value[: max_display - 1]}…"
+    _STDERR_CONSOLE.print(
+        Panel(
+            f"[dim]{reason}[/]\n[bold italic #fbbf24]{display}[/]",
+            title="[bold #818cf8]ℹ  Usando ejemplo[/]",
+            border_style="#6366f1",
+            padding=(0, 1),
+        )
+    )
+
+
+def _echo_generation_output(text: str) -> None:
+    """Print generated text in a styled panel."""
+    _STDOUT_CONSOLE.print(
+        Panel(
+            text,
+            title="[bold #818cf8]Generación[/]",
+            border_style="#6366f1",
+            padding=(1, 2),
+        )
+    )
+
+
+def _echo_ner_entities(entities: list[dict]) -> None:
+    """Print NER predictions as a styled table."""
+    table = Table(
+        title="Entidades detectadas",
+        title_style="bold #818cf8",
+        border_style="#6366f1",
+        header_style="bold cyan",
+        show_lines=True,
+    )
+    table.add_column("Tipo", style="bold #a5b4fc", min_width=6)
+    table.add_column("Texto", style="#fef3c7")
+    for entity in entities:
+        table.add_row(entity["type"], entity["text"])
+    _STDOUT_CONSOLE.print(table)
+
+
+def _echo_no_entities() -> None:
+    """Print a styled message when NER finds no entities."""
+    _STDOUT_CONSOLE.print(
+        Panel(
+            "[dim]No se encontraron entidades con el umbral actual.[/]",
+            title="[bold #818cf8]NER[/]",
+            border_style="#6366f1",
+            padding=(0, 1),
+        )
+    )
+
 
 @app.command("train-tokenizer")
+@_cli_file_not_found
 def cmd_train_tokenizer(
     config: Annotated[
         Optional[Path],
@@ -35,11 +134,12 @@ def cmd_train_tokenizer(
 
 
 @app.command("train-causal")
+@_cli_file_not_found
 def cmd_train_causal(
     weights: Annotated[
         Path,
         typer.Option("--weights", help="Output path for causal model weights (.pth)."),
-    ],
+    ] = package_path("p5_causal_2611.pth"),
     config: Annotated[
         Optional[Path],
         typer.Option("--config", help="Path to the JSON configuration file."),
@@ -69,17 +169,18 @@ def cmd_train_causal(
 
 
 @app.command("train-ner")
+@_cli_file_not_found
 def cmd_train_ner(
     weights: Annotated[
         Path,
         typer.Option("--weights", help="Output path for NER model weights (.pth)."),
-    ],
+    ] = package_path("p5_ner_2611.pth"),
     causal_weights: Annotated[
         Path,
         typer.Option(
             "--causal-weights", help="Path to pretrained causal backbone weights."
         ),
-    ],
+    ] = package_path("p5_causal_2611.pth"),
     annotations: Annotated[
         Path,
         typer.Option(
@@ -109,61 +210,88 @@ def cmd_train_ner(
 
 
 @app.command("inference-generate")
+@_cli_file_not_found
 def cmd_generate(
     weights: Annotated[
-        Path, typer.Option("--weights", help="Path to causal model weights (.pth).")
-    ],
+        Path,
+        typer.Option(
+            "--weights", help="Path to causal model weights (.pth)."
+        ),
+    ] = package_path("p5_causal_2611.pth"),
     prompt: Annotated[
-        str, typer.Option("--prompt", "-p", help="Initial prompt text.")
-    ] = "Alice",
+        Optional[str],
+        typer.Option(
+            "--prompt",
+            "-p",
+            help="Initial prompt text (if omitted, uses the example from config.json).",
+        ),
+    ] = None,
     max_new_tokens: Annotated[
         int, typer.Option("--max-new-tokens", help="Maximum tokens to generate.")
     ] = 100,
     temperature: Annotated[
         float, typer.Option("--temperature", help="Sampling temperature.")
     ] = 1.0,
-):
-    """Generate text continuation from a prompt."""
-    text = generate_text(weights, prompt, max_new_tokens, temperature)
-    typer.echo(text)
-
-
-@app.command("inference-ner")
-def cmd_ner(
-    weights: Annotated[
-        Path, typer.Option("--weights", help="Path to NER model weights (.pth).")
-    ],
-    text_file: Annotated[
-        Optional[Path], typer.Argument(help="Text file to run NER on.")
-    ] = None,
-    text: Annotated[
-        Optional[str],
+    tokenizer: Annotated[
+        Optional[Path],
         typer.Option(
-            "--text", "-t", help="Raw text to run NER on (alternative to a file)."
+            "--tokenizer",
+            help="Path to BPE tokenizer JSON (default: from checkpoint / config).",
         ),
     ] = None,
 ):
-    """Print named entities detected in a file or inline text."""
-    if text_file is not None and text is not None:
-        typer.echo("Error: use --text OR a file path, not both.", err=True)
-        raise typer.Exit(code=1)
-    if text_file is None and text is None:
-        typer.echo("Error: provide a file path or use --text.", err=True)
-        raise typer.Exit(code=1)
+    """Generate text continuation from a prompt."""
+    if prompt is None:
+        prompt = load_config()["generation"]["prompt"]
+        _echo_example_notice("Sin --prompt · valor de config.json (generation.prompt)", prompt)
+    text = generate_text(
+        weights, prompt, max_new_tokens, temperature, tokenizer_path=tokenizer
+    )
+    _echo_generation_output(text)
 
-    entities = (
-        extract_entities_from_file(weights, text_file)
-        if text_file is not None
-        else extract_entities_from_text(weights, text)
+
+@app.command("inference-ner")
+@_cli_file_not_found
+def cmd_ner(
+    text_file: Annotated[
+        Optional[Path],
+        typer.Argument(help="UTF-8 text file to run NER on."),
+    ] = None,
+    weights: Annotated[
+        Path,
+        typer.Option("--weights", help="Path to NER model weights (.pth)."),
+    ] = package_path("p5_ner_2611.pth"),
+    tokenizer: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--tokenizer",
+            help="Path to BPE tokenizer JSON (default: from checkpoint / config).",
+        ),
+    ] = None,
+):
+    """Print named entities detected in a text file."""
+    using_example = text_file is None
+    if using_example:
+        text_file = _EXAMPLE_NER_PATH
+    text_file = require_file(text_file, label="text file")
+    if using_example:
+        _echo_example_notice(
+            f"Sin fichero · usando ejemplo {_EXAMPLE_NER_PATH.name}",
+            text_file.read_text(encoding="utf-8").strip(),
+            max_display=None,
+        )
+
+    entities = extract_entities_from_file(
+        weights, text_file, tokenizer_path=tokenizer
     )
     if not entities:
-        typer.echo("No entities found.")
+        _echo_no_entities()
         raise typer.Exit(code=0)
-    for entity in entities:
-        typer.echo(f"{entity['type']}\t{entity['text']}")
+    _echo_ner_entities(entities)
 
 
 @app.command("prepare-annotations")
+@_cli_file_not_found
 def cmd_prepare_annotations(
     output_dir: Annotated[
         Path,
@@ -225,6 +353,7 @@ def cmd_prepare_annotations(
 
 
 @app.command("merge-annotations")
+@_cli_file_not_found
 def cmd_merge_annotations(
     json_dir: Annotated[
         Path,
@@ -246,6 +375,7 @@ def cmd_merge_annotations(
 
 
 @app.command("run-experiments")
+@_cli_file_not_found
 def cmd_run_experiments(
     config: Annotated[
         Optional[Path],

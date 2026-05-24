@@ -14,6 +14,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
+from fdi_pln_2611_p5.paths import require_file
 
 
 def extraer_frases(texto: str) -> list[str]:
@@ -240,6 +241,7 @@ def crear_jsons_anotacion(
             )
     else:
         random.seed(seed)
+        archivo_entrada = require_file(archivo_entrada, label="input corpus file")
         texto = archivo_entrada.read_text(encoding="utf-8")
         frases = extraer_frases(texto)
         if min_palabras > 0:

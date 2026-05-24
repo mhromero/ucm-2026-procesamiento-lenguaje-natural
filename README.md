@@ -85,20 +85,18 @@ Pipeline típico de principio a fin:
 # 1. Tokenizador BPE (también se entrena dentro de train-causal)
 uv run fdi-pln-2611-p5 train-tokenizer
 
-# 2. LM causal
-uv run fdi-pln-2611-p5 train-causal --weights p5_causal_2611.pth
+# 2. LM causal (por defecto: p5_causal_2611.pth)
+uv run fdi-pln-2611-p5 train-causal
 
 # 3. Fusionar anotaciones manuales
 uv run fdi-pln-2611-p5 merge-annotations
 
-# 4. NER sobre el backbone causal
-uv run fdi-pln-2611-p5 train-ner \
-  --weights p5_ner_2611.pth \
-  --causal-weights p5_causal_2611.pth
+# 4. NER sobre el backbone causal (por defecto: p5_ner_2611.pth + p5_causal_2611.pth)
+uv run fdi-pln-2611-p5 train-ner
 
 # 5. Inferencia
-uv run fdi-pln-2611-p5 inference-generate --weights p5_causal_2611.pth --prompt "Alice"
-uv run fdi-pln-2611-p5 inference-ner --weights p5_ner_2611.pth --text "Alice met the Queen of Hearts"
+uv run fdi-pln-2611-p5 inference-generate          # prompt de ejemplo (config)
+uv run fdi-pln-2611-p5 inference-ner               # fichero de ejemplo (sample_ner_test.txt)
 ```
 
 ---
@@ -110,10 +108,12 @@ uv run fdi-pln-2611-p5 inference-ner --weights p5_ner_2611.pth --text "Alice met
 | Comando | Descripción |
 |---------|-------------|
 | `train-tokenizer` | Entrena BPE y guarda `data/bpe_tokenizer.json` |
-| `train-causal --weights <ruta.pth>` | Entrena el LM causal y guarda pesos + config de reproducibilidad |
-| `train-causal --weights <ruta.pth> --tokenizer <bpe.json>` | Igual, usando un BPE preentrenado (p. ej. de un experimento) |
-| `train-causal --weights <ruta.pth> --grid-search` | Grid search 3×3 (lr × batch) y entrenamiento final con la mejor combinación |
-| `train-ner --weights <ruta.pth> --causal-weights <ruta.pth>` | Fine-tuning del cabezal NER (5 clases) sobre el backbone causal |
+| `train-causal` | Entrena el LM causal (pesos por defecto: `p5_causal_2611.pth`) |
+| `train-causal --weights <ruta.pth>` | Igual con ruta de salida personalizada |
+| `train-causal --tokenizer <bpe.json>` | Usa un BPE preentrenado (p. ej. de un experimento) |
+| `train-causal --grid-search` | Grid search 3×3 (lr × batch) y entrenamiento final con la mejor combinación |
+| `train-ner` | Fine-tuning NER (por defecto: `p5_ner_2611.pth`, backbone `p5_causal_2611.pth`) |
+| `train-ner --weights <ruta.pth> --causal-weights <ruta.pth>` | Rutas de salida y backbone personalizadas |
 | `train-ner … --tokenizer <bpe.json>` | NER con BPE explícito (por defecto: el del checkpoint causal) |
 | `run-experiments` | Ocho ablaciones (corpus, ventana, vocab, profundidad) + informe comparativo |
 
@@ -121,9 +121,10 @@ uv run fdi-pln-2611-p5 inference-ner --weights p5_ner_2611.pth --text "Alice met
 
 | Comando | Descripción |
 |---------|-------------|
-| `inference-generate --weights <ruta.pth> --prompt <texto>` | Generación autoregresiva |
-| `inference-ner --weights <ruta.pth> <fichero.txt>` | Entidades en un fichero de texto |
-| `inference-ner --weights <ruta.pth> --text <texto>` | Entidades en texto inline |
+| `inference-generate` | Generación autoregresiva (pesos por defecto: `p5_causal_2611.pth`) |
+| `inference-generate --tokenizer <bpe.json>` | Generación con BPE explícito |
+| `inference-ner <fichero.txt>` | Entidades en un fichero UTF-8 (por defecto: `sample_ner_test.txt`) |
+| `inference-ner --tokenizer <bpe.json>` | NER con BPE explícito |
 
 ### Anotación
 

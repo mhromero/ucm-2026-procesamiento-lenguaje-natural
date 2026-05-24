@@ -15,6 +15,7 @@ from fdi_pln_2611_p5.config import (
     load_config,
     package_path,
 )
+from fdi_pln_2611_p5.paths import require_file
 
 TRAINING_CONFIG_NAME = "training_config.json"
 CONFIG_COPY_NAME = "config.json"
@@ -23,7 +24,9 @@ EXPERIMENT_CONFIG_NAME = "experiment_config.json"
 
 def resolve_config_path(config_path: Path | None) -> Path:
     """Return the config file path used for a training run."""
-    return Path(config_path).resolve() if config_path else DEFAULT_CONFIG_PATH
+    if config_path is None:
+        return DEFAULT_CONFIG_PATH
+    return require_file(config_path, label="config file")
 
 
 def save_reproducibility_artifacts(

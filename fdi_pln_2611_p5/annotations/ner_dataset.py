@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from fdi_pln_2611_p5.paths import require_file
+
 import torch
 
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
@@ -147,6 +149,7 @@ def load_merged_dataset(path: Path) -> list[dict]:
     Returns:
         List of merged sentence dicts.
     """
+    path = require_file(path, label="annotation dataset")
     payload = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(payload, list):
         return payload

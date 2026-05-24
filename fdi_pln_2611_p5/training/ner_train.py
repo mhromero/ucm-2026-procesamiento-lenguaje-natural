@@ -17,6 +17,7 @@ from fdi_pln_2611_p5.annotations.ner_dataset import (
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.ner.checkpoints import save_ner_checkpoint
 from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
+from fdi_pln_2611_p5.paths import require_file, require_optional_file
 from fdi_pln_2611_p5.training.run_config import (
     resolve_config_path,
     save_reproducibility_artifacts,
@@ -134,6 +135,15 @@ def train_ner(
     """
     resolved_config_path = resolve_config_path(config_path)
     config = load_config(config_path)
+    causal_weights_path = require_file(
+        causal_weights_path, label="causal model weights"
+    )
+    merged_annotations_path = require_file(
+        merged_annotations_path, label="merged annotations"
+    )
+    resolved_tokenizer_path = require_optional_file(
+        tokenizer_path, label="BPE tokenizer"
+    )
     seed = config.get("seed", 42)
     random.seed(seed)
     torch.manual_seed(seed)
@@ -145,18 +155,13 @@ def train_ner(
     causal_payload = torch.load(
         causal_weights_path, map_location="cpu", weights_only=False
     )
-    if tokenizer_path is not None:
-        resolved_tokenizer_path = Path(tokenizer_path).resolve()
-        if not resolved_tokenizer_path.is_file():
-            raise FileNotFoundError(
-                f"No se encontró el tokenizador BPE: {resolved_tokenizer_path}"
-            )
-    else:
-        resolved_tokenizer_path = Path(
+    if resolved_tokenizer_path is None:
+        resolved_tokenizer_path = require_file(
             causal_payload.get(
                 "tokenizer_path", str(package_path(config["tokenizer"]["cache_path"]))
-            )
-        ).resolve()
+            ),
+            label="BPE tokenizer",
+        )
     tokenizer = BPETokenizer.load(str(resolved_tokenizer_path))
     logger.info("Tokenizador BPE: {}", resolved_tokenizer_path)
 

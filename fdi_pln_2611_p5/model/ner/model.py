@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import string
+
 import torch
 import torch.nn as nn
 
@@ -96,8 +98,42 @@ class NERModel(nn.Module):
         )
 
 
+_PUNCTUATION = set(string.punctuation)
+
+
+def _word_bounds(text: str, index: int) -> tuple[int, int]:
+    """Return slice indices for the word at ``index``, without edge punctuation."""
+    if not text:
+        return 0, 0
+    index = min(max(index, 0), len(text) - 1)
+    start = index
+    while start > 0 and not text[start - 1].isspace():
+        start -= 1
+    end = index + 1
+    while end < len(text) and not text[end].isspace():
+        end += 1
+    while start < end and text[start] in _PUNCTUATION:
+        start += 1
+    while end > start and text[end - 1] in _PUNCTUATION:
+        end -= 1
+    return start, end
+
+
+def _strip_outer_punctuation(span: str) -> str:
+    """Remove leading and trailing punctuation from an entity surface form."""
+    span = span.strip()
+    while span and span[0] in _PUNCTUATION:
+        span = span[1:]
+    while span and span[-1] in _PUNCTUATION:
+        span = span[:-1]
+    return span
+
+
 def labels_to_entities(text: str, label_ids: list[int], tokenizer) -> list[dict]:
     """Group BPE-level predictions into human-readable entity spans.
+
+    When a subtoken is tagged with ``pi`` or ``li``, the span is expanded to the
+    full whitespace-delimited word in the source text (not only the BPE piece).
 
     Args:
         text: Original input text.
@@ -107,22 +143,35 @@ def labels_to_entities(text: str, label_ids: list[int], tokenizer) -> list[dict]
     Returns:
         List of entity dictionaries with ``text`` and ``type`` keys.
     """
-    token_ids, _ = tokenizer.encode_with_labels(text.lower(), [0] * len(text.lower()))
+    text = text.lower()
+    token_ids, _ = tokenizer.encode_with_labels(text, [0] * len(text))
     tokens = tokenizer.decode_tokens(token_ids)
+    if len(label_ids) < len(tokens):
+        label_ids = label_ids + [0] * (len(tokens) - len(label_ids))
+    elif len(label_ids) > len(tokens):
+        label_ids = label_ids[: len(tokens)]
+
     entities: list[dict] = []
-    current = ""
-    current_type: str | None = None
+    open_start: int | None = None
+    open_end: int | None = None
+    open_type: str | None = None
+    char_pos = 0
 
-    def flush():
-        nonlocal current, current_type
-        span = current.strip()
-        if span and current_type:
-            entities.append({"text": span, "type": current_type})
-        current = ""
-        current_type = None
+    def flush() -> None:
+        nonlocal open_start, open_end, open_type
+        if open_start is None or open_end is None or not open_type:
+            open_start = open_end = open_type = None
+            return
+        span_text = _strip_outer_punctuation(text[open_start:open_end])
+        if span_text:
+            entities.append({"text": span_text, "type": open_type})
+        open_start = open_end = open_type = None
 
-    for token_text, label_id in zip(tokens, label_ids, strict=False):
+    for token_text, label_id in zip(tokens, label_ids, strict=True):
         label = ID2LABEL.get(label_id, "o")
+        token_start = char_pos
+        char_pos += len(token_text)
+
         if label == "o":
             flush()
             continue
@@ -133,20 +182,19 @@ def labels_to_entities(text: str, label_ids: list[int], tokenizer) -> list[dict]
             continue
 
         if label.endswith("i"):
-            if current_type and current_type != entity_type:
-                flush()
-            current_type = entity_type
-            current += token_text
+            flush()
+            word_start, word_end = _word_bounds(text, token_start)
+            open_start, open_end, open_type = word_start, word_end, entity_type
         elif label.endswith("c"):
-            if current_type == entity_type:
-                current += token_text
+            if open_type == entity_type and open_start is not None:
+                _, word_end = _word_bounds(text, token_start)
+                open_end = max(open_end, word_end)
             else:
                 flush()
-                current_type = entity_type
-                current = token_text
+                word_start, word_end = _word_bounds(text, token_start)
+                open_start, open_end, open_type = word_start, word_end, entity_type
         else:
             flush()
-            current_type = entity_type
-            current += token_text
+
     flush()
     return entities

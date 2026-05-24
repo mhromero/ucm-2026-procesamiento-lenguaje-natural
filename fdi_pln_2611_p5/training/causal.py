@@ -13,6 +13,7 @@ from loguru import logger
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
 from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
+from fdi_pln_2611_p5.paths import require_optional_file
 from fdi_pln_2611_p5.training.run_config import (
     resolve_config_path,
     save_reproducibility_artifacts,
@@ -66,7 +67,9 @@ def prepare_tokenizer_and_tokens(
         else alice_textos + "\n" + extra_train_textos
     )
 
-    explicit_tokenizer = Path(tokenizer_path).resolve() if tokenizer_path else None
+    explicit_tokenizer = require_optional_file(
+        tokenizer_path, label="BPE tokenizer"
+    )
 
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
@@ -83,10 +86,6 @@ def prepare_tokenizer_and_tokens(
         test_tokens_path = package_path(tokenizer_cfg["test_tokens_cache_path"])
 
     if explicit_tokenizer is not None:
-        if not explicit_tokenizer.is_file():
-            raise FileNotFoundError(
-                f"No se encontró el tokenizador BPE: {explicit_tokenizer}"
-            )
         tokenizer = BPETokenizer.load(str(explicit_tokenizer))
         logger.info("Tokenizador BPE cargado desde {}", explicit_tokenizer)
     elif tokenizer_cfg["use_cache"] and bpe_path.exists():
@@ -184,6 +183,7 @@ def train_causal(
     """
     resolved_config_path = resolve_config_path(config_path)
     config = load_config(config_path)
+    require_optional_file(tokenizer_path, label="BPE tokenizer")
     corpus_cfg = config["corpus"]
     max_books = corpus_cfg.get("extra_max_books")
     if max_books == 0:

@@ -14,6 +14,7 @@ from pathlib import Path
 from loguru import logger
 
 from fdi_pln_2611_p5.annotations.ner_dataset import save_merged_dataset
+from fdi_pln_2611_p5.paths import require_dir, require_file
 
 
 @dataclass
@@ -335,11 +336,11 @@ def resolve_assignments(json_dir: Path) -> tuple[str, list[str], list[list[int]]
         FileNotFoundError: If neither metadata nor annotator JSON files exist.
         ValueError: If ``frases_seleccionadas.json`` has an invalid format.
     """
-    json_dir = Path(json_dir)
+    json_dir = require_dir(json_dir, label="annotations directory")
     asignaciones_path = json_dir / "asignaciones.json"
     if asignaciones_path.is_file():
         logger.info("Using assignments from {}", asignaciones_path)
-        return load_assignments(asignaciones_path)
+        return load_assignments(require_file(asignaciones_path, label="assignments file"))
 
     frases_path = json_dir / "frases_seleccionadas.json"
     if not frases_path.is_file():
@@ -349,7 +350,11 @@ def resolve_assignments(json_dir: Path) -> tuple[str, list[str], list[list[int]]
             "Run prepare-annotations to generate templates, or add asignaciones.json."
         )
 
-    frases = json.loads(frases_path.read_text(encoding="utf-8"))
+    frases = json.loads(
+        require_file(frases_path, label="selected sentences file").read_text(
+            encoding="utf-8"
+        )
+    )
     if not isinstance(frases, list) or not all(isinstance(f, str) for f in frases):
         raise ValueError(
             f"{frases_path.name} must be a JSON array of sentence strings."
@@ -405,6 +410,7 @@ def merge_annotations(
     Returns:
         ``MergeBundle`` with global report, merged sentences, and per-sentence details.
     """
+    json_dir = require_dir(json_dir, label="annotations directory")
     granularidad, frases, assignments = resolve_assignments(json_dir)
     frase_texts = [frase.lower() for frase in frases]
     logger.info("Merging annotations (granularity={})", granularidad)
