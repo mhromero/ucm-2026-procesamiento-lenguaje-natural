@@ -35,9 +35,7 @@ def generate_text(
     weights_path = require_file(weights_path, label="causal model weights")
     payload = torch.load(weights_path, map_location="cpu", weights_only=False)
     config = load_config()
-    resolved_tokenizer = require_optional_file(
-        tokenizer_path, label="BPE tokenizer"
-    )
+    resolved_tokenizer = require_optional_file(tokenizer_path, label="BPE tokenizer")
     if resolved_tokenizer is None:
         resolved_tokenizer = resolve_tokenizer_path(
             payload, config, weights_path=weights_path

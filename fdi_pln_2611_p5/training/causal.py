@@ -67,9 +67,7 @@ def prepare_tokenizer_and_tokens(
         else alice_textos + "\n" + extra_train_textos
     )
 
-    explicit_tokenizer = require_optional_file(
-        tokenizer_path, label="BPE tokenizer"
-    )
+    explicit_tokenizer = require_optional_file(tokenizer_path, label="BPE tokenizer")
 
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)

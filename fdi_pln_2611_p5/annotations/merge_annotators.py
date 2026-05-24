@@ -340,7 +340,9 @@ def resolve_assignments(json_dir: Path) -> tuple[str, list[str], list[list[int]]
     asignaciones_path = json_dir / "asignaciones.json"
     if asignaciones_path.is_file():
         logger.info("Using assignments from {}", asignaciones_path)
-        return load_assignments(require_file(asignaciones_path, label="assignments file"))
+        return load_assignments(
+            require_file(asignaciones_path, label="assignments file")
+        )
 
     frases_path = json_dir / "frases_seleccionadas.json"
     if not frases_path.is_file():

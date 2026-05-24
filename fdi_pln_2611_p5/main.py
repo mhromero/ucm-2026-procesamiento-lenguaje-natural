@@ -41,12 +41,12 @@ def _echo_path_not_found(exc: FileNotFoundError) -> None:
         if len(lines) == 1:
             body = lines[0]
         else:
-            body = lines[0] + "\n" + "\n".join(
-                f"[dim]→[/] {line.strip()}" for line in lines[1:]
+            body = (
+                lines[0]
+                + "\n"
+                + "\n".join(f"[dim]→[/] {line.strip()}" for line in lines[1:])
             )
-    _STDERR_CONSOLE.print(
-        Panel(body, title=title, border_style="red", padding=(0, 1))
-    )
+    _STDERR_CONSOLE.print(Panel(body, title=title, border_style="red", padding=(0, 1)))
 
 
 def _cli_file_not_found(fn):
@@ -214,9 +214,7 @@ def cmd_train_ner(
 def cmd_generate(
     weights: Annotated[
         Path,
-        typer.Option(
-            "--weights", help="Path to causal model weights (.pth)."
-        ),
+        typer.Option("--weights", help="Path to causal model weights (.pth)."),
     ] = package_path("p5_causal_2611.pth"),
     prompt: Annotated[
         Optional[str],
@@ -243,7 +241,9 @@ def cmd_generate(
     """Generate text continuation from a prompt."""
     if prompt is None:
         prompt = load_config()["generation"]["prompt"]
-        _echo_example_notice("Sin --prompt · valor de config.json (generation.prompt)", prompt)
+        _echo_example_notice(
+            "Sin --prompt · valor de config.json (generation.prompt)", prompt
+        )
     text = generate_text(
         weights, prompt, max_new_tokens, temperature, tokenizer_path=tokenizer
     )
@@ -281,9 +281,7 @@ def cmd_ner(
             max_display=None,
         )
 
-    entities = extract_entities_from_file(
-        weights, text_file, tokenizer_path=tokenizer
-    )
+    entities = extract_entities_from_file(weights, text_file, tokenizer_path=tokenizer)
     if not entities:
         _echo_no_entities()
         raise typer.Exit(code=0)
