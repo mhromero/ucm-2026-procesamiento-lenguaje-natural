@@ -6,7 +6,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from fdi_pln_2611_p5.annotations.dataset import save_merged_dataset
+from fdi_pln_2611_p5.annotations.ner_dataset import save_merged_dataset
 
 VALID_LABELS = frozenset({"o", "pi", "pc", "li", "lc"})
 LABEL_TYPOS = {"ps": "pi", "o ": "o", " o": "o"}

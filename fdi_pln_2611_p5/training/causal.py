@@ -8,11 +8,11 @@ from pathlib import Path
 import torch
 from loguru import logger
 
-from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
-from fdi_pln_2611_p5.checkpoints import save_causal_checkpoint
+from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
+from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
 from fdi_pln_2611_p5.config import load_config, package_path
-from fdi_pln_2611_p5.corpus import build_extra_train_corpus, concatenar_archivos_txt
-from fdi_pln_2611_p5.LLM import LLM
+from fdi_pln_2611_p5.corpus.load_corpus import build_extra_train_corpus, concatenar_archivos_txt
+from fdi_pln_2611_p5.model.lm_causal.llm import LLM
 from fdi_pln_2611_p5.training.grid_search import run_grid_search
 from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
 

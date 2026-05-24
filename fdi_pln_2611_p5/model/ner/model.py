@@ -3,8 +3,8 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from fdi_pln_2611_p5.labels import ID2LABEL, LABEL2ID, entity_type_from_label
-from fdi_pln_2611_p5.LLM import LLM
+from fdi_pln_2611_p5.model.lm_causal.llm import LLM
+from fdi_pln_2611_p5.model.ner.labels import ID2LABEL, LABEL2ID, entity_type_from_label
 from fdi_pln_2611_p5.training.utils import predict_label_ids_for_tokens
 
 

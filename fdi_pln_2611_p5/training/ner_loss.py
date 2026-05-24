@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID
+from fdi_pln_2611_p5.model.ner.labels import IGNORE_LABEL_ID
 
 
 def compute_class_weights(

@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from fdi_pln_2611_p5.config import package_path
-from fdi_pln_2611_p5.LLM import LLM
+from fdi_pln_2611_p5.model.lm_causal.llm import LLM
 from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html
 from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
 

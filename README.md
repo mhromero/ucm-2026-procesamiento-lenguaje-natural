@@ -63,10 +63,7 @@ pip install fdi_pln_2611_p5-1.0-py3-none-any.whl
 | `merge-etiquetados` | Fusiona `data/etiquetados/` (parte1 + parte2) en `data/annotations/merged.json` |
 | `report-annotation` | Genera informe HTML con métricas y gráficos del etiquetado |
 | `merge-annotations` | Fusiona JSON de anotadores y calcula κ de Cohen |
-| `generate-templates-word` | Genera plantillas JSON con una etiqueta por palabra |
-| `generate-templates-6frases` | Genera plantillas de 6 frases largas por JSON |
-| `generate-templates-1json-9frases` | Genera un JSON con 9 frases (6 de parte1 + 3 extra) |
-| `generate-templates-token` | Genera plantillas con una etiqueta por subpalabra BPE |
+| `prepare-annotations` | Crea los JSON de anotación vacíos (5 frases/JSON, 2 anotadores/frase por defecto) |
 
 ---
 
@@ -165,6 +162,35 @@ uv run fdi-pln-2611-p5 report-annotation --skip-merge
 | `pc` | Continuación de persona |
 | `li` | Inicio de lugar |
 | `lc` | Continuación de lugar |
+
+---
+
+## Estructura del paquete
+
+```
+fdi_pln_2611_p5/
+├── main.py              # CLI (Typer)
+├── config.py / config.json
+├── model/
+│   ├── lm_causal/       # Transformer, BPE y checkpoints causales
+│   └── ner/             # Etiquetas BIO, modelo NER y decodificación
+├── corpus/
+│   └── load_corpus.py           # Concatenar .txt y corpus extra (HP)
+├── inference/
+│   ├── causal_generation.py     # Generar texto con el LM
+│   └── ner_extraction.py        # Extraer entidades de texto/fichero
+├── annotations/
+│   ├── json_templates.py        # Crear JSON vacíos (prepare-annotations)
+│   ├── merge_annotators.py      # Fusionar json_XX de varios anotadores
+│   ├── merge_labeled_dirs.py    # Fusionar data/etiquetados (p1/p2)
+│   ├── ner_dataset.py           # Ventanas NER desde merged.json
+│   ├── labeling_report.py       # Métricas e informe de etiquetado
+│   └── labeling_report_html.py  # Plantilla HTML del informe
+├── training/            # Entrenamiento causal, NER, grid search y experimentos
+├── data/                # Corpus, tokens, anotaciones y caché de experimentos
+│   └── experiments/     # Pesos y tokenizers por experimento
+└── informes/            # Informes HTML generados
+```
 
 ---
 

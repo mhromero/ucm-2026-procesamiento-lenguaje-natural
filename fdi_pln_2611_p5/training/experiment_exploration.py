@@ -13,7 +13,7 @@ from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
-from fdi_pln_2611_p5.checkpoints import save_causal_checkpoint
+from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
 from fdi_pln_2611_p5.config import load_config, package_path
 from fdi_pln_2611_p5.training.causal import build_model, prepare_tokenizer_and_tokens
 from fdi_pln_2611_p5.training.experiment_report import generate_experiment_html

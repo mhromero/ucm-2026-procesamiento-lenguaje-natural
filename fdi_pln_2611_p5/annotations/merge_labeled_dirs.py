@@ -7,7 +7,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from fdi_pln_2611_p5.annotations.merge import (
+from fdi_pln_2611_p5.annotations.merge_annotators import (
     cohen_kappa,
     extract_frase_records,
     load_assignments,
@@ -15,7 +15,7 @@ from fdi_pln_2611_p5.annotations.merge import (
     normalize_merge_label,
     records_to_word_labels,
 )
-from fdi_pln_2611_p5.annotations.dataset import save_merged_dataset
+from fdi_pln_2611_p5.annotations.ner_dataset import save_merged_dataset
 from fdi_pln_2611_p5.config import package_path
 
 

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from fdi_pln_2611_p5.attention import Attention
-from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
+from fdi_pln_2611_p5.model.lm_causal.attention import Attention
+from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 
 
 class TransformerBlock(nn.Module):

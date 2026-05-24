@@ -4,7 +4,7 @@ from pathlib import Path
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from fdi_pln_2611_p5.labels import label_to_id, merge_subword_labels
+from fdi_pln_2611_p5.model.ner.labels import label_to_id, merge_subword_labels
 
 
 class BPETokenizer:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 import torch.nn.functional as F
 
-from fdi_pln_2611_p5.labels import ID2LABEL
+from fdi_pln_2611_p5.model.ner.labels import ID2LABEL
 
 
 def _entity_type_char(label_id: int) -> str | None:

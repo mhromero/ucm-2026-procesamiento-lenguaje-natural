@@ -4,12 +4,12 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from fdi_pln_2611_p5.annotations.dataset import load_merged_dataset
-from fdi_pln_2611_p5.annotations.etiquetados import MergeBundle, merge_etiquetados
-from fdi_pln_2611_p5.annotations.report_html import build_report_html
-from fdi_pln_2611_p5.annotations.merge import records_to_text_and_labels
+from fdi_pln_2611_p5.annotations.ner_dataset import load_merged_dataset
+from fdi_pln_2611_p5.annotations.merge_labeled_dirs import MergeBundle, merge_etiquetados
+from fdi_pln_2611_p5.annotations.labeling_report_html import build_report_html
+from fdi_pln_2611_p5.annotations.merge_annotators import records_to_text_and_labels
 from fdi_pln_2611_p5.config import package_path
-from fdi_pln_2611_p5.labels import LABEL2ID, PREFIX_TO_ENTITY_TYPE
+from fdi_pln_2611_p5.model.ner.labels import LABEL2ID, PREFIX_TO_ENTITY_TYPE
 
 
 def _label_distribution(labels: list[str]) -> dict[str, int]:

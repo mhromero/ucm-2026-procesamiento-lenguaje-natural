@@ -5,9 +5,9 @@ from typing import Annotated, Optional
 
 import typer
 
-from fdi_pln_2611_p5.annotations.etiquetados import merge_etiquetados
-from fdi_pln_2611_p5.annotations.merge import merge_annotations
-from fdi_pln_2611_p5.annotations.report import generate_annotation_report
+from fdi_pln_2611_p5.annotations.merge_labeled_dirs import merge_etiquetados
+from fdi_pln_2611_p5.annotations.merge_annotators import merge_annotations
+from fdi_pln_2611_p5.annotations.labeling_report import generate_annotation_report
 from fdi_pln_2611_p5.config import package_path
 from fdi_pln_2611_p5.inference import (
     extract_entities_from_file,
@@ -108,24 +108,40 @@ def cmd_ner(
         typer.echo(f"{entity['type']}\t{entity['text']}")
 
 
-@app.command("generate-templates-word")
-def cmd_generate_templates_word(
+@app.command("prepare-annotations")
+def cmd_prepare_annotations(
     output_dir: Annotated[
         Path, typer.Option("--output-dir", help="Directorio de salida.")
-    ] = package_path("data/alice_jsons_palabra"),
+    ] = package_path("data/alice_jsons"),
+    n_json: Annotated[
+        int,
+        typer.Option("--n-json", help="Número de ficheros json_XX.json (anotadores)."),
+    ] = 14,
+    frases_por_json: Annotated[
+        int, typer.Option("--frases-por-json", help="Frases por fichero JSON.")
+    ] = 5,
+    anotadores_por_frase: Annotated[
+        int,
+        typer.Option(
+            "--anotadores-por-frase",
+            help="Cuántos JSON distintos comparten cada frase (κ de Cohen).",
+        ),
+    ] = 2,
     n_frases: Annotated[
         Optional[int],
         typer.Option(
-            "--n-frases", help="Si se omite, se deduce de n-json y frases/json."
+            "--n-frases",
+            help="Frases únicas en el pool; por defecto (n_json × frases_por_json) / anotadores.",
         ),
-    ] = 50,
-    n_json: Annotated[int, typer.Option("--n-json")] = 25,
-    frases_por_json: Annotated[int, typer.Option("--frases-por-json")] = 4,
-    min_palabras: Annotated[int, typer.Option("--min-palabras")] = 0,
-    seed: Annotated[int, typer.Option("--seed", help="Semilla aleatoria.")] = 44,
+    ] = None,
+    min_palabras: Annotated[
+        int,
+        typer.Option("--min-palabras", help="Mínimo de palabras por frase."),
+    ] = 20,
+    seed: Annotated[int, typer.Option("--seed", help="Semilla aleatoria.")] = 46,
 ):
-    """Genera plantillas JSON con una etiqueta por palabra."""
-    from fdi_pln_2611_p5.annotations.templates import (
+    """Genera plantillas JSON (una etiqueta por palabra) con frases largas de Alice."""
+    from fdi_pln_2611_p5.annotations.json_templates import (
         crear_jsons_anotacion,
         tokenizar_palabras,
     )
@@ -138,119 +154,16 @@ def cmd_generate_templates_word(
         n_frases=n_frases,
         n_json=n_json,
         frases_por_json=frases_por_json,
-        min_palabras=min_palabras,
-        seed=seed,
-    )
-    typer.echo(
-        f"Plantillas (palabra) en {info['directorio']} ({info['n_frases']} frases, seed={seed})"
-    )
-
-
-@app.command("generate-templates-6frases")
-def cmd_generate_templates_6frases(
-    output_dir: Annotated[
-        Path, typer.Option("--output-dir", help="Directorio de salida.")
-    ] = package_path("data/alice_jsons_6frases"),
-    n_json: Annotated[int, typer.Option("--n-json")] = 13,
-    min_palabras: Annotated[int, typer.Option("--min-palabras")] = 20,
-    seed: Annotated[int, typer.Option("--seed", help="Semilla aleatoria.")] = 46,
-):
-    """6 frases por JSON, solo frases largas; no modifica data/alice_jsons/."""
-    from fdi_pln_2611_p5.annotations.templates import (
-        crear_jsons_anotacion,
-        tokenizar_palabras,
-    )
-
-    info = crear_jsons_anotacion(
-        archivo_entrada=package_path("data/corpus/alice_in_wonderland.txt"),
-        directorio_salida=output_dir,
-        tokenizar=tokenizar_palabras,
-        granularidad="palabra",
-        n_frases=None,
-        n_json=n_json,
-        frases_por_json=6,
+        anotadores_por_frase=anotadores_por_frase,
         min_palabras=min_palabras,
         seed=seed,
     )
     typer.echo(
         f"Plantillas en {info['directorio']}: {info['n_json']} JSON × "
         f"{info['frases_por_json']} frases ({info['n_frases']} frases únicas, "
+        f"{info['anotadores_por_frase']} anotadores/frase, "
         f"≥{info['min_palabras']} palabras, seed={seed})"
     )
-
-
-@app.command("generate-templates-1json-9frases")
-def cmd_generate_templates_1json_9frases(
-    output_dir: Annotated[
-        Path, typer.Option("--output-dir", help="Directorio de salida.")
-    ] = package_path("data/alice_jsons_1json_9frases"),
-    min_palabras: Annotated[int, typer.Option("--min-palabras")] = 20,
-    seed: Annotated[int, typer.Option("--seed", help="Semilla aleatoria.")] = 46,
-):
-    """Un JSON: 6 frases de json_01 (6frases) + 3 extra del mismo pool."""
-    from fdi_pln_2611_p5.annotations.templates import (
-        crear_jsons_anotacion,
-        seleccionar_frases_6frases_mas_extra,
-        tokenizar_palabras,
-    )
-
-    entrada = package_path("data/corpus/alice_in_wonderland.txt")
-    frases = seleccionar_frases_6frases_mas_extra(
-        entrada,
-        min_palabras=min_palabras,
-        seed=seed,
-        frases_extra=3,
-        seed_extra=seed + 1,
-    )
-    info = crear_jsons_anotacion(
-        archivo_entrada=entrada,
-        directorio_salida=output_dir,
-        tokenizar=tokenizar_palabras,
-        granularidad="palabra",
-        n_frases=len(frases),
-        n_json=1,
-        frases_por_json=9,
-        min_palabras=min_palabras,
-        seed=seed,
-        frases_fijas=frases,
-    )
-    typer.echo(
-        f"Plantilla en {info['directorio']}: {info['n_json']} JSON "
-        f"(6 de json_01 6frases + 3 extra, ≥{info['min_palabras']} palabras, seed={seed})"
-    )
-
-
-@app.command("generate-templates-token")
-def cmd_generate_templates_token(
-    output_dir: Annotated[
-        Path, typer.Option("--output-dir", help="Directorio de salida.")
-    ] = package_path("data/alice_jsons_token"),
-    n_frases: Annotated[int, typer.Option("--n-frases")] = 50,
-    n_json: Annotated[int, typer.Option("--n-json")] = 25,
-    frases_por_json: Annotated[int, typer.Option("--frases-por-json")] = 4,
-    seed: Annotated[int, typer.Option("--seed", help="Semilla aleatoria.")] = 44,
-):
-    """Genera plantillas JSON con una etiqueta por subpalabra BPE."""
-    from fdi_pln_2611_p5.annotations.templates import crear_jsons_anotacion
-    from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
-
-    tokenizer_path = package_path("data/bpe_tokenizer.json")
-    if not tokenizer_path.exists():
-        raise typer.BadParameter(
-            f"No existe {tokenizer_path}. Ejecuta antes train-causal para crear el BPE."
-        )
-    tokenizer = BPETokenizer.load(str(tokenizer_path))
-    crear_jsons_anotacion(
-        archivo_entrada=package_path("data/corpus/alice_in_wonderland.txt"),
-        directorio_salida=output_dir,
-        tokenizar=lambda text: tokenizer.decode_tokens(tokenizer.encode(text)),
-        granularidad="token",
-        n_frases=n_frases,
-        n_json=n_json,
-        frases_por_json=frases_por_json,
-        seed=seed,
-    )
-    typer.echo(f"Plantillas (token BPE) en {output_dir} (seed={seed})")
 
 
 @app.command("merge-annotations")

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import torch
 
-from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
-from fdi_pln_2611_p5.labels import (
+from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
+from fdi_pln_2611_p5.model.ner.labels import (
     IGNORE_LABEL_ID,
     label_to_id,
     word_labels_to_char_labels,

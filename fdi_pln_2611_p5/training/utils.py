@@ -8,15 +8,15 @@ import torch
 from loguru import logger
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from fdi_pln_2611_p5.annotations.dataset import char_labels_from_merged
-from fdi_pln_2611_p5.labels import (
+from fdi_pln_2611_p5.annotations.ner_dataset import char_labels_from_merged
+from fdi_pln_2611_p5.model.ner.labels import (
     ID2LABEL,
     IGNORE_LABEL_ID,
     LABEL2ID,
     entity_type_from_label,
 )
-from fdi_pln_2611_p5.LLM import LLM
-from fdi_pln_2611_p5.ner_decode import logits_to_label_ids
+from fdi_pln_2611_p5.model.lm_causal.llm import LLM
+from fdi_pln_2611_p5.model.ner.decode import logits_to_label_ids
 
 
 def iter_batches(x: torch.Tensor, y: torch.Tensor, batch_size: int):
@@ -251,7 +251,7 @@ def predict_label_ids_for_tokens(
         for pid in options:
             counts[pid] = counts.get(pid, 0) + 1
         result.append(max(counts, key=counts.get))
-    from fdi_pln_2611_p5.ner_decode import repair_bio_label_ids
+    from fdi_pln_2611_p5.model.ner.decode import repair_bio_label_ids
 
     return repair_bio_label_ids(result)
 

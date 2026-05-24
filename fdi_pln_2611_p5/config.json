@@ -34,7 +34,7 @@
   "experiment_exploration": {
     "epochs_per_run": 5,
     "results_path": "data/experiment_results.json",
-    "report_path": "data/informe_experimentos.html",
+    "report_path": "informes/informe_experimentos.html",
     "cache_root": "data/experiments"
   },
   "ner_training": {

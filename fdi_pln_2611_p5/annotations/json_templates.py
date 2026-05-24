@@ -6,7 +6,7 @@ import re
 from collections.abc import Callable
 from pathlib import Path
 
-from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
+from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 
 
 def extraer_frases(texto: str) -> list[str]:
@@ -40,6 +40,7 @@ def generar_asignaciones(
     n_frases: int,
     n_json: int,
     frases_por_json: int,
+    anotadores_por_frase: int = 2,
 ) -> list[list[int]]:
     if n_json == 1:
         if frases_por_json != n_frases:
@@ -50,7 +51,7 @@ def generar_asignaciones(
         return [list(range(n_frases))]
 
     total_slots = n_json * frases_por_json
-    required_slots = n_frases * 2
+    required_slots = n_frases * anotadores_por_frase
 
     capacidades = [frases_por_json] * n_json
     if total_slots < required_slots:
@@ -60,7 +61,7 @@ def generar_asignaciones(
             "Hay mas huecos que frases duplicadas. Ajusta parametros para evitar relleno artificial."
         )
 
-    apariciones_restantes = {i: 2 for i in range(n_frases)}
+    apariciones_restantes = {i: anotadores_por_frase for i in range(n_frases)}
     asignaciones = [[] for _ in range(n_json)]
 
     for idx_json in range(n_json):
@@ -75,7 +76,8 @@ def generar_asignaciones(
 
     if any(v != 0 for v in apariciones_restantes.values()):
         raise RuntimeError(
-            "No se pudo completar la asignacion de frases en 2 JSONs exactos."
+            f"No se pudo completar la asignacion: cada frase debe aparecer en "
+            f"{anotadores_por_frase} JSON exactos."
         )
 
     return asignaciones
@@ -85,59 +87,23 @@ def records_from_units(units: list[str]) -> list[dict]:
     return [{"clave": unit, "valor": ""} for unit in units]
 
 
-def seleccionar_frases_6frases_mas_extra(
-    archivo_entrada: Path,
-    *,
-    min_palabras: int = 20,
-    seed: int = 46,
-    n_json: int = 13,
-    frases_por_json: int = 6,
-    indice_json: int = 0,
-    frases_extra: int = 3,
-    seed_extra: int | None = None,
-) -> list[str]:
-    """6 frases de un JSON del esquema 6frases + N adicionales del mismo pool."""
-    random.seed(seed)
-    texto = archivo_entrada.read_text(encoding="utf-8")
-    frases = extraer_frases(texto)
-    if min_palabras > 0:
-        frases = filtrar_frases_por_longitud(frases, min_palabras)
-
-    n_frases_pool = resolver_n_frases(None, n_json, frases_por_json)
-    if len(frases) < n_frases_pool + frases_extra:
-        raise ValueError(
-            f"Solo hay {len(frases)} frases elegibles; se necesitan al menos "
-            f"{n_frases_pool + frases_extra}."
-        )
-
-    pool = random.sample(frases, n_frases_pool)
-    asignaciones = generar_asignaciones(n_frases_pool, n_json, frases_por_json)
-    if not (0 <= indice_json < len(asignaciones)):
-        raise ValueError(f"indice_json debe estar entre 0 y {len(asignaciones) - 1}")
-
-    base = [pool[i] for i in asignaciones[indice_json]]
-    restantes = [f for f in pool if f not in base]
-    if len(restantes) < frases_extra:
-        raise ValueError(
-            f"Solo quedan {len(restantes)} frases en el pool tras las {len(base)} base; "
-            f"se piden {frases_extra} extra."
-        )
-
-    random.seed(seed_extra if seed_extra is not None else seed + 1)
-    extra = random.sample(restantes, frases_extra)
-    return base + extra
-
-
-def resolver_n_frases(n_frases: int | None, n_json: int, frases_por_json: int) -> int:
+def resolver_n_frases(
+    n_frases: int | None,
+    n_json: int,
+    frases_por_json: int,
+    anotadores_por_frase: int = 2,
+) -> int:
     if n_frases is not None:
         return n_frases
     if n_json == 1:
         return frases_por_json
-    if (n_json * frases_por_json) % 2 != 0:
+    total_slots = n_json * frases_por_json
+    if total_slots % anotadores_por_frase != 0:
         raise ValueError(
-            "n_json * frases_por_json debe ser par para que cada frase aparezca en 2 JSON."
+            f"n_json * frases_por_json ({total_slots}) debe ser divisible por "
+            f"anotadores_por_frase ({anotadores_por_frase})."
         )
-    return (n_json * frases_por_json) // 2
+    return total_slots // anotadores_por_frase
 
 
 def crear_jsons_anotacion(
@@ -145,11 +111,12 @@ def crear_jsons_anotacion(
     directorio_salida: Path,
     tokenizar: Callable[[str], list[str]],
     granularidad: str,
-    n_frases: int | None = 50,
-    n_json: int = 25,
-    frases_por_json: int = 4,
-    min_palabras: int = 0,
-    seed: int = 44,
+    n_frases: int | None = None,
+    n_json: int = 14,
+    frases_por_json: int = 5,
+    anotadores_por_frase: int = 2,
+    min_palabras: int = 20,
+    seed: int = 46,
     frases_fijas: list[str] | None = None,
 ) -> dict:
     if frases_fijas is not None:
@@ -166,7 +133,9 @@ def crear_jsons_anotacion(
         if min_palabras > 0:
             frases = filtrar_frases_por_longitud(frases, min_palabras)
 
-        n_frases = resolver_n_frases(n_frases, n_json, frases_por_json)
+        n_frases = resolver_n_frases(
+            n_frases, n_json, frases_por_json, anotadores_por_frase
+        )
         if len(frases) < n_frases:
             raise ValueError(
                 f"Solo hay {len(frases)} frases elegibles (min_palabras={min_palabras}); "
@@ -174,7 +143,9 @@ def crear_jsons_anotacion(
             )
 
         frases_seleccionadas = random.sample(frases, n_frases)
-    asignaciones = generar_asignaciones(n_frases, n_json, frases_por_json)
+    asignaciones = generar_asignaciones(
+        n_frases, n_json, frases_por_json, anotadores_por_frase
+    )
     directorio_salida.mkdir(parents=True, exist_ok=True)
 
     for i, indices in enumerate(asignaciones, start=1):
@@ -198,6 +169,7 @@ def crear_jsons_anotacion(
                 "granularidad": granularidad,
                 "min_palabras": min_palabras,
                 "frases_por_json": frases_por_json,
+                "anotadores_por_frase": anotadores_por_frase,
                 "n_json": n_json,
                 "seed": seed,
                 "frases": frases_seleccionadas,
@@ -213,5 +185,6 @@ def crear_jsons_anotacion(
         "n_frases": n_frases,
         "n_json": n_json,
         "frases_por_json": frases_por_json,
+        "anotadores_por_frase": anotadores_por_frase,
         "min_palabras": min_palabras,
     }

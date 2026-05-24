@@ -8,12 +8,12 @@ from pathlib import Path
 import torch
 from loguru import logger
 
-from fdi_pln_2611_p5.annotations.dataset import build_ner_windows, load_merged_dataset
-from fdi_pln_2611_p5.BPETokenizer import BPETokenizer
-from fdi_pln_2611_p5.checkpoints import save_ner_checkpoint
+from fdi_pln_2611_p5.annotations.ner_dataset import build_ner_windows, load_merged_dataset
+from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
+from fdi_pln_2611_p5.model.ner.checkpoints import save_ner_checkpoint
 from fdi_pln_2611_p5.config import load_config, package_path
-from fdi_pln_2611_p5.labels import IGNORE_LABEL_ID, LABEL2ID
-from fdi_pln_2611_p5.ner import NERModel
+from fdi_pln_2611_p5.model.ner.labels import IGNORE_LABEL_ID, LABEL2ID
+from fdi_pln_2611_p5.model.ner.model import NERModel
 from fdi_pln_2611_p5.training.causal import build_model
 from fdi_pln_2611_p5.training.ner_loss import build_ner_loss, compute_class_weights
 from fdi_pln_2611_p5.training.ner_report import generate_ner_report
