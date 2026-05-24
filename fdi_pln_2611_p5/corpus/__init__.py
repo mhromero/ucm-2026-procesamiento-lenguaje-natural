@@ -1,4 +1,4 @@
-"""Utilidades para cargar y combinar corpus de texto."""
+"""Utilities for loading and combining text corpora."""
 
 from fdi_pln_2611_p5.corpus.load_corpus import (
     build_extra_train_corpus,

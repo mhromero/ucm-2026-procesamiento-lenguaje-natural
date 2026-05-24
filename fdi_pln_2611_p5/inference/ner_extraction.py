@@ -1,3 +1,5 @@
+"""Load an NER checkpoint and extract entities from text or files."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -11,6 +13,14 @@ from fdi_pln_2611_p5.training.causal import build_model
 
 
 def _load_ner_model(weights_path: Path) -> tuple[NERModel, BPETokenizer]:
+    """Load an NER model and its tokenizer from a checkpoint file.
+
+    Args:
+        weights_path: Path to the NER checkpoint ``.pth`` file.
+
+    Returns:
+        Tuple of ``(ner_model, tokenizer)`` moved to the active compute device.
+    """
     weights_path = Path(weights_path).resolve()
     payload = torch.load(weights_path, map_location="cpu", weights_only=False)
     config = load_config()
@@ -32,12 +42,30 @@ def _load_ner_model(weights_path: Path) -> tuple[NERModel, BPETokenizer]:
 
 
 def extract_entities_from_text(weights_path: Path, text: str) -> list[dict]:
+    """Predict entities in a raw text string.
+
+    Args:
+        weights_path: Path to the NER checkpoint ``.pth`` file.
+        text: Input text to annotate.
+
+    Returns:
+        List of entity dictionaries with ``text`` and ``type`` keys.
+    """
     ner_model, tokenizer = _load_ner_model(weights_path)
     label_ids = ner_model.predict_label_ids(text)
     return labels_to_entities(text, label_ids, tokenizer)
 
 
 def extract_entities_from_file(weights_path: Path, text_path: Path) -> list[dict]:
+    """Predict entities in the contents of a UTF-8 text file.
+
+    Args:
+        weights_path: Path to the NER checkpoint ``.pth`` file.
+        text_path: Path to the input text file.
+
+    Returns:
+        List of entity dictionaries with ``text`` and ``type`` keys.
+    """
     return extract_entities_from_text(
         weights_path, text_path.read_text(encoding="utf-8")
     )

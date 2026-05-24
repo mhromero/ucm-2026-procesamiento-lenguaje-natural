@@ -1,3 +1,5 @@
+"""Hyperparameter grid search for causal language-model training."""
+
 from __future__ import annotations
 
 import json
@@ -24,6 +26,20 @@ def run_grid_search(
     y_test: torch.Tensor,
     device: torch.device,
 ) -> dict:
+    """Run learning-rate × batch-size grid search and persist the best configuration.
+
+    Args:
+        config: Loaded project configuration with a ``grid_search`` section.
+        build_model: Factory that returns a fresh ``LLM`` instance per run.
+        x_train: Training input windows.
+        y_train: Training target windows.
+        x_test: Validation input windows.
+        y_test: Validation target windows.
+        device: Torch device for training.
+
+    Returns:
+        Dict with ``params`` (best lr/batch) and ``best`` (full best row).
+    """
     grid_cfg = config["grid_search"]
     learning_rates = grid_cfg["learning_rates"]
     batch_sizes = grid_cfg["batch_sizes"]
@@ -80,6 +96,7 @@ def run_grid_search(
 
 
 def _print_grid_table(results: list[dict], best: dict) -> None:
+    """Print a Rich table summarizing grid-search results."""
     sorted_results = sorted(results, key=lambda r: r["test_loss"])
     table = Table(title="Resultados Grid Search", show_lines=True)
     table.add_column("lr", style="cyan", justify="right")

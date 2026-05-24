@@ -1,4 +1,4 @@
-"""NER: etiquetas BIO, modelo y decodificación."""
+"""Named entity recognition: BIO labels, model, and decoding utilities."""
 
 from fdi_pln_2611_p5.model.ner.decode import logits_to_label_ids, repair_bio_label_ids
 from fdi_pln_2611_p5.model.ner.labels import (
@@ -29,6 +29,7 @@ __all__ = [
 
 
 def __getattr__(name: str):
+    """Lazily import heavy NER symbols to avoid circular imports."""
     if name == "NERModel":
         from fdi_pln_2611_p5.model.ner.model import NERModel
 

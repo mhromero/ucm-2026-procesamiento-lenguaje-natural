@@ -1,4 +1,4 @@
-"""Pérdidas y pesos de clase para NER con desbalance fuerte hacia 'o'."""
+"""Loss functions and class weights for heavily imbalanced NER training."""
 
 from __future__ import annotations
 
@@ -17,7 +17,18 @@ def compute_class_weights(
     beta: float = 0.9999,
     entity_boost: float = 3.0,
 ) -> torch.Tensor:
-    """Pesos por clase; por defecto favorece fuertemente etiquetas distintas de 'o'."""
+    """Compute per-class weights that up-weight non-``o`` entity labels.
+
+    Args:
+        y_train: Training label tensor (ignored positions excluded internally).
+        num_labels: Number of NER label ids.
+        mode: Weighting scheme (``inverse``, ``sqrt_inverse``, or ``effective_num``).
+        beta: Effective-number smoothing parameter when ``mode`` is ``effective_num``.
+        entity_boost: Multiplier applied to entity start/continuation classes.
+
+    Returns:
+        Normalized class weight tensor of shape ``(num_labels,)``.
+    """
     flat = y_train.view(-1)
     flat = flat[flat != IGNORE_LABEL_ID]
     counts = torch.bincount(flat, minlength=num_labels).float().clamp(min=1.0)
@@ -30,10 +41,10 @@ def compute_class_weights(
         effective = (1.0 - beta**counts) / (1.0 - beta)
         weights = (1.0 - beta) / effective
     else:
-        raise ValueError(f"Modo de pesos desconocido: {mode}")
+        raise ValueError(f"Unknown class-weight mode: {mode}")
 
     if entity_boost != 1.0 and num_labels > 1:
-        # Refuerzo en inicio/continuación; lc (muy raro) sin multiplicar tanto
+        # Boost start/continuation labels; apply a smaller boost to rare ``lc``.
         for idx in (1, 2, 3):
             weights[idx] *= entity_boost
         weights[4] *= max(1.0, entity_boost**0.5)
@@ -43,7 +54,7 @@ def compute_class_weights(
 
 
 class FocalLoss(nn.Module):
-    """Focal loss multiclase; reduce el peso de ejemplos fáciles (típicamente 'o')."""
+    """Multi-class focal loss that down-weights easy examples (typically ``o``)."""
 
     def __init__(
         self,
@@ -52,12 +63,20 @@ class FocalLoss(nn.Module):
         weight: torch.Tensor | None = None,
         ignore_index: int = IGNORE_LABEL_ID,
     ):
+        """Initialize focal loss.
+
+        Args:
+            gamma: Focusing parameter; higher values emphasize hard examples.
+            weight: Optional per-class weights passed to cross-entropy.
+            ignore_index: Label id to exclude from the loss.
+        """
         super().__init__()
         self.gamma = gamma
         self.register_buffer("weight", weight if weight is not None else None)
         self.ignore_index = ignore_index
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        """Compute mean focal loss over non-ignored targets."""
         ce = F.cross_entropy(
             logits,
             targets,
@@ -81,6 +100,20 @@ def build_ner_loss(
     focal_gamma: float = 2.0,
     label_smoothing: float = 0.0,
 ) -> nn.Module:
+    """Build the NER loss module from configuration.
+
+    Args:
+        loss_name: Either ``focal`` or ``ce``.
+        class_weights: Optional per-class weights.
+        focal_gamma: Gamma for focal loss when ``loss_name`` is ``focal``.
+        label_smoothing: Label smoothing for cross-entropy when ``loss_name`` is ``ce``.
+
+    Returns:
+        A ``nn.Module`` loss callable.
+
+    Raises:
+        ValueError: If ``loss_name`` is not recognized.
+    """
     if loss_name == "focal":
         return FocalLoss(gamma=focal_gamma, weight=class_weights)
     if loss_name == "ce":
@@ -89,4 +122,4 @@ def build_ner_loss(
             ignore_index=IGNORE_LABEL_ID,
             label_smoothing=label_smoothing,
         )
-    raise ValueError(f"Pérdida NER desconocida: {loss_name}")
+    raise ValueError(f"Unknown NER loss: {loss_name}")

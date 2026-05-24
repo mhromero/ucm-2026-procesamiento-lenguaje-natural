@@ -1,3 +1,10 @@
+"""Merge labeled annotation directories into a unified NER corpus.
+
+Reads human-labeled JSON files organized by batch (parte1, parte2, etc.),
+pairs annotators per sentence, and produces a single merged dataset with
+per-sentence agreement metrics.
+"""
+
 from __future__ import annotations
 
 import json
@@ -21,6 +28,8 @@ from fdi_pln_2611_p5.config import package_path
 
 @dataclass
 class FraseMergeResult:
+    """Per-sentence merge outcome with annotator comparison details."""
+
     frase_id: int
     text: str
     lote: str
@@ -35,12 +44,15 @@ class FraseMergeResult:
 
 @dataclass
 class MergeBundle:
+    """Full merge output: summary report, sentences, and per-sentence details."""
+
     report: dict
     sentences: list[dict]
     frase_details: list[FraseMergeResult] = field(default_factory=list)
 
 
 def _json_dir_candidates(json_idx: int) -> list[str]:
+    """Return plausible directory names for a JSON assignment index."""
     n = json_idx + 1
     return [
         f"json_{n:02d}",
@@ -51,6 +63,15 @@ def _json_dir_candidates(json_idx: int) -> list[str]:
 
 
 def resolve_etiquetados_json_dir(etiquetados_root: Path, json_idx: int) -> Path | None:
+    """Locate the labeled-data directory for a JSON assignment index.
+
+    Args:
+        etiquetados_root: Root directory of labeled annotation folders.
+        json_idx: Zero-based JSON index from assignments metadata.
+
+    Returns:
+        Path to the matching subdirectory, or ``None`` if not found.
+    """
     for name in _json_dir_candidates(json_idx):
         path = etiquetados_root / name
         if path.is_dir():
@@ -59,7 +80,15 @@ def resolve_etiquetados_json_dir(etiquetados_root: Path, json_idx: int) -> Path 
 
 
 def resolve_annotation_file(json_dir: Path, parte_suffix: str) -> Path | None:
-    """parte_suffix: 'p1' (parte1) o 'p2' (parte2)."""
+    """Find an annotator file within a JSON directory by part suffix.
+
+    Args:
+        json_dir: Directory containing labeled JSON files.
+        parte_suffix: File suffix identifying the annotator (``'p1'`` or ``'p2'``).
+
+    Returns:
+        Path to the first matching annotation file, or ``None``.
+    """
     matches = sorted(json_dir.glob(f"*_{parte_suffix}.json"))
     if matches:
         return matches[0]
@@ -67,6 +96,14 @@ def resolve_annotation_file(json_dir: Path, parte_suffix: str) -> Path | None:
 
 
 def load_records(path: Path) -> list[dict]:
+    """Load annotation records from a JSON file.
+
+    Args:
+        path: Path to a labeled annotation JSON file.
+
+    Returns:
+        List of annotation record dicts.
+    """
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -77,6 +114,18 @@ def merge_lote(
     parte_suffix: str,
     frase_id_offset: int = 0,
 ) -> tuple[list[dict], list[FraseMergeResult], dict]:
+    """Merge one annotation batch (lote) from paired annotator files.
+
+    Args:
+        etiquetados_root: Root directory of labeled annotation folders.
+        assignments_path: Path to ``asignaciones.json`` for this batch.
+        lote: Batch identifier stored in output records (e.g. ``"parte1"``).
+        parte_suffix: Annotator file suffix (``'p1'`` or ``'p2'``).
+        frase_id_offset: Global sentence ID offset for multi-batch merges.
+
+    Returns:
+        Tuple of merged sentence dicts, per-sentence details, and batch report.
+    """
     granularidad, frases, assignments = load_assignments(assignments_path)
     frase_texts = [frase.lower() for frase in frases]
 
@@ -204,6 +253,21 @@ def merge_etiquetados(
     lote_9frases_assignments: Path | None = None,
     output_path: Path | None = None,
 ) -> MergeBundle:
+    """Merge all labeled batches into a single NER training dataset.
+
+    Combines parte1, parte2, and optionally the 9-sentence supplemental batch,
+    writing ``merged.json`` and returning detailed merge statistics.
+
+    Args:
+        etiquetados_root: Root of labeled annotation directories.
+        parte1_assignments: Assignments file for batch parte1.
+        parte2_assignments: Assignments file for batch parte2.
+        lote_9frases_assignments: Optional assignments for the 9-sentence batch.
+        output_path: Destination path for the merged dataset JSON.
+
+    Returns:
+        ``MergeBundle`` with global report, sentences, and per-sentence details.
+    """
     etiquetados_root = etiquetados_root or package_path("data/etiquetados")
     parte1_assignments = parte1_assignments or package_path(
         "data/asignaciones/alice_jsons_parte1/asignaciones.json"

@@ -1,8 +1,8 @@
-"""Esquema de etiquetas NER usado en los JSON de anotación (token interno)."""
+"""NER label schema used in annotation JSON (internal token format)."""
 
 from __future__ import annotations
 
-# o = fuera; pi/pc = persona (inicio/continuación); li/lc = lugar (inicio/continuación)
+# o = outside; pi/pc = person (begin/continuation); li/lc = location (begin/continuation)
 LABEL2ID: dict[str, int] = {
     "o": 0,
     "pi": 1,
@@ -25,17 +25,44 @@ CONTINUATION_LABEL: dict[str, str] = {
 
 
 def label_to_id(label: str) -> int:
+    """Map a label string to its numeric id.
+
+    Args:
+        label: Label string; empty or unknown values map to ``"o"``.
+
+    Returns:
+        Numeric label id.
+    """
     return LABEL2ID.get(label or "o", 0)
 
 
 def entity_type_from_label(label: str) -> str | None:
+    """Map a BIO label to its coarse entity type.
+
+    Args:
+        label: Internal label string (e.g. ``"pi"``, ``"lc"``).
+
+    Returns:
+        Entity type string such as ``"PER"`` or ``"LOC"``, or ``None`` for ``"o"``.
+    """
     if not label or label == "o" or len(label) < 2:
         return None
     return PREFIX_TO_ENTITY_TYPE.get(label[0])
 
 
 def expand_word_label_to_char_labels(token: str, label: str) -> list[str]:
-    """Dentro de una palabra: primer carácter inicio (pi/li), resto continuación (pc/lc)."""
+    """Expand a word-level label to per-character BIO labels within the word.
+
+    The first character receives the begin label (``pi``/``li``); remaining
+    characters receive the continuation label (``pc``/``lc``).
+
+    Args:
+        token: Word text.
+        label: Word-level label.
+
+    Returns:
+        Character-level label list aligned with ``token``.
+    """
     if not token:
         return []
     if label == "o":
@@ -51,7 +78,19 @@ def expand_word_label_to_char_labels(token: str, label: str) -> list[str]:
 def word_labels_to_char_labels(
     tokens: list[str], labels: list[str]
 ) -> tuple[str, list[str]]:
-    """Expande etiquetas por palabra a etiquetas por carácter (BIO intra-palabra)."""
+    """Expand word-level labels to character-level BIO labels.
+
+    Args:
+        tokens: Token strings.
+        labels: Word-level labels aligned with ``tokens``.
+
+    Returns:
+        Tuple of concatenated text and character-level label list.
+
+    Raises:
+        ValueError: If ``tokens`` and ``labels`` differ in length or the expanded
+            labels do not match the concatenated text length.
+    """
     if len(tokens) != len(labels):
         raise ValueError("tokens y labels deben tener la misma longitud.")
     text = "".join(tokens)
@@ -64,7 +103,15 @@ def word_labels_to_char_labels(
 
 
 def merge_subword_labels(left: int, right: int) -> int:
-    """Combina etiquetas al fusionar dos subpalabras BPE."""
+    """Combine label ids when merging two BPE subword tokens.
+
+    Args:
+        left: Label id of the left subword.
+        right: Label id of the right subword.
+
+    Returns:
+        Merged label id for the combined token.
+    """
     if left == right:
         return left
     if left == 0:

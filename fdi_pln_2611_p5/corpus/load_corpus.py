@@ -1,10 +1,12 @@
+"""Corpus loading, concatenation, and optional Harry Potter truncation."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 from fdi_pln_2611_p5.config import package_path
 
-# Primer capítulo de cada libro (minúsculas; el corpus extra se pasa a .lower()).
+# First-chapter markers for each Harry Potter book (lowercase; extra corpus is lowercased).
 _HARRY_POTTER_BOOK_MARKERS = (
     "the worst birthday",
     "owl post",
@@ -16,6 +18,16 @@ _HARRY_POTTER_BOOK_MARKERS = (
 
 
 def concatenar_archivos_txt(data_dir: str | Path) -> str:
+    """Concatenate all ``.txt`` files in a directory into one string.
+
+    Files are read in sorted filename order and joined with newline separators.
+
+    Args:
+        data_dir: Directory containing ``*.txt`` files.
+
+    Returns:
+        Combined corpus text.
+    """
     data_path = Path(data_dir)
     textos = [
         archivo.read_text(encoding="utf-8")
@@ -25,7 +37,17 @@ def concatenar_archivos_txt(data_dir: str | Path) -> str:
 
 
 def _harry_potter_book_starts(text: str) -> list[int]:
-    """Índices de inicio de los 7 libros en el .txt concatenado."""
+    """Find start indices of the seven books in a concatenated corpus.
+
+    Args:
+        text: Lowercased concatenated Harry Potter corpus text.
+
+    Returns:
+        Sorted list of book start character indices, including index ``0``.
+
+    Raises:
+        ValueError: If a book marker string cannot be found in ``text``.
+    """
     starts = [0]
     search_from = 0
     for marker in _HARRY_POTTER_BOOK_MARKERS:
@@ -40,7 +62,17 @@ def _harry_potter_book_starts(text: str) -> list[int]:
 
 
 def build_extra_train_corpus(corpus_cfg: dict) -> str:
-    """Texto HP para entrenamiento. ``extra_max_books=0`` → cadena vacía (solo Alice)."""
+    """Build optional Harry Potter training text from corpus configuration.
+
+    When ``extra_max_books`` is ``0``, returns an empty string so training uses
+    only the Alice corpus.
+
+    Args:
+        corpus_cfg: Corpus section of the application config.
+
+    Returns:
+        Lowercased extra training text, optionally truncated by book count.
+    """
     max_books = corpus_cfg.get("extra_max_books")
     if max_books == 0:
         return ""
@@ -51,7 +83,18 @@ def build_extra_train_corpus(corpus_cfg: dict) -> str:
 
 
 def truncar_corpus_extra(text: str, max_books: int | None) -> str:
-    """Recorta el corpus extra a los primeros ``max_books`` (p. ej. 4 ≈ mitad de 7)."""
+    """Truncate extra corpus text to the first ``max_books`` Harry Potter books.
+
+    Args:
+        text: Lowercased concatenated Harry Potter corpus text.
+        max_books: Number of books to keep; ``None`` or ``>= 7`` keeps the full text.
+
+    Returns:
+        Truncated corpus text.
+
+    Raises:
+        ValueError: If ``max_books`` is less than 1.
+    """
     if max_books is None or max_books >= 7:
         return text
     if max_books < 1:

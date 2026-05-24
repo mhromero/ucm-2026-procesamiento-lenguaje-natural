@@ -1,4 +1,4 @@
-"""Decodificación NER: argmax con P(o) + umbral opcional + restricciones BIO."""
+"""NER decoding: argmax with P(o) thresholding and optional BIO repair."""
 
 from __future__ import annotations
 
@@ -9,6 +9,14 @@ from fdi_pln_2611_p5.model.ner.labels import ID2LABEL
 
 
 def _entity_type_char(label_id: int) -> str | None:
+    """Return the entity-type prefix character for a label id.
+
+    Args:
+        label_id: Numeric label id.
+
+    Returns:
+        Single-character entity prefix (``"p"`` or ``"l"``), or ``None`` for ``"o"``.
+    """
     label = ID2LABEL.get(label_id, "o")
     if label == "o" or len(label) < 2:
         return None
@@ -16,7 +24,14 @@ def _entity_type_char(label_id: int) -> str | None:
 
 
 def repair_bio_label_ids(label_ids: list[int]) -> list[int]:
-    """Convierte secuencias BIO inválidas (p. ej. pc sin pi) a 'o'."""
+    """Convert invalid BIO sequences (e.g. ``pc`` without ``pi``) to ``"o"``.
+
+    Args:
+        label_ids: Predicted label id sequence.
+
+    Returns:
+        Label ids with invalid continuation/start patterns replaced by ``"o"``.
+    """
     fixed: list[int] = []
     open_type: str | None = None
 
@@ -54,7 +69,21 @@ def logits_to_label_ids(
     entity_threshold: float = 0.5,
     apply_bio_repair: bool = True,
 ) -> list[int]:
-    """Argmax sobre las 5 clases; entidad solo si P(etiqueta) >= umbral y P(etiqueta) > P(o)."""
+    """Decode logits into label ids with optional entity confidence filtering.
+
+    Takes the argmax over five classes. An entity label is kept only if its
+    probability is at least ``entity_threshold`` and strictly greater than
+    ``P(o)``.
+
+    Args:
+        logits: Logits tensor of shape ``(seq_len, num_labels)`` or
+            ``(1, seq_len, num_labels)``.
+        entity_threshold: Minimum probability required to emit an entity label.
+        apply_bio_repair: Whether to run ``repair_bio_label_ids`` on the result.
+
+    Returns:
+        Predicted label id sequence.
+    """
     probs = F.softmax(logits, dim=-1)
     if probs.dim() == 3:
         probs = probs.squeeze(0)
@@ -80,6 +109,16 @@ def batch_logits_to_label_ids(
     entity_threshold: float = 0.5,
     apply_bio_repair: bool = True,
 ) -> list[list[int]]:
+    """Decode a batch of logits into label id sequences.
+
+    Args:
+        logits: Logits tensor of shape ``(batch, seq_len, num_labels)``.
+        entity_threshold: Minimum probability required to emit an entity label.
+        apply_bio_repair: Whether to run BIO repair on each sequence.
+
+    Returns:
+        List of predicted label id sequences, one per batch item.
+    """
     return [
         logits_to_label_ids(logits[i], entity_threshold, apply_bio_repair)
         for i in range(logits.size(0))

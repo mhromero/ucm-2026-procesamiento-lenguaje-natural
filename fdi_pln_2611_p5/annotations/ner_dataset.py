@@ -1,3 +1,10 @@
+"""Load merged annotations and build NER training windows.
+
+Bridges the merged annotation JSON format to BPE-tokenized tensors used by
+the NER training loop, handling character-to-token label alignment and
+sliding-window chunking for long sentences.
+"""
+
 from __future__ import annotations
 
 import json
@@ -14,6 +21,18 @@ from fdi_pln_2611_p5.model.ner.labels import (
 
 
 def char_labels_from_merged(sentence: dict) -> tuple[str, list[int]]:
+    """Convert a merged sentence dict to text and integer character labels.
+
+    Args:
+        sentence: Merged sentence with ``text``, ``labels``, and optional
+            ``tokens``.
+
+    Returns:
+        Tuple of text and label IDs aligned at character level.
+
+    Raises:
+        ValueError: If character-level text and labels differ in length.
+    """
     labels = sentence["labels"]
     if "tokens" in sentence:
         text, char_labels = word_labels_to_char_labels(sentence["tokens"], labels)
@@ -32,11 +51,24 @@ def build_ner_windows(
     *,
     stride: int | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Construye ventanas de tokens y etiquetas para entrenamiento NER.
+    """Build token windows and label tensors for NER training.
 
-    Frases más cortas que window_size se incluyen como ventana única con padding
-    (token de espacio, etiqueta IGNORE_LABEL_ID).
-    Frases más largas generan ventanas deslizantes; el último token queda cubierto.
+    Shorter sentences are padded to ``window_size`` with the space token and
+    ``IGNORE_LABEL_ID``. Longer sentences produce sliding windows so the final
+    token remains covered.
+
+    Args:
+        sentences: Merged sentence dicts from the annotation pipeline.
+        tokenizer: BPE tokenizer shared with the NER model.
+        window_size: Fixed sequence length for each training window.
+        stride: Step between sliding windows (defaults to 1).
+
+    Returns:
+        Tuple of ``(input_ids, label_ids)`` tensors shaped
+        ``(n_windows, window_size)``.
+
+    Raises:
+        ValueError: If ``stride`` is invalid or no windows can be built.
     """
     step = stride if stride is not None else 1
     if step < 1:
@@ -70,7 +102,14 @@ def build_ner_windows(
 
 
 def slim_sentence(sentence: dict) -> dict:
-    """Solo campos necesarios para entrenamiento / dataset fusionado (por palabra)."""
+    """Keep only fields required for training and merged dataset storage.
+
+    Args:
+        sentence: Full merged sentence record.
+
+    Returns:
+        Slim dict with ``frase_id``, ``text``, optional ``tokens``, and ``labels``.
+    """
     out: dict = {
         "frase_id": sentence["frase_id"],
         "text": sentence["text"],
@@ -82,7 +121,12 @@ def slim_sentence(sentence: dict) -> dict:
 
 
 def save_merged_dataset(path: Path, sentences: list[dict]) -> None:
-    """Guarda únicamente la lista de frases anotadas (sin bloque report)."""
+    """Persist the merged sentence list without report metadata.
+
+    Args:
+        path: Output JSON file path.
+        sentences: Merged sentence records to save.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     slim = [slim_sentence(s) for s in sentences]
     path.write_text(
@@ -92,6 +136,17 @@ def save_merged_dataset(path: Path, sentences: list[dict]) -> None:
 
 
 def load_merged_dataset(path: Path) -> list[dict]:
+    """Load merged sentences from a dataset JSON file.
+
+    Supports both a bare sentence list and a legacy wrapper with a
+    ``sentences`` key.
+
+    Args:
+        path: Path to the merged dataset JSON file.
+
+    Returns:
+        List of merged sentence dicts.
+    """
     payload = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(payload, list):
         return payload

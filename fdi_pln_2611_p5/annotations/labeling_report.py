@@ -1,3 +1,10 @@
+"""Generate HTML labeling quality reports from merged annotations.
+
+Collects inter-annotator agreement metrics, label distributions, and coverage
+statistics, then renders an interactive HTML report via
+``labeling_report_html``.
+"""
+
 from __future__ import annotations
 
 import json
@@ -13,11 +20,19 @@ from fdi_pln_2611_p5.model.ner.labels import LABEL2ID, PREFIX_TO_ENTITY_TYPE
 
 
 def _label_distribution(labels: list[str]) -> dict[str, int]:
+    """Count occurrences of each label tag."""
     return dict(Counter(labels))
 
 
 def _merged_json_label_distribution(merged_json: Path) -> dict[str, int]:
-    """Cuenta etiquetas por tipo leyendo data/annotations/merged.json."""
+    """Count label types across all sentences in ``merged.json``.
+
+    Args:
+        merged_json: Path to the merged annotation dataset.
+
+    Returns:
+        Mapping from label tag to token count.
+    """
     counter: Counter[str] = Counter()
     for sentence in load_merged_dataset(merged_json):
         counter.update(sentence["labels"])
@@ -27,6 +42,7 @@ def _merged_json_label_distribution(merged_json: Path) -> dict[str, int]:
 def _confusion_matrix(
     labels_a: list[str], labels_b: list[str]
 ) -> dict[str, dict[str, int]]:
+    """Build a token-level confusion matrix between two annotators."""
     matrix: dict[str, dict[str, int]] = {}
     for left, right in zip(labels_a, labels_b, strict=True):
         matrix.setdefault(left, Counter())
@@ -35,6 +51,7 @@ def _confusion_matrix(
 
 
 def _count_entities(labels: list[str]) -> dict[str, int]:
+    """Count entity spans by type (PER, LOC) from BIO labels."""
     counts = Counter()
     current: str | None = None
     for label in labels:
@@ -52,6 +69,7 @@ def _count_entities(labels: list[str]) -> dict[str, int]:
 
 
 def _scan_coverage(etiquetados_root: Path) -> list[dict]:
+    """Scan all labeled files and compute entity-token coverage per file."""
     rows: list[dict] = []
     for json_dir in sorted(etiquetados_root.iterdir()):
         if not json_dir.is_dir():
@@ -73,6 +91,15 @@ def _scan_coverage(etiquetados_root: Path) -> list[dict]:
 
 
 def _collect_analytics(bundle: MergeBundle, etiquetados_root: Path) -> dict:
+    """Aggregate all analytics needed for the HTML report.
+
+    Args:
+        bundle: Merge result with per-sentence details and global report.
+        etiquetados_root: Root of labeled annotation directories.
+
+    Returns:
+        Dict with distributions, confusion matrix, coverage, and per-sentence stats.
+    """
     merged_labels: list[str] = []
     ann_a_labels: list[str] = []
     ann_b_labels: list[str] = []
@@ -117,6 +144,7 @@ def _collect_analytics(bundle: MergeBundle, etiquetados_root: Path) -> dict:
 
 
 def _compact_chart_opts(**extra) -> dict:
+    """Build compact Chart.js options shared by report bar and scatter charts."""
     tick = {"font": {"size": 9, "family": "Inter"}, "color": "#94a3b8"}
     grid = {"color": "#f1f5f9", "drawBorder": False}
     base = {
@@ -150,6 +178,7 @@ def _chart_js_script(
     datasets: list[dict],
     options: dict | None = None,
 ) -> str:
+    """Emit JavaScript that instantiates one Chart.js chart."""
     opts = options or {}
     return f"""
     new Chart(document.getElementById('{chart_id}'), {{
@@ -167,6 +196,21 @@ def generate_annotation_report(
     merged_json: Path | None = None,
     lote_9frases_assignments: Path | None = None,
 ) -> Path:
+    """Build and write the full labeling quality HTML report.
+
+    Runs the merge pipeline when ``bundle`` is not provided, collects analytics,
+    renders Chart.js visualizations, and writes the final HTML page.
+
+    Args:
+        bundle: Pre-computed merge result; merged on the fly when ``None``.
+        etiquetados_root: Root of labeled annotation directories.
+        output_html: Destination path for the HTML report.
+        merged_json: Path to the merged dataset JSON (written during merge).
+        lote_9frases_assignments: Optional assignments for the 9-sentence batch.
+
+    Returns:
+        Path to the written HTML report file.
+    """
     etiquetados_root = etiquetados_root or package_path("data/etiquetados")
     output_html = output_html or package_path(
         "data/annotations/informe_etiquetado.html"

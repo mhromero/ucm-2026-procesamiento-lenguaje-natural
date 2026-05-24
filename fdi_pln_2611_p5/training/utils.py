@@ -1,3 +1,5 @@
+"""Shared training utilities for causal LM and NER evaluation."""
+
 from __future__ import annotations
 
 import copy
@@ -20,6 +22,16 @@ from fdi_pln_2611_p5.model.ner.decode import logits_to_label_ids
 
 
 def iter_batches(x: torch.Tensor, y: torch.Tensor, batch_size: int):
+    """Yield ``(x_batch, y_batch)`` slices along the first dimension.
+
+    Args:
+        x: Input tensor of shape ``(N, ...)``.
+        y: Target tensor with matching batch size.
+        batch_size: Maximum number of rows per batch.
+
+    Yields:
+        Tuple of input and target batch tensors.
+    """
     for start in range(0, x.size(0), batch_size):
         end = start + batch_size
         yield x[start:end], y[start:end]
@@ -28,6 +40,7 @@ def iter_batches(x: torch.Tensor, y: torch.Tensor, batch_size: int):
 def mover_optimizador_a_dispositivo(
     optimizer: torch.optim.Optimizer, device: torch.device
 ):
+    """Move optimizer state tensors to ``device`` (e.g. after ``model.to(device)``)."""
     for state in optimizer.state.values():
         for key, value in state.items():
             if isinstance(value, torch.Tensor):
@@ -42,6 +55,7 @@ def evaluar_loss_causal(
     batch_size: int,
     device: torch.device,
 ) -> float:
+    """Compute mean causal language-model loss over batched windows."""
     if x_data.size(0) == 0:
         return 0.0
     model.eval()
@@ -65,6 +79,7 @@ def evaluar_loss_ner(
     batch_size: int,
     device: torch.device,
 ) -> float:
+    """Compute mean NER token classification loss over batched windows."""
     if x_data.size(0) == 0:
         return 0.0
     model.eval()
@@ -81,6 +96,7 @@ def evaluar_loss_ner(
 
 
 def _ner_entity_threshold(model) -> float:
+    """Return the entity probability threshold stored on the model."""
     return float(getattr(model, "entity_threshold", 0.5))
 
 
@@ -92,6 +108,7 @@ def _collect_ner_preds_labels(
     batch_size: int,
     device: torch.device,
 ) -> tuple[torch.Tensor, torch.Tensor]:
+    """Collect flattened NER predictions and gold labels from window batches."""
     model.eval()
     threshold = _ner_entity_threshold(model)
     pred_parts: list[int] = []
@@ -116,7 +133,7 @@ def build_ner_optimizer(
     learning_rate: float,
     backbone_lr_factor: float = 1.0,
 ) -> torch.optim.Optimizer:
-    """Adam con LR reducido en el backbone si ``backbone_lr_factor`` < 1."""
+    """Build Adam with a reduced learning rate on the backbone when factor < 1."""
     if backbone_lr_factor >= 1.0:
         return torch.optim.Adam(
             [p for p in model.parameters() if p.requires_grad],
@@ -139,7 +156,7 @@ def build_ner_optimizer(
 
 
 def _spans_from_label_ids(label_ids: list[int]) -> list[tuple[int, int, str]]:
-    """Spans (inicio, fin, PER|LOC) a nivel token BPE."""
+    """Extract entity spans ``(start, end, PER|LOC)`` at BPE token level."""
     spans: list[tuple[int, int, str]] = []
     i = 0
     while i < len(label_ids):
@@ -160,6 +177,7 @@ def _spans_from_label_ids(label_ids: list[int]) -> list[tuple[int, int, str]]:
 
 
 def span_f1_from_label_lists(pred_ids: list[int], gold_ids: list[int]) -> float:
+    """Compute span-level F1 between predicted and gold label id sequences."""
     pred_spans = set(_spans_from_label_ids(pred_ids))
     gold_spans = set(_spans_from_label_ids(gold_ids))
     if not pred_spans and not gold_spans:
@@ -177,6 +195,7 @@ def span_f1_from_label_lists(pred_ids: list[int], gold_ids: list[int]) -> float:
 def _metrics_from_pred_label_lists(
     pred_parts: list[int], label_parts: list[int]
 ) -> dict:
+    """Aggregate token-level NER metrics from parallel pred/label id lists."""
     preds = torch.tensor(pred_parts, dtype=torch.long)
     labels = torch.tensor(label_parts, dtype=torch.long)
     if labels.numel() == 0:
@@ -218,7 +237,7 @@ def predict_label_ids_for_tokens(
     *,
     stride: int | None = None,
 ) -> list[int]:
-    """Inferencia por token: ventanas con solapamiento y voto mayoritario."""
+    """Run per-token NER inference with overlapping windows and majority vote."""
     n = len(token_ids)
     if n == 0:
         return []
@@ -266,7 +285,7 @@ def evaluar_metricas_ner_sentence_level(
     *,
     infer_stride: int | None = None,
 ) -> dict:
-    """Métricas en val: cada token BPE cuenta una vez (inferencia alineada con entrenamiento)."""
+    """Evaluate NER metrics at sentence level (each BPE token counted once)."""
     threshold = _ner_entity_threshold(model)
     pred_parts: list[int] = []
     label_parts: list[int] = []
@@ -297,7 +316,7 @@ def evaluar_confusion_ner_sentence_level(
     window_size: int,
     device: torch.device,
 ) -> dict:
-    """Matriz de confusión sin duplicar tokens por ventanas solapadas."""
+    """Build a confusion matrix without double-counting overlapping window tokens."""
     num_labels = len(LABEL2ID)
     metrics = evaluar_metricas_ner_sentence_level(
         model, val_sentences, tokenizer, window_size, device
@@ -355,7 +374,7 @@ def evaluar_metricas_ner(
     batch_size: int,
     device: torch.device,
 ) -> dict:
-    """Métricas en ventanas de validación (puede inflar conteos si hay solapamiento)."""
+    """Evaluate NER metrics on validation windows (may inflate counts if windows overlap)."""
     if x_val.size(0) == 0:
         return {
             "overall_acc": 0.0,
@@ -375,7 +394,7 @@ def ner_checkpoint_score(
     metric_name: str,
     val_loss: float,
 ) -> tuple[float, bool]:
-    """Devuelve (score, higher_is_better) para elegir el mejor checkpoint."""
+    """Return ``(score, higher_is_better)`` for checkpoint selection."""
     if metric_name == "val_loss":
         return val_loss, False
     if metric_name == "macro_f1_non_o":
@@ -384,17 +403,18 @@ def ner_checkpoint_score(
         return metricas.get("entity_recall", 0.0), True
     if metric_name == "entity_acc_constrained":
         return metricas.get("entity_token_acc", 0.0), True
-    raise ValueError(f"Métrica de selección desconocida: {metric_name}")
+        raise ValueError(f"Unknown checkpoint selection metric: {metric_name}")
 
 
 def passes_overall_acc_constraint(metricas: dict, min_overall_acc: float) -> bool:
+    """Return whether overall token accuracy meets the minimum constraint."""
     if min_overall_acc <= 0:
         return True
     return metricas.get("overall_acc", 0.0) >= min_overall_acc
 
 
 def _macro_f1_non_o(preds: torch.Tensor, labels: torch.Tensor) -> float:
-    """F1 macro promediando solo clases de entidad (1..n-1)."""
+    """Compute macro F1 averaged over entity classes only (ids 1..n-1)."""
     f1_scores: list[float] = []
     for class_id in range(1, len(LABEL2ID)):
         tp = ((preds == class_id) & (labels == class_id)).sum().item()
@@ -423,6 +443,23 @@ def entrenar_epochs_causal(
     batch_size: int,
     description: str = "Entrenando LLM",
 ) -> tuple[float, float, list[dict]]:
+    """Train a causal LM for multiple epochs and restore the best val checkpoint.
+
+    Args:
+        model: Causal language model.
+        x_train: Training input windows.
+        y_train: Training target windows.
+        x_val: Validation input windows.
+        y_val: Validation target windows.
+        optimizer: Torch optimizer.
+        device: Torch device.
+        epochs: Number of training epochs.
+        batch_size: Mini-batch size.
+        description: Label shown in the progress bar and logs.
+
+    Returns:
+        Tuple of (final train loss, best val loss, per-epoch history).
+    """
     steps_per_epoch = math.ceil(x_train.size(0) / batch_size)
     total_steps = steps_per_epoch * epochs
     train_loss = 0.0
@@ -485,7 +522,7 @@ def find_best_entity_threshold(
     tokenizer=None,
     window_size: int = 128,
 ) -> tuple[float, dict]:
-    """Busca umbral en val que maximiza macro F1 (por frase si se pasan sentences)."""
+    """Search validation thresholds that maximize macro F1 (sentence-level if provided)."""
     candidates = candidates or [
         0.30,
         0.35,
@@ -529,7 +566,7 @@ def evaluar_confusion_ner(
     batch_size: int,
     device: torch.device,
 ) -> dict:
-    """Calcula la matriz de confusión y métricas por clase (precision/recall/F1)."""
+    """Compute confusion matrix and per-class precision/recall/F1 on window batches."""
     num_labels = len(LABEL2ID)
     if x_val.size(0) == 0:
         return {"matrix": [[0] * num_labels] * num_labels, "per_class": {}}

@@ -1,4 +1,4 @@
-"""LM causal: transformer, BPE y checkpoints."""
+"""Causal language model: transformer, BPE tokenizer, and checkpoints."""
 
 from fdi_pln_2611_p5.model.lm_causal.attention import Attention
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer

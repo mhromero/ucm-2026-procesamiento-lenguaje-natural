@@ -1,3 +1,5 @@
+"""NER classification head on top of a pretrained causal language model."""
+
 from __future__ import annotations
 
 import torch
@@ -9,7 +11,14 @@ from fdi_pln_2611_p5.training.utils import predict_label_ids_for_tokens
 
 
 class NERModel(nn.Module):
-    """Cabezal de NER sobre el backbone del LLM causal preentrenado."""
+    """NER classification head on a pretrained causal LM backbone.
+
+    Args:
+        backbone: Pretrained ``LLM`` used as the feature extractor.
+        num_labels: Number of label classes. Defaults to ``len(LABEL2ID)``.
+        loss_fn: Optional loss function; defaults to cross-entropy with
+            ``ignore_index=-1``.
+    """
 
     def __init__(
         self,
@@ -25,6 +34,14 @@ class NERModel(nn.Module):
         self.entity_threshold = 0.5
 
     def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
+        """Compute per-token label logits.
+
+        Args:
+            token_ids: Tensor of shape ``(batch, seq_len)``.
+
+        Returns:
+            Logits of shape ``(batch, seq_len, num_labels)``.
+        """
         hidden = self.backbone.encode_tokens(token_ids, causal=False)
         return self.label_projection(hidden)
 
@@ -34,6 +51,16 @@ class NERModel(nn.Module):
         y_batch: torch.Tensor,
         optimizer: torch.optim.Optimizer,
     ) -> float:
+        """Run one NER training step and return the loss value.
+
+        Args:
+            x_batch: Input token windows.
+            y_batch: Gold label ids aligned with ``x_batch``.
+            optimizer: Optimizer used for the parameter update.
+
+        Returns:
+            Scalar loss value for the batch.
+        """
         self.train()
         optimizer.zero_grad()
         logits = self.forward(x_batch)
@@ -44,6 +71,14 @@ class NERModel(nn.Module):
 
     @torch.no_grad()
     def predict_label_ids(self, text: str) -> list[int]:
+        """Predict NER label ids for a raw text string.
+
+        Args:
+            text: Input text; converted to lowercase before tokenization.
+
+        Returns:
+            Predicted label id sequence aligned with BPE tokens.
+        """
         self.eval()
         device = next(self.parameters()).device
         text = text.lower()
@@ -62,7 +97,16 @@ class NERModel(nn.Module):
 
 
 def labels_to_entities(text: str, label_ids: list[int], tokenizer) -> list[dict]:
-    """Agrupa predicciones BPE en entidades legibles."""
+    """Group BPE-level predictions into human-readable entity spans.
+
+    Args:
+        text: Original input text.
+        label_ids: Predicted label ids aligned with BPE tokens.
+        tokenizer: BPE tokenizer used to decode token strings.
+
+    Returns:
+        List of entity dictionaries with ``text`` and ``type`` keys.
+    """
     token_ids, _ = tokenizer.encode_with_labels(text.lower(), [0] * len(text.lower()))
     tokens = tokenizer.decode_tokens(token_ids)
     entities: list[dict] = []

@@ -1,4 +1,4 @@
-"""Modelos de la práctica: LM causal y NER."""
+"""Practice models: causal language model and NER."""
 
 from fdi_pln_2611_p5.model.lm_causal import (
     Attention,
@@ -27,6 +27,7 @@ __all__ = [
 
 
 def __getattr__(name: str):
+    """Lazily expose NER symbols to avoid circular imports."""
     from fdi_pln_2611_p5.model import ner
 
     return getattr(ner, name)

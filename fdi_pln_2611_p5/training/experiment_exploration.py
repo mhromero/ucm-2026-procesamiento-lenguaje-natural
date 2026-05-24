@@ -1,3 +1,5 @@
+"""Controlled experiment suite for corpus, window, vocabulary, and depth settings."""
+
 from __future__ import annotations
 
 import copy
@@ -19,9 +21,9 @@ from fdi_pln_2611_p5.training.causal import build_model, prepare_tokenizer_and_t
 from fdi_pln_2611_p5.training.experiment_report import generate_experiment_html
 from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
 
-# Ocho experimentos: corpus, ventana, vocabulario BPE y profundidad del Transformer.
-# Validación siempre en Alice. Salvo corpus_alice, train = Alice + 4 primeros libros HP.
-# Referencia común: window=128, vocab=300, n_blocks=4 salvo que el eje indique otra cosa.
+# Eight experiments varying corpus, window size, BPE vocabulary, and Transformer depth.
+# Validation is always on Alice. Except corpus_alice, train = Alice + first 4 HP books.
+# Common reference: window=128, vocab=300, n_blocks=4 unless an axis overrides them.
 _REF = {
     "corpus": {"extra_max_books": 4},
     "tokenizer": {"vocab_size": 300, "show_progress": False},
@@ -132,6 +134,7 @@ EXPERIMENT_SPECS: list[dict] = [
 
 
 def _merge_config(base: dict, overrides: dict) -> dict:
+    """Deep-merge ``overrides`` into a copy of ``base``."""
     merged = copy.deepcopy(base)
     for key, value in overrides.items():
         if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
@@ -142,6 +145,7 @@ def _merge_config(base: dict, overrides: dict) -> dict:
 
 
 def _corpus_train_label(config: dict) -> str:
+    """Return a human-readable training-corpus label for reports."""
     max_books = config["corpus"].get("extra_max_books")
     if max_books == 0:
         return "solo Alice"
@@ -153,6 +157,7 @@ def _corpus_train_label(config: dict) -> str:
 
 
 def _config_snapshot(config: dict) -> dict:
+    """Extract key hyperparameters for logging and HTML reports."""
     return {
         "corpus_train": _corpus_train_label(config),
         "vocab_size": config["tokenizer"]["vocab_size"],
@@ -168,14 +173,14 @@ def _config_snapshot(config: dict) -> dict:
 
 
 def _tokenizer_corpus_key(config: dict) -> str:
-    """Clave del corpus sobre el que se entrena el BPE (Alice ≠ Alice+HP)."""
+    """Return a cache key for the BPE training corpus (Alice-only vs Alice+HP)."""
     if config["corpus"].get("extra_max_books") == 0:
         return "alice_only"
     return f"alice_hp{config['corpus'].get('extra_max_books', 'all')}"
 
 
 def _experiment_config_key(config: dict) -> tuple:
-    """Dos runs solo comparten entrenamiento si BPE y modelo son equivalentes."""
+    """Return a tuple key; two runs share training only if BPE and model configs match."""
     return (
         _tokenizer_corpus_key(config),
         config["tokenizer"]["vocab_size"],
@@ -194,7 +199,7 @@ EXPERIMENT_CONFIG_NAME = "experiment_config.json"
 
 
 def _copy_experiment_artifacts(source_dir: Path, dest_dir: Path) -> None:
-    """Copia BPE, tokens, pesos y config JSON al directorio del experimento."""
+    """Copy BPE artifacts, token caches, weights, and config JSON to an experiment dir."""
     dest_dir.mkdir(parents=True, exist_ok=True)
     for name in _TOKENIZER_CACHE_FILES + (
         EXPERIMENT_WEIGHTS_NAME,
@@ -216,7 +221,11 @@ def _save_experiment_artifacts(
     best_epoch: dict,
     history: list[dict],
 ) -> tuple[Path, Path]:
-    """Guarda pesos (.pth) y configuración (JSON) en data/experiments/<id>/."""
+    """Save weights (``.pth``) and experiment config JSON under ``data/experiments/<id>/``.
+
+    Returns:
+        Tuple of (weights_path, config_path).
+    """
     cache_dir.mkdir(parents=True, exist_ok=True)
     weights_path = cache_dir / EXPERIMENT_WEIGHTS_NAME
     config_path = cache_dir / EXPERIMENT_CONFIG_NAME
@@ -256,6 +265,7 @@ def _write_experiment_config(
     *,
     reused_from: str | None = None,
 ) -> None:
+    """Write experiment metadata and full config to ``config_path``."""
     payload: dict = {
         "experiment_id": spec["id"],
         "experiment_name": spec["name"],
@@ -278,6 +288,18 @@ def run_single_experiment(
     device: torch.device,
     cache_root: Path,
 ) -> dict:
+    """Train one experiment specification and persist artifacts.
+
+    Args:
+        spec: Experiment metadata and config overrides.
+        base_config: Base project configuration.
+        epochs: Number of training epochs.
+        device: Torch device.
+        cache_root: Root directory for per-experiment caches.
+
+    Returns:
+        Result dict with metrics, paths, and dataset statistics.
+    """
     config = _merge_config(base_config, spec["overrides"])
     cache_dir = cache_root / spec["id"]
 
@@ -382,7 +404,14 @@ def run_single_experiment(
 
 
 def run_experiment_exploration(config_path: Path | None = None) -> dict:
-    """Ejecuta los 8 experimentos y guarda JSON + informe HTML."""
+    """Run all eight experiments and write JSON results plus an HTML report.
+
+    Args:
+        config_path: Optional path to the configuration file.
+
+    Returns:
+        Payload dict written to the results JSON file.
+    """
     base_config = load_config(config_path)
     exp_cfg = base_config["experiment_exploration"]
     epochs = exp_cfg["epochs_per_run"]
@@ -474,6 +503,7 @@ def run_experiment_exploration(config_path: Path | None = None) -> dict:
 
 
 def _print_summary_table(results: list[dict], best: dict) -> None:
+    """Print a Rich summary table of all experiment runs."""
     table = Table(title="Exploración de experimentos (8 runs)", show_lines=True)
     table.add_column("ID", style="cyan")
     table.add_column("Corpus train")

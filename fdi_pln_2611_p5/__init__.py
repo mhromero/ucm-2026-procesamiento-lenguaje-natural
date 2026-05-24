@@ -1,1 +1,1 @@
-"""Package for p5 experiments."""
+"""Practice 5 package: causal language modeling and NER experiments."""

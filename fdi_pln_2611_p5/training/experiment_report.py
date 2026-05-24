@@ -1,3 +1,5 @@
+"""HTML report generation for the causal LM experiment exploration suite."""
+
 from __future__ import annotations
 
 import html
@@ -7,12 +9,30 @@ from pathlib import Path
 
 
 def generate_experiment_html(payload: dict, output_path: Path) -> Path:
+    """Write an HTML experiment report from an in-memory results payload.
+
+    Args:
+        payload: Experiment results dict (same schema as the JSON output).
+        output_path: Destination HTML file path.
+
+    Returns:
+        The ``output_path`` written.
+    """
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(_build_html(payload), encoding="utf-8")
     return output_path
 
 
 def generate_experiment_html_from_json(results_path: Path, output_path: Path) -> Path:
+    """Load experiment JSON from disk and generate the HTML report.
+
+    Args:
+        results_path: Path to ``experiment_results.json``.
+        output_path: Destination HTML file path.
+
+    Returns:
+        The ``output_path`` written.
+    """
     payload = json.loads(results_path.read_text(encoding="utf-8"))
     return generate_experiment_html(payload, output_path)
 
@@ -20,6 +40,7 @@ def generate_experiment_html_from_json(results_path: Path, output_path: Path) ->
 def _svg_learning_curve(
     history: list[dict], width: int = 420, height: int = 200
 ) -> str:
+    """Render an SVG train/val loss curve for one experiment."""
     if not history:
         return "<p>Sin historial.</p>"
     epochs = [h["epoch"] for h in history]
@@ -82,6 +103,7 @@ def _svg_learning_curve(
 
 
 def _comparison_bars(results: list[dict], width: int = 520, height: int = 220) -> str:
+    """Render an SVG bar chart comparing best val_loss across experiments."""
     sorted_r = sorted(results, key=lambda r: r["best_epoch"]["val_loss"])
     losses = [r["best_epoch"]["val_loss"] for r in sorted_r]
     y_min, y_max = min(losses) * 0.9, max(losses) * 1.1
@@ -113,6 +135,7 @@ def _comparison_bars(results: list[dict], width: int = 520, height: int = 220) -
 
 
 def _history_table(history: list[dict]) -> str:
+    """Render a compact per-epoch loss table for one experiment."""
     rows = ""
     best_val = min(h["val_loss"] for h in history)
     for h in history:
@@ -129,6 +152,7 @@ def _history_table(history: list[dict]) -> str:
 
 
 def _build_html(payload: dict) -> str:
+    """Assemble the full experiment exploration HTML document."""
     experiments: list[dict] = payload["experiments"]
     best: dict = payload["best"]
     methodology = payload.get("methodology", {})

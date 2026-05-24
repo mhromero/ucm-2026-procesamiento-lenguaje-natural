@@ -1,3 +1,5 @@
+"""Causal language-model training pipeline and tokenizer preparation."""
+
 from __future__ import annotations
 
 import json
@@ -21,7 +23,15 @@ def prepare_tokenizer_and_tokens(
     config: dict,
     cache_dir: Path | None = None,
 ) -> tuple[BPETokenizer, list[int], list[int]]:
-    """Prepara BPE y tokens. Si ``cache_dir`` se indica, usa cachés aisladas (p. ej. por experimento)."""
+    """Prepare the BPE tokenizer and tokenized train/test splits.
+
+    Args:
+        config: Loaded project configuration.
+        cache_dir: Optional directory for isolated caches (e.g. per experiment).
+
+    Returns:
+        Tuple of (tokenizer, train token ids, test token ids).
+    """
     corpus_cfg = config["corpus"]
     tokenizer_cfg = config["tokenizer"]
 
@@ -79,7 +89,14 @@ def prepare_tokenizer_and_tokens(
 
 
 def train_tokenizer(config_path: Path | None = None) -> BPETokenizer:
-    """Entrena y guarda el tokenizador BPE; sobreescribe la caché existente."""
+    """Train and save the BPE tokenizer, overwriting any existing cache.
+
+    Args:
+        config_path: Optional path to the configuration file.
+
+    Returns:
+        The trained BPE tokenizer.
+    """
     config = load_config(config_path)
     corpus_cfg = config["corpus"]
     tokenizer_cfg = config["tokenizer"]
@@ -102,6 +119,15 @@ def train_tokenizer(config_path: Path | None = None) -> BPETokenizer:
 
 
 def build_model(config: dict, tokenizer: BPETokenizer) -> LLM:
+    """Instantiate a causal LLM from configuration and tokenizer.
+
+    Args:
+        config: Loaded project configuration.
+        tokenizer: BPE tokenizer shared with the model.
+
+    Returns:
+        An uninitialized ``LLM`` instance (weights not loaded).
+    """
     model_cfg = config["model"]
     return LLM(
         tokenizer=tokenizer,
@@ -118,10 +144,18 @@ def train_causal(
     config_path: Path | None = None,
     grid_search: bool = False,
 ) -> dict:
-    """Entrena el LLM causal sobre Alice + Harry Potter y guarda el checkpoint.
+    """Train the causal LLM on Alice (+ optional Harry Potter) and save a checkpoint.
 
-    Si grid_search=True ejecuta primero 9 combinaciones lr×batch y usa la mejor
-    configuración para el entrenamiento final.
+    When ``grid_search=True``, runs a learning-rate × batch-size grid search first
+    and uses the best configuration for the final training run.
+
+    Args:
+        weights_path: Destination path for model weights.
+        config_path: Optional path to the configuration file.
+        grid_search: Whether to run hyperparameter grid search before final training.
+
+    Returns:
+        Dict with final train/test loss and a generated text sample.
     """
     config = load_config(config_path)
     corpus_cfg = config["corpus"]

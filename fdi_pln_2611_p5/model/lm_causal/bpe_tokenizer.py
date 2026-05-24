@@ -1,3 +1,5 @@
+"""Byte Pair Encoding tokenizer trained from scratch on the corpus."""
+
 import json
 from collections import Counter
 from pathlib import Path
@@ -8,12 +10,16 @@ from fdi_pln_2611_p5.model.ner.labels import label_to_id, merge_subword_labels
 
 
 class BPETokenizer:
-    """Tokenizador Byte Pair Encoding entrenado desde cero sobre el corpus.
+    """Byte Pair Encoding tokenizer trained from scratch on the corpus.
 
-    Parte de caracteres individuales y fusiona iterativamente los pares más
-    frecuentes hasta alcanzar vocab_size. Soporta codificación con etiquetas
-    NER por carácter (encode_with_labels) para propagar etiquetas al nivel de
-    subpalabra mediante merge_subword_labels.
+    Starts from individual characters and iteratively merges the most frequent
+    token pairs until ``vocab_size`` is reached. Supports NER-aware encoding via
+    ``encode_with_labels``, which propagates character-level labels to subword
+    tokens using ``merge_subword_labels``.
+
+    Args:
+        text: Training corpus text.
+        vocab_size: Target vocabulary size including the initial character set.
     """
 
     def __init__(self, text: str, vocab_size: int = 5000):
@@ -50,7 +56,17 @@ class BPETokenizer:
 
     @staticmethod
     def _apply_merge(tokens: list[int], a: int, b: int, new_id: int) -> list[int]:
-        "Reemplaza los tokens a y b por el nuevo token new_id"
+        """Replace consecutive ``(a, b)`` pairs with ``new_id``.
+
+        Args:
+            tokens: Token id sequence.
+            a: Left token id in the merge pair.
+            b: Right token id in the merge pair.
+            new_id: Merged token id to insert.
+
+        Returns:
+            Updated token id sequence.
+        """
         result = []
         i = 0
         while i < len(tokens):
@@ -63,11 +79,26 @@ class BPETokenizer:
         return result
 
     def padding_token_id(self) -> int:
-        """Id de relleno en ventanas NER (espacio BPE, no el carácter índice 0 genérico)."""
+        """Return the padding token id used in NER windows.
+
+        Uses the BPE encoding of a space character, not the generic index-0
+        fallback used for unknown characters.
+
+        Returns:
+            Token id used for padding.
+        """
         space_ids = self.encode(" ")
         return space_ids[0] if space_ids else 0
 
     def encode(self, text: str) -> list[int]:
+        """Encode text into BPE token ids.
+
+        Args:
+            text: Input string.
+
+        Returns:
+            List of token ids.
+        """
         tokens = [self.tok2id.get(c, 0) for c in text]
         for (a, b), new_id in self.merges:
             tokens = self._apply_merge(tokens, a, b, new_id)
@@ -76,6 +107,18 @@ class BPETokenizer:
     def encode_with_labels(
         self, text: str, char_labels: list[int]
     ) -> tuple[list[int], list[int]]:
+        """Encode text and propagate character-level NER labels to subwords.
+
+        Args:
+            text: Input string.
+            char_labels: Per-character label ids aligned with ``text``.
+
+        Returns:
+            Tuple of ``(token_ids, token_label_ids)``.
+
+        Raises:
+            ValueError: If ``text`` and ``char_labels`` have different lengths.
+        """
         if len(text) != len(char_labels):
             raise ValueError("text y char_labels deben tener la misma longitud.")
 
@@ -98,12 +141,33 @@ class BPETokenizer:
         return tokens, labels
 
     def decode_tokens(self, tokens: list[int]) -> list[str]:
+        """Decode token ids into individual token strings.
+
+        Args:
+            tokens: Token id sequence.
+
+        Returns:
+            List of token strings; unknown ids decode to ``"?"``.
+        """
         return [self.id2tok.get(token_id, "?") for token_id in tokens]
 
     def decode(self, tokens: list[int]) -> str:
+        """Decode token ids into a single string.
+
+        Args:
+            tokens: Token id sequence.
+
+        Returns:
+            Reconstructed text.
+        """
         return "".join([self.id2tok.get(t, "?") for t in tokens])
 
     def save(self, path: str):
+        """Persist the tokenizer vocabulary and merge rules to disk.
+
+        Args:
+            path: Output JSON file path.
+        """
         save_path = Path(path)
         payload = {
             "tok2id": self.tok2id,
@@ -113,6 +177,14 @@ class BPETokenizer:
 
     @classmethod
     def load(cls, path: str) -> "BPETokenizer":
+        """Load a tokenizer from a JSON file.
+
+        Args:
+            path: Path to a saved tokenizer JSON file.
+
+        Returns:
+            Restored ``BPETokenizer`` instance.
+        """
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
         tokenizer = cls.__new__(cls)
         tokenizer.tok2id = payload["tok2id"]
@@ -121,4 +193,9 @@ class BPETokenizer:
         return tokenizer
 
     def get_tokens(self) -> list[str]:
+        """Return all vocabulary token strings.
+
+        Returns:
+            List of token strings in arbitrary dictionary order.
+        """
         return list(self.tok2id.keys())

@@ -1,3 +1,5 @@
+"""NER fine-tuning on top of a pretrained causal language-model backbone."""
+
 from __future__ import annotations
 
 import copy
@@ -33,7 +35,15 @@ from fdi_pln_2611_p5.training.utils import (
 def _stratified_sentence_split(
     sentences: list[dict], val_ratio: float
 ) -> tuple[list[dict], list[dict]]:
-    """Divide frases en train/val manteniendo la proporción de frases con entidades."""
+    """Split sentences into train/val while preserving entity-sentence proportions.
+
+    Args:
+        sentences: Annotated sentence dicts with ``labels``.
+        val_ratio: Fraction of each stratum reserved for validation.
+
+    Returns:
+        Tuple of (train sentences, validation sentences).
+    """
     with_entities = [s for s in sentences if any(l != "o" for l in s.get("labels", []))]
     without_entities = [
         s for s in sentences if all(l == "o" for l in s.get("labels", []))
@@ -41,7 +51,7 @@ def _stratified_sentence_split(
 
     def take_val(group: list[dict]) -> tuple[list[dict], list[dict]]:
         n_val = max(1, round(len(group) * val_ratio)) if len(group) > 1 else 0
-        # tomar cada Nth para que val esté distribuido por todo el dataset
+        # Sample every Nth item so validation spans the full dataset.
         step = max(1, len(group) // max(n_val, 1))
         val_idx = set(range(0, len(group), step)[:n_val])
         val = [s for i, s in enumerate(group) if i in val_idx]
@@ -56,7 +66,16 @@ def _stratified_sentence_split(
 def _oversample_entity_windows(
     x: torch.Tensor, y: torch.Tensor, factor: int
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Replica ventanas que contienen al menos un token de entidad."""
+    """Duplicate windows that contain at least one entity token.
+
+    Args:
+        x: Window input tensor.
+        y: Window label tensor.
+        factor: Total copies per entity window (1 leaves data unchanged).
+
+    Returns:
+        Possibly expanded ``(x, y)`` tensors.
+    """
     if factor <= 1:
         return x, y
     extra_x: list[torch.Tensor] = []
@@ -74,6 +93,7 @@ def _oversample_entity_windows(
 
 
 def _init_ner_from_causal(ner_model: NERModel, causal_state: dict):
+    """Load causal backbone weights into the NER model, excluding the vocab head."""
     backbone_state = {
         key: value
         for key, value in causal_state.items()
@@ -88,11 +108,19 @@ def train_ner(
     merged_annotations_path: Path,
     config_path: Path | None = None,
 ) -> dict:
-    """Ajusta el cabezal NER sobre el backbone causal preentrenado.
+    """Fine-tune the NER head on a pretrained causal backbone.
 
-    Carga los pesos causales, sustituye la cabeza de vocabulario por una proyección
-    lineal a las etiquetas NER, y entrena con CrossEntropyLoss ponderado para
-    compensar el desbalance entre tokens 'o' y tokens de entidad.
+    Loads causal weights, replaces the vocabulary projection with a linear NER
+    head, and trains with class-weighted loss to handle ``o`` vs. entity imbalance.
+
+    Args:
+        weights_path: Destination path for NER checkpoint weights.
+        causal_weights_path: Path to the pretrained causal model checkpoint.
+        merged_annotations_path: Path to merged annotation JSON.
+        config_path: Optional path to the configuration file.
+
+    Returns:
+        Dict with best metric name, score, epoch, and window counts.
     """
     config = load_config(config_path)
     seed = config.get("seed", 42)

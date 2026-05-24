@@ -1,1 +1,1 @@
-"""Entrenamiento causal y NER."""
+"""Causal language-model and NER training utilities."""

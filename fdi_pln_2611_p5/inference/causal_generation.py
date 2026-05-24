@@ -1,3 +1,5 @@
+"""Load a causal LM checkpoint and generate text from a prompt."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -12,6 +14,17 @@ from fdi_pln_2611_p5.training.causal import build_model
 def generate_text(
     weights_path: Path, prompt: str, max_new_tokens: int, temperature: float
 ) -> str:
+    """Generate text with a saved causal language model.
+
+    Args:
+        weights_path: Path to the model checkpoint ``.pth`` file.
+        prompt: Seed text for autoregressive generation.
+        max_new_tokens: Maximum number of tokens to generate after the prompt.
+        temperature: Sampling temperature passed to the model.
+
+    Returns:
+        Prompt followed by generated continuation text.
+    """
     weights_path = Path(weights_path).resolve()
     payload = torch.load(weights_path, map_location="cpu", weights_only=False)
     config = load_config()

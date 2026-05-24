@@ -1,4 +1,8 @@
-"""Generación del HTML del informe de etiquetado."""
+"""Render the labeling quality report as a self-contained HTML page.
+
+Turns aggregated analytics and Chart.js configuration into a styled dashboard
+with KPIs, label distributions, confusion matrices, and per-sentence rankings.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +28,15 @@ _LABEL_CHIP_META = {
 
 
 def _merged_json_chips_html(dist: dict[str, int], total: int) -> str:
+    """Render label-distribution summary chips for ``merged.json``.
+
+    Args:
+        dist: Mapping from label tag to token count.
+        total: Total token count across all labels.
+
+    Returns:
+        HTML fragment with chip cards and an entity-token summary line.
+    """
     if total <= 0:
         return '<p class="note">Sin datos en merged.json.</p>'
 
@@ -69,6 +82,14 @@ def _merged_json_chips_html(dist: dict[str, int], total: int) -> str:
 
 
 def _kappa_badge(value: float | None) -> str:
+    """Render a color-coded HTML badge for a Cohen's kappa value.
+
+    Args:
+        value: Kappa coefficient, or ``None`` when unavailable.
+
+    Returns:
+        HTML ``<span>`` with a severity-based CSS class.
+    """
     if value is None:
         return '<span class="badge badge-muted">—</span>'
     if value >= 0.8:
@@ -81,6 +102,15 @@ def _kappa_badge(value: float | None) -> str:
 
 
 def build_report_html(data: dict, charts_js: str) -> str:
+    """Assemble the full labeling report HTML document.
+
+    Args:
+        data: Analytics dict produced by ``labeling_report._collect_analytics``.
+        charts_js: JavaScript snippets that initialize Chart.js visualizations.
+
+    Returns:
+        Complete HTML page as a string.
+    """
     report = data["report"]
     kappas = data["kappa_values"]
     confusion_labels = data["confusion_labels"]

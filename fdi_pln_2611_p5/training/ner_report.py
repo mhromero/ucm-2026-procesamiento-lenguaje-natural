@@ -1,3 +1,5 @@
+"""HTML report generation for NER training metrics and confusion matrices."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -12,7 +14,19 @@ def generate_ner_report(
     best_epoch: int,
     output_path: Path,
 ) -> Path:
-    """Genera informe HTML del entrenamiento NER con curvas y matriz de confusión."""
+    """Build an HTML training report with curves and a confusion matrix.
+
+    Args:
+        history: Per-epoch training metrics.
+        confusion: Sentence-level confusion matrix and per-class stats.
+        model_cfg: Model architecture configuration.
+        ner_cfg: NER training hyperparameters.
+        best_epoch: Epoch selected as best by the training loop.
+        output_path: Destination HTML file path.
+
+    Returns:
+        The ``output_path`` written.
+    """
     output_path.parent.mkdir(parents=True, exist_ok=True)
     html = _build_html(history, confusion, model_cfg, ner_cfg, best_epoch)
     output_path.write_text(html, encoding="utf-8")
@@ -20,14 +34,17 @@ def generate_ner_report(
 
 
 def _pct(v: float) -> str:
+    """Format a ratio as a percentage string."""
     return f"{v:.1%}"
 
 
 def _fmt(v: float) -> str:
+    """Format a float with four decimal places."""
     return f"{v:.4f}"
 
 
 def _loss_color(loss: float, min_loss: float, max_loss: float) -> str:
+    """Map validation loss to an RGB color along a green-to-red scale."""
     if max_loss == min_loss:
         return "rgb(80,160,80)"
     t = (loss - min_loss) / (max_loss - min_loss)
@@ -37,11 +54,13 @@ def _loss_color(loss: float, min_loss: float, max_loss: float) -> str:
 
 
 def _bar(value: float, max_value: float, color: str, width: int = 120) -> str:
+    """Render an inline HTML bar proportional to ``value / max_value``."""
     px = max(2, int(width * value / max(max_value, 1e-9)))
     return f'<span style="display:inline-block;width:{px}px;height:12px;background:{color};border-radius:2px;vertical-align:middle;"></span>'
 
 
 def _confusion_cell(count: int, row_total: int) -> str:
+    """Render one styled confusion-matrix cell."""
     ratio = count / max(row_total, 1)
     intensity = int(40 + 200 * ratio)
     if count == 0:
@@ -60,6 +79,7 @@ def _build_html(
     ner_cfg: dict,
     best_epoch: int,
 ) -> str:
+    """Assemble the full NER training report HTML document."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     labels = confusion.get("labels", [])
     matrix = confusion.get("matrix", [])

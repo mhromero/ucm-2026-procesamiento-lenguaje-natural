@@ -1,3 +1,5 @@
+"""Multi-head self-attention with optional causal masking."""
+
 import math
 
 import torch
@@ -6,7 +8,14 @@ from torch.nn.functional import softmax
 
 
 class Attention(nn.Module):
-    """Auto-atención multi-cabezal con máscara causal opcional."""
+    """Multi-head self-attention with optional causal masking.
+
+    Args:
+        d_model: Model hidden dimension.
+        n_heads: Number of attention heads.
+        max_seq_len: Maximum sequence length for the precomputed causal mask.
+        dropout: Dropout probability applied to attention weights.
+    """
 
     def __init__(self, d_model, n_heads, max_seq_len, dropout):
         super().__init__()
@@ -21,6 +30,16 @@ class Attention(nn.Module):
         self.register_buffer("mask", mask)
 
     def forward(self, x, causal=True):
+        """Apply self-attention to the input sequence.
+
+        Args:
+            x: Input tensor of shape ``(batch, seq_len, d_model)``.
+            causal: If True, apply a causal mask so positions cannot attend
+                to future tokens.
+
+        Returns:
+            Output tensor of shape ``(batch, seq_len, d_model)``.
+        """
         _, n_tokens, _ = x.shape
         q, k, v = self.qkv(x).tensor_split(3, dim=-1)
         q = self.split_heads(q)
@@ -39,5 +58,13 @@ class Attention(nn.Module):
         return self.out(z)
 
     def split_heads(self, x):
+        """Reshape a tensor for multi-head attention.
+
+        Args:
+            x: Tensor of shape ``(batch, seq_len, d_model)``.
+
+        Returns:
+            Tensor of shape ``(batch, n_heads, seq_len, head_dim)``.
+        """
         x = x.unflatten(-1, (self.n_heads, self.head_dim))
         return x.transpose(1, 2)

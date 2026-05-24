@@ -1,3 +1,5 @@
+"""HTML report generation for causal LM hyperparameter grid search."""
+
 from __future__ import annotations
 
 import json
@@ -6,7 +8,15 @@ from pathlib import Path
 
 
 def generate_grid_search_html(results_path: Path, output_path: Path) -> Path:
-    """Genera un informe HTML con los resultados del grid search."""
+    """Generate an HTML report from grid-search JSON results.
+
+    Args:
+        results_path: Path to ``grid_search_results.json``.
+        output_path: Destination HTML file path.
+
+    Returns:
+        The ``output_path`` written.
+    """
     payload = json.loads(results_path.read_text(encoding="utf-8"))
     results: list[dict] = payload["results"]
     best: dict = payload["best"]
@@ -29,6 +39,7 @@ def generate_grid_search_html(results_path: Path, output_path: Path) -> Path:
 
 
 def _avg_by_key(results: list[dict], group_key: str, value_key: str) -> dict:
+    """Average ``value_key`` within each group defined by ``group_key``."""
     groups: dict = {}
     for r in results:
         k = r[group_key]
@@ -37,6 +48,7 @@ def _avg_by_key(results: list[dict], group_key: str, value_key: str) -> dict:
 
 
 def _loss_color(loss: float, min_loss: float, max_loss: float) -> str:
+    """Map test loss to an RGB color for bar charts."""
     if max_loss == min_loss:
         ratio = 0.0
     else:
@@ -47,6 +59,7 @@ def _loss_color(loss: float, min_loss: float, max_loss: float) -> str:
 
 
 def _bar(value: float, min_val: float, max_val: float, width: int = 180) -> str:
+    """Render an inline HTML bar for comparative loss visualization."""
     ratio = (value - min_val) / (max_val - min_val) if max_val != min_val else 0.5
     bar_width = max(4, int(width * ratio))
     color = _loss_color(value, min_val, max_val)
@@ -66,6 +79,7 @@ def _build_html(
     best_lr: float,
     best_bs: int,
 ) -> str:
+    """Assemble the full grid-search HTML report."""
     rows = ""
     for i, r in enumerate(sorted_results):
         is_best = (

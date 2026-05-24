@@ -1,3 +1,9 @@
+"""Merge dual-annotator JSON labels into a consensus NER dataset.
+
+Normalizes labels, resolves disagreements with BIO-aware rules, and computes
+inter-annotator agreement metrics before writing merged sentence records.
+"""
+
 from __future__ import annotations
 
 import json
@@ -13,7 +19,17 @@ LABEL_TYPOS = {"ps": "pi", "o ": "o", " o": "o"}
 
 
 def normalize_merge_label(label: str | None) -> str:
-    """Etiquetas válidas: o, pi, pc, li, lc. Cualquier otra → o."""
+    """Normalize a raw annotator label to a valid merge vocabulary tag.
+
+    Valid labels are ``o``, ``pi``, ``pc``, ``li``, and ``lc``; anything else
+    maps to ``o``.
+
+    Args:
+        label: Raw label string from an annotation record.
+
+    Returns:
+        Normalized label in ``VALID_LABELS``.
+    """
     if not label:
         return "o"
     cleaned = label.strip().lower()
@@ -24,13 +40,22 @@ def normalize_merge_label(label: str | None) -> str:
 
 
 def _entity_prefix(label: str) -> str | None:
+    """Return the entity-type prefix (``p`` or ``l``) for a non-``o`` label."""
     if label == "o":
         return None
     return label[0]
 
 
 def coerce_bio_label(label: str, prev_label: str) -> str:
-    """Ajusta i/c según el contexto (primero i, continuación c)."""
+    """Coerce a label to BIO-style ``i`` (initial) or ``c`` (continuation).
+
+    Args:
+        label: Candidate normalized label.
+        prev_label: Previous token label in the sentence.
+
+    Returns:
+        BIO-adjusted label consistent with ``prev_label``.
+    """
     label = normalize_merge_label(label)
     if label == "o":
         return "o"
@@ -43,7 +68,15 @@ def coerce_bio_label(label: str, prev_label: str) -> str:
 
 
 def merge_disagreeing_labels(votes: list[str], prev_label: str) -> str:
-    """Reglas de fusión cuando los anotadores no coinciden."""
+    """Resolve conflicting annotator votes for a single token.
+
+    Args:
+        votes: Raw label votes from annotators.
+        prev_label: Previous merged token label.
+
+    Returns:
+        Consensus label after normalization and BIO coercion.
+    """
     votes = [normalize_merge_label(v) for v in votes]
     if len(set(votes)) == 1:
         return coerce_bio_label(votes[0], prev_label)
@@ -62,7 +95,16 @@ def merge_disagreeing_labels(votes: list[str], prev_label: str) -> str:
 
 
 def records_to_text_and_labels(records: list[dict]) -> tuple[str, list[str]]:
-    """Expansión carácter a carácter (legacy / informes)."""
+    """Expand annotation records to character-level text and labels.
+
+    Legacy helper used for reports and sentence boundary matching.
+
+    Args:
+        records: Annotation records with ``clave`` and ``valor`` fields.
+
+    Returns:
+        Tuple of reconstructed text and one label per character.
+    """
     text = "".join(item["clave"] for item in records)
     labels: list[str] = []
     for item in records:
@@ -72,7 +114,14 @@ def records_to_text_and_labels(records: list[dict]) -> tuple[str, list[str]]:
 
 
 def records_to_word_labels(records: list[dict]) -> tuple[str, list[str], list[str]]:
-    """Una etiqueta por unidad de anotación (palabra, espacio, puntuación)."""
+    """Convert records to one label per annotation unit (word, space, or punctuation).
+
+    Args:
+        records: Annotation records with ``clave`` and ``valor`` fields.
+
+    Returns:
+        Tuple of full text, token units, and per-unit labels.
+    """
     tokens = [item["clave"] for item in records]
     labels = [normalize_merge_label(item.get("valor")) for item in records]
     text = "".join(tokens)
@@ -80,6 +129,18 @@ def records_to_word_labels(records: list[dict]) -> tuple[str, list[str], list[st
 
 
 def cohen_kappa(labels_a: list[str], labels_b: list[str]) -> float:
+    """Compute Cohen's kappa for two label sequences of equal length.
+
+    Args:
+        labels_a: Labels from annotator A.
+        labels_b: Labels from annotator B.
+
+    Returns:
+        Kappa coefficient in ``[0, 1]`` (1.0 for empty input).
+
+    Raises:
+        ValueError: If the sequences differ in length.
+    """
     if len(labels_a) != len(labels_b):
         raise ValueError("Las secuencias deben tener la misma longitud.")
     if not labels_a:
@@ -105,7 +166,14 @@ def cohen_kappa(labels_a: list[str], labels_b: list[str]) -> float:
 
 
 def normalize_annotation_text(text: str) -> str:
-    """Unifica comillas/apóstrofos para emparejar frases entre JSON y asignaciones."""
+    """Normalize curly quotes and apostrophes for fuzzy sentence matching.
+
+    Args:
+        text: Raw annotation text.
+
+    Returns:
+        Text with Unicode quote variants replaced by ASCII equivalents.
+    """
     return (
         text.replace("\u2019", "'")
         .replace("\u2018", "'")
@@ -115,6 +183,17 @@ def normalize_annotation_text(text: str) -> str:
 
 
 def merge_sentence_labels(label_sets: list[list[str]]) -> tuple[list[str], float]:
+    """Merge per-annotator label sequences for one sentence.
+
+    Args:
+        label_sets: One label list per annotator, all of equal length.
+
+    Returns:
+        Tuple of merged labels and mean raw token agreement (for pairs only).
+
+    Raises:
+        ValueError: If annotator sequences differ in length.
+    """
     if not label_sets:
         return [], 1.0
     length = len(label_sets[0])
@@ -145,6 +224,15 @@ def merge_sentence_labels(label_sets: list[list[str]]) -> tuple[list[str], float
 
 
 def extract_frase_records(records: list[dict], frase_text: str) -> list[dict] | None:
+    """Extract annotation records covering a target sentence substring.
+
+    Args:
+        records: Full annotation records from one JSON file.
+        frase_text: Lowercased sentence text to locate.
+
+    Returns:
+        Slice of records spanning the sentence, or ``None`` if not found.
+    """
     full_text, _ = records_to_text_and_labels(records)
     start = full_text.find(frase_text)
     if start < 0:
@@ -179,6 +267,14 @@ def extract_frase_records(records: list[dict], frase_text: str) -> list[dict] | 
 
 
 def load_assignments(path: Path) -> tuple[str, list[str], list[list[int]]]:
+    """Load sentence assignment metadata from ``asignaciones.json``.
+
+    Args:
+        path: Path to the assignments JSON file.
+
+    Returns:
+        Tuple of granularity label, sentence texts, and per-JSON index lists.
+    """
     payload = json.loads(path.read_text(encoding="utf-8"))
     granularidad = payload.get("granularidad", "palabra")
     return granularidad, payload["frases"], payload["asignaciones"]
@@ -189,6 +285,16 @@ def merge_annotations(
     assignments_path: Path,
     output_path: Path,
 ) -> dict:
+    """Merge dual annotations from a flat JSON directory into one dataset.
+
+    Args:
+        json_dir: Directory containing ``json_XX.json`` annotation files.
+        assignments_path: Path to ``asignaciones.json`` with sentence mapping.
+        output_path: Destination path for the merged dataset JSON.
+
+    Returns:
+        Report dict with agreement statistics and metadata.
+    """
     granularidad, frases, assignments = load_assignments(assignments_path)
     frase_texts = [frase.lower() for frase in frases]
     logger.info("Fusionando anotaciones (granularidad={})", granularidad)
