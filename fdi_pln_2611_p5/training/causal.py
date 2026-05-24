@@ -12,7 +12,8 @@ from loguru import logger
 
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
-from fdi_pln_2611_p5.config import load_config, package_path
+from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
+from fdi_pln_2611_p5.training.run_config import resolve_config_path, save_reproducibility_artifacts
 from fdi_pln_2611_p5.corpus.load_corpus import build_extra_train_corpus, concatenar_archivos_txt
 from fdi_pln_2611_p5.model.lm_causal.llm import LLM
 from fdi_pln_2611_p5.training.grid_search import run_grid_search
@@ -157,6 +158,7 @@ def train_causal(
     Returns:
         Dict with final train/test loss and a generated text sample.
     """
+    resolved_config_path = resolve_config_path(config_path)
     config = load_config(config_path)
     corpus_cfg = config["corpus"]
     max_books = corpus_cfg.get("extra_max_books")
@@ -232,6 +234,24 @@ def train_causal(
             "train_loss": train_loss,
             "test_loss": test_loss,
             "hyperparams": train_cfg,
+        },
+    )
+    weights_path = Path(weights_path)
+    training_config_filename = None
+    if weights_path.parent.resolve() == PACKAGE_DIR.resolve():
+        training_config_filename = f"{weights_path.stem}_training_config.json"
+    save_reproducibility_artifacts(
+        weights_path.parent,
+        config,
+        run_type="causal",
+        config_path=resolved_config_path,
+        training_config_filename=training_config_filename,
+        extra={
+            "weights_path": str(weights_path),
+            "train_loss": train_loss,
+            "test_loss": test_loss,
+            "hyperparams": train_cfg,
+            "grid_search": grid_search,
         },
     )
 

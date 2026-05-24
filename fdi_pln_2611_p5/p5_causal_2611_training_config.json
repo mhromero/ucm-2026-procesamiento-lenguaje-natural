@@ -1,8 +1,7 @@
 {
-  "experiment_id": "vocab_300",
-  "experiment_name": "Vocabulario BPE = 300 (referencia)",
-  "variable": "tokenizer.vocab_size",
-  "research_question": "Vocabulario intermedio del enunciado con Alice+4HP y ventana 128.",
+  "run_type": "causal",
+  "saved_at": "2026-05-24T01:24:13.825038+00:00",
+  "config_source": "/Users/javimartinfuentes/Documents/GitHub/fdi-pln2611/fdi_pln_2611_p5/config.json",
   "config": {
     "seed": 42,
     "corpus": {
@@ -12,7 +11,7 @@
     },
     "tokenizer": {
       "vocab_size": 300,
-      "show_progress": false,
+      "show_progress": true,
       "use_cache": true,
       "cache_path": "data/bpe_tokenizer.json",
       "train_tokens_cache_path": "data/train_tokens.json",
@@ -47,7 +46,7 @@
     "experiment_exploration": {
       "epochs_per_run": 5,
       "results_path": "data/experiment_results.json",
-      "report_path": "data/informe_experimentos.html",
+      "report_path": "informes/informe_experimentos.html",
       "cache_root": "data/experiments"
     },
     "ner_training": {
@@ -91,17 +90,6 @@
       "temperature": 1.0
     }
   },
-  "config_snapshot": {
-    "corpus_train": "Alice + 4 libros HP",
-    "vocab_size": 300,
-    "n_blocks": 4,
-    "n_heads": 4,
-    "d_model": 128,
-    "window_size": 128,
-    "dropout": 0.1,
-    "extra_max_books": 4,
-    "learning_rate": 0.0003,
-    "batch_size": 64
-  },
-  "reused_training_from": "corpus_alice_hp4"
+  "backfilled": true,
+  "weights_path": "/Users/javimartinfuentes/Documents/GitHub/fdi-pln2611/fdi_pln_2611_p5/p5_causal_2611.pth"
 }

@@ -208,6 +208,19 @@ def cmd_merge_annotations(
     )
 
 
+@app.command("backfill-training-configs")
+def cmd_backfill_training_configs():
+    """Write config.json / training_config.json for artifact dirs that lack them."""
+    from fdi_pln_2611_p5.training.run_config import backfill_missing_training_configs
+
+    written = backfill_missing_training_configs()
+    if not written:
+        typer.echo("No missing training configs found.")
+        return
+    for path in written:
+        typer.echo(f"Wrote {path}")
+
+
 @app.command("run-experiments")
 def cmd_run_experiments(
     config: Annotated[

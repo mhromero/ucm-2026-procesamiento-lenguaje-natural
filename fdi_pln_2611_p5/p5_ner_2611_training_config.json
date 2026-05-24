@@ -1,8 +1,7 @@
 {
-  "experiment_id": "window_64",
-  "experiment_name": "Ventana 64 (Alice + 4 HP)",
-  "variable": "model.window_size",
-  "research_question": "Con el mismo corpus (Alice+4HP), ¿una ventana más corta (64) cambia el número de batches y la generalización en Alice?",
+  "run_type": "ner",
+  "saved_at": "2026-05-24T01:24:13.825929+00:00",
+  "config_source": "/Users/javimartinfuentes/Documents/GitHub/fdi-pln2611/fdi_pln_2611_p5/config.json",
   "config": {
     "seed": 42,
     "corpus": {
@@ -12,7 +11,7 @@
     },
     "tokenizer": {
       "vocab_size": 300,
-      "show_progress": false,
+      "show_progress": true,
       "use_cache": true,
       "cache_path": "data/bpe_tokenizer.json",
       "train_tokens_cache_path": "data/train_tokens.json",
@@ -22,7 +21,7 @@
       "d_model": 128,
       "n_blocks": 4,
       "n_heads": 4,
-      "window_size": 64,
+      "window_size": 128,
       "dropout": 0.1
     },
     "training": {
@@ -47,7 +46,7 @@
     "experiment_exploration": {
       "epochs_per_run": 5,
       "results_path": "data/experiment_results.json",
-      "report_path": "data/informe_experimentos.html",
+      "report_path": "informes/informe_experimentos.html",
       "cache_root": "data/experiments"
     },
     "ner_training": {
@@ -91,16 +90,6 @@
       "temperature": 1.0
     }
   },
-  "config_snapshot": {
-    "corpus_train": "Alice + 4 libros HP",
-    "vocab_size": 300,
-    "n_blocks": 4,
-    "n_heads": 4,
-    "d_model": 128,
-    "window_size": 64,
-    "dropout": 0.1,
-    "extra_max_books": 4,
-    "learning_rate": 0.0003,
-    "batch_size": 64
-  }
+  "backfilled": true,
+  "weights_path": "/Users/javimartinfuentes/Documents/GitHub/fdi-pln2611/fdi_pln_2611_p5/p5_ner_2611.pth"
 }

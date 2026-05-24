@@ -13,7 +13,8 @@ from loguru import logger
 from fdi_pln_2611_p5.annotations.ner_dataset import build_ner_windows, load_merged_dataset
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.ner.checkpoints import save_ner_checkpoint
-from fdi_pln_2611_p5.config import load_config, package_path
+from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
+from fdi_pln_2611_p5.training.run_config import resolve_config_path, save_reproducibility_artifacts
 from fdi_pln_2611_p5.model.ner.labels import IGNORE_LABEL_ID, LABEL2ID
 from fdi_pln_2611_p5.model.ner.model import NERModel
 from fdi_pln_2611_p5.training.causal import build_model
@@ -122,6 +123,7 @@ def train_ner(
     Returns:
         Dict with best metric name, score, epoch, and window counts.
     """
+    resolved_config_path = resolve_config_path(config_path)
     config = load_config(config_path)
     seed = config.get("seed", 42)
     random.seed(seed)
@@ -413,6 +415,26 @@ def train_ner(
             "best_score": best_score,
             "entity_threshold": ner_model.entity_threshold,
             "ner_training": ner_cfg,
+        },
+    )
+    weights_path = Path(weights_path)
+    training_config_filename = None
+    if weights_path.parent.resolve() == PACKAGE_DIR.resolve():
+        training_config_filename = f"{weights_path.stem}_training_config.json"
+    save_reproducibility_artifacts(
+        weights_path.parent,
+        config,
+        run_type="ner",
+        config_path=resolved_config_path,
+        training_config_filename=training_config_filename,
+        extra={
+            "weights_path": str(weights_path),
+            "causal_weights_path": str(causal_weights_path),
+            "merged_annotations_path": str(merged_annotations_path),
+            "best_metric": best_metric_name,
+            "best_score": best_score,
+            "best_epoch": best_epoch,
+            "entity_threshold": ner_model.entity_threshold,
         },
     )
 

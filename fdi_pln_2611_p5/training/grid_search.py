@@ -12,6 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from fdi_pln_2611_p5.config import package_path
+from fdi_pln_2611_p5.training.run_config import save_reproducibility_artifacts
 from fdi_pln_2611_p5.model.lm_causal.llm import LLM
 from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html
 from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
@@ -86,6 +87,26 @@ def run_grid_search(
     report_path = output_path.parent / "informe_grid_search.html"
     generate_grid_search_html(output_path, report_path)
     logger.info("Informe HTML guardado en {}", report_path)
+
+    grid_extra = {
+        "grid_search_best": best,
+        "results_path": str(output_path),
+    }
+    save_reproducibility_artifacts(
+        output_path.parent,
+        config,
+        run_type="grid_search",
+        extra=grid_extra,
+    )
+    grid_cache = package_path("data/experiments/grid_search")
+    if grid_cache.is_dir() and grid_cache.resolve() != output_path.parent.resolve():
+        save_reproducibility_artifacts(
+            grid_cache,
+            config,
+            run_type="grid_search",
+            extra={**grid_extra, "results_path": str(grid_cache / output_path.name)},
+        )
+
     return {
         "params": {
             "learning_rate": best["learning_rate"],

@@ -16,7 +16,8 @@ from rich.console import Console
 from rich.table import Table
 
 from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
-from fdi_pln_2611_p5.config import load_config, package_path
+from fdi_pln_2611_p5.config import DEFAULT_CONFIG_PATH, load_config, package_path
+from fdi_pln_2611_p5.training.run_config import save_reproducibility_artifacts
 from fdi_pln_2611_p5.training.causal import build_model, prepare_tokenizer_and_tokens
 from fdi_pln_2611_p5.training.experiment_report import generate_experiment_html
 from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
@@ -253,6 +254,14 @@ def _save_experiment_artifacts(
         },
     )
     _write_experiment_config(config_path, spec, config)
+    save_reproducibility_artifacts(
+        cache_dir,
+        config,
+        run_type="experiment",
+        config_path=DEFAULT_CONFIG_PATH,
+        extra={"experiment_id": spec["id"]},
+        write_training_config=False,
+    )
     logger.info("Pesos guardados en {}", weights_path)
     logger.info("Config guardada en {}", config_path)
     return weights_path, config_path
