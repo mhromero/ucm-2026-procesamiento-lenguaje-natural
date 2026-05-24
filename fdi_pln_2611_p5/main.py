@@ -64,7 +64,7 @@ def cmd_train_ner(
     train_ner(weights, causal_weights, annotations, config_path=config)
 
 
-@app.command("generate")
+@app.command("inference-generate")
 def cmd_generate(
     weights: Annotated[Path, typer.Option("--weights", help="Pesos causales (.pth).")],
     prompt: Annotated[
@@ -78,7 +78,7 @@ def cmd_generate(
     typer.echo(text)
 
 
-@app.command("ner")
+@app.command("inference-ner")
 def cmd_ner(
     weights: Annotated[Path, typer.Option("--weights", help="Pesos NER (.pth).")],
     text_file: Annotated[
@@ -313,7 +313,7 @@ def cmd_merge_etiquetados(
     )
 
 
-@app.command("annotation-report")
+@app.command("report-annotation")
 def cmd_annotation_report(
     etiquetados_dir: Annotated[Path, typer.Option("--etiquetados-dir")] = package_path(
         "data/etiquetados"
@@ -362,7 +362,7 @@ def cmd_run_experiments(
     run_experiment_exploration(config_path=config)
 
 
-@app.command("experiment-report")
+@app.command("report-experiment")
 def cmd_experiment_report(
     results_json: Annotated[
         Path,
@@ -387,7 +387,7 @@ def cmd_experiment_report(
     typer.echo(f"Informe guardado en {path}")
 
 
-@app.command("grid-search-report")
+@app.command("report-grid-search")
 def cmd_grid_search_report(
     results_json: Annotated[
         Path, typer.Option("--results-json", help="JSON de resultados del grid search.")

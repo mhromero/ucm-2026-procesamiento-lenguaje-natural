@@ -75,21 +75,80 @@ Resumen de resultados (5 épocas, validación siempre en Alice):
 
 ### 3.1 Evaluación cualitativa y limitaciones
 
-<!-- Evaluar el NER con ejemplos concretos (comando: uv run fdi-pln-2611-p5 ner --weights p5_ner_2611.pth --text "...") -->
-<!-- Explicar por qué la entity token accuracy es tan baja (13.4%):
+Ejemplo de predicción sobre frases extraídas del corpus:
+
+```
+Entrada:
+  alice was beginning to get very tired of sitting by her sister on the bank.
+  the white rabbit ran close by her.
+  alice started to her feet and ran across the field after the rabbit.
+  the queen of hearts shouted off with her head.
+  alice met the cheshire cat sitting on a branch.
+  lewis carroll wrote alice's adventures in wonderland.
+  the mad hatter and the march hare were having a tea party.
+  alice found herself in the court of the king and queen of hearts.
+
+Salida del modelo:
+  PER  ali
+  LOC  n
+  PER  k
+  PER  ali
+  PER  a
+  PER  ali
+  PER  alice
+  PER  a
+  LOC  p
+  PER  ali
+```
+
+Los resultados son claramente deficientes. El modelo detecta subtokens BPE aislados (`ali`, `a`, `k`, `n`, `p`) en lugar de los nombres completos, y no detecta ninguna entidad de tipo LOC correctamente (p.ej. `wonderland`). Las causas principales son:
+
+<!-- Desarrollar estas razones en el informe final:
      - Dataset de anotaciones muy pequeño (pocas frases etiquetadas manualmente)
-     - Desequilibrio extremo de clases: la mayoría de tokens son "o"
-     - El modelo tiende a predecir "o" casi siempre → alta accuracy global pero pésima detección de entidades
-     - La segmentación BPE dificulta la continuidad de etiquetas (pi/pc): un token "a" de "alice" puede recibir "pi" pero el siguiente subtoken "lice" queda como "o"
-     - Fine-tuning sobre un backbone de dominio mixto (Alice+HP) con pocos datos NER
-     - Las entidades de Alice son muy específicas (nombres propios poco frecuentes en el vocabulario BPE)
+     - Desequilibrio extremo de clases: la mayoría de tokens son "o" → entity token accuracy 13.4%
+     - La segmentación BPE rompe los nombres propios en subtokens: "alice" → "ali"+"ce", "queen" → "q"+"ueen", etc.
+       El modelo aprende a etiquetar solo el primer subtoken (pi) pero no los siguientes (pc)
+     - Fine-tuning con pocos datos sobre un backbone entrenado en dominio mixto (Alice+HP)
+     - Las entidades de Alice son nombres propios muy específicos, poco frecuentes en el vocabulario BPE compartido con HP
 -->
 
 ---
 
 ## 4. Generación de texto
 
-<!-- Ejemplos de texto generado con distintos prompts. Observaciones sobre coherencia, vocabulario, repeticiones. -->
+Ejemplos de texto generado (100 tokens, temperatura=1.0):
+
+**Prompt: `"alice"`**
+```
+aliceted astonishness .he come out an unpleasant run .it was a while you dont go !
+hermione was learned .in my wand said to him .let me watch him .for questionly come
+on he said .she could hear now said a frightened library looking at hermione for a rac
+```
+
+**Prompt: `"harry potter is"`**
+```
+harry potter isnt this evenes ?lill it you his hand ?something youre a put us when you
+came to prival to the truth as i ?said dumbledore and george .he held up her hand hid
+him .theyll find funny ive knowledge i had heard is in here wouldve y
+```
+
+**Prompt: `"The Queen said"`**
+```
+the queen saidseek above the imprisontains again he felt as though she were in these
+three tall his ankle and things the spells was struggling all lumors on viere and worked
+him through the platform beetle .spun diggory and sprieked by haywi
+```
+
+<!-- Observaciones a desarrollar:
+     - El modelo genera texto sintácticamente parcialmente coherente pero semánticamente incoherente
+     - Mezcla vocabulario de Alice y Harry Potter (hermione, dumbledore, wand, hogwarts) independientemente del prompt
+       → consecuencia directa de entrenar con ambos corpus
+     - Los nombres propios aparecen fragmentados o inventados ("aliceted", "imprisontains")
+       → el tokenizador BPE de vocabulario pequeño (300 tokens) genera subwords que el modelo recombina mal
+     - Puntuación irregular: espacios antes de signos, interrogaciones intercaladas
+     - No hay coherencia temática sostenida más allá de 2-3 tokens
+     - Limitación del modelo: tamaño (128d, 4 bloques), pocas épocas (10), corpus relativamente pequeño
+-->
 
 ---
 

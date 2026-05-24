@@ -44,24 +44,24 @@ pip install fdi_pln_2611_p5-1.0-py3-none-any.whl
 
 | Comando | Descripción |
 |---------|-------------|
-| `generate --weights <ruta.pth> --prompt <texto>` | Genera texto a partir de un prompt |
-| `ner --weights <ruta.pth> <fichero.txt>` | Lista entidades nombradas en un fichero |
-| `ner --weights <ruta.pth> --text <texto>` | Lista entidades nombradas en texto directo |
+| `inference-generate --weights <ruta.pth> --prompt <texto>` | Genera texto a partir de un prompt |
+| `inference-ner --weights <ruta.pth> <fichero.txt>` | Lista entidades nombradas en un fichero |
+| `inference-ner --weights <ruta.pth> --text <texto>` | Lista entidades nombradas en texto directo |
 
 ### Informes y exploración
 
 | Comando | Descripción |
 |---------|-------------|
 | `run-experiments` | Lanza 8 experimentos (corpus, ventana, vocab, profundidad) y genera informe HTML |
-| `experiment-report` | Regenera `informes/informe_experimentos.html` desde `data/experiment_results.json` |
-| `grid-search-report` | Regenera `informes/informe_grid_search.html` desde `data/grid_search_results.json` |
+| `report-experiment` | Regenera `informes/informe_experimentos.html` desde `data/experiment_results.json` |
+| `report-grid-search` | Regenera `informes/informe_grid_search.html` desde `data/grid_search_results.json` |
 
 ### Anotación
 
 | Comando | Descripción |
 |---------|-------------|
 | `merge-etiquetados` | Fusiona `data/etiquetados/` (parte1 + parte2) en `data/annotations/merged.json` |
-| `annotation-report` | Genera informe HTML con métricas y gráficos del etiquetado |
+| `report-annotation` | Genera informe HTML con métricas y gráficos del etiquetado |
 | `merge-annotations` | Fusiona JSON de anotadores y calcula κ de Cohen |
 | `generate-templates-word` | Genera plantillas JSON con una etiqueta por palabra |
 | `generate-templates-6frases` | Genera plantillas de 6 frases largas por JSON |
@@ -86,25 +86,25 @@ uv run fdi-pln-2611-p5 train-causal --weights p5_causal_2611.pth --grid-search
 uv run fdi-pln-2611-p5 train-ner --weights p5_ner_2611.pth --causal-weights p5_causal_2611.pth
 
 # Generar texto
-uv run fdi-pln-2611-p5 generate --weights p5_causal_2611.pth --prompt "Alice"
-uv run fdi-pln-2611-p5 generate --weights p5_causal_2611.pth --prompt "The Queen" --max-new-tokens 200 --temperature 0.8
+uv run fdi-pln-2611-p5 inference-generate --weights p5_causal_2611.pth --prompt "Alice"
+uv run fdi-pln-2611-p5 inference-generate --weights p5_causal_2611.pth --prompt "The Queen" --max-new-tokens 200 --temperature 0.8
 
 # NER desde fichero
-uv run fdi-pln-2611-p5 ner --weights p5_ner_2611.pth fdi_pln_2611_p5/data/corpus/alice_in_wonderland.txt
+uv run fdi-pln-2611-p5 inference-ner --weights p5_ner_2611.pth fdi_pln_2611_p5/data/corpus/alice_in_wonderland.txt
 
 # NER desde texto directo
-uv run fdi-pln-2611-p5 ner --weights p5_ner_2611.pth --text "Alice met the Queen of Hearts"
+uv run fdi-pln-2611-p5 inference-ner --weights p5_ner_2611.pth --text "Alice met the Queen of Hearts"
 
 # Exploración de hiperparámetros y arquitectura
 uv run fdi-pln-2611-p5 run-experiments
 
 # Regenerar informes HTML
-uv run fdi-pln-2611-p5 experiment-report
-uv run fdi-pln-2611-p5 grid-search-report
+uv run fdi-pln-2611-p5 report-experiment
+uv run fdi-pln-2611-p5 report-grid-search
 
 # Fusionar etiquetados e informe de anotación
 uv run fdi-pln-2611-p5 merge-etiquetados
-uv run fdi-pln-2611-p5 annotation-report --skip-merge
+uv run fdi-pln-2611-p5 report-annotation --skip-merge
 ```
 
 ---
