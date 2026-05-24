@@ -2,54 +2,231 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Informe Práctica 5 — LM causal y NER (fdi-pln-2611)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 24px; color: #222; line-height: 1.6; }
-  h1 { border-bottom: 3px solid #1a237e; padding-bottom: 10px; color: #1a237e; }
-  h2 { color: #283593; border-bottom: 2px solid #c5cae9; padding-bottom: 4px; margin-top: 2.2em; }
-  h3 { color: #3949ab; margin-top: 1.4em; }
-  h4 { color: #555; margin-top: 1.2em; }
-  p { margin: 0.7em 0; }
-  code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 0.92em; }
-  pre { background: #f5f5f5; padding: 14px 18px; border-radius: 6px; font-size: 0.88em; overflow-x: auto; border-left: 3px solid #bbb; }
-  ul { margin: 0.5em 0; padding-left: 1.5em; }
-  li { margin: 0.3em 0; }
-  .meta { color: #666; font-size: 0.9em; }
-  .info { background: #e8eaf6; border-left: 4px solid #3949ab; padding: 12px 18px; border-radius: 4px; margin: 16px 0; }
-  .figure { margin: 24px 0; text-align: center; }
-  .figure figcaption { font-size: 0.88em; color: #555; margin-top: 6px; }
-  hr { border: none; border-top: 1px solid #ddd; margin: 2.5em 0; }
-  /* --- tablas de resultados --- */
-  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.92em; }
-  th { background: #3949ab; color: #fff; padding: 8px 10px; text-align: left; }
-  td { border: 1px solid #e0e0e0; padding: 6px 10px; }
-  tr.best-row { background: #e8f5e9; }
-  tr:nth-child(even) { background: #f9f9f9; }
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 28px 64px;
+    color: #1a1a2e;
+    line-height: 1.7;
+    background: #fafafa;
+  }
+
+  /* ── Header ── */
+  .report-header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
+    color: #fff;
+    border-radius: 0 0 20px 20px;
+    padding: 48px 40px 40px;
+    margin: 0 -28px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .report-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(99,102,241,.35) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .report-tag {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .report-header h1 {
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 6px;
+    letter-spacing: -.02em;
+    color: #fff;
+  }
+  .report-subtitle {
+    font-size: 1rem;
+    color: rgba(255,255,255,.7);
+    margin: 0 0 28px;
+  }
+  .report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .report-meta span {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  /* ── Typography ── */
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin: 2.6em 0 .6em;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e7ff;
+    letter-spacing: -.01em;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3730a3;
+    margin: 1.8em 0 .5em;
+  }
+  h4 { font-size: 0.95rem; font-weight: 600; color: #555; margin: 1.3em 0 .4em; }
+  p { margin: .75em 0; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: #ede9fe;
+    color: #4338ca;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    background: #1e1b4b;
+    color: #c7d2fe;
+    padding: 18px 22px;
+    border-radius: 10px;
+    font-size: 0.84em;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: 1em; }
+
+  ul { margin: .5em 0; padding-left: 1.6em; }
+  li { margin: .35em 0; }
+
+  .meta { color: #6b7280; font-size: 0.88em; }
+
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 2.5em 0; }
+
+  .info {
+    background: #eef2ff;
+    border-left: 4px solid #6366f1;
+    padding: 14px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+
+  .figure { margin: 28px 0; text-align: center; }
+  .figure figcaption { font-size: 0.85em; color: #6b7280; margin-top: 8px; }
+
+  /* ── Tables ── */
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 0.9em; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  th { background: #312e81; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.85em; letter-spacing: .02em; }
+  td { border-bottom: 1px solid #f0f0f0; padding: 8px 14px; }
+  tr:last-child td { border-bottom: none; }
+  tr.best-row { background: #f0fdf4; }
+  tr:nth-child(even) { background: #f9fafb; }
+
   /* grid search */
-  .gs-summary { background: #e8f5e9; border-left: 4px solid #43a047; padding: 12px 18px; border-radius: 4px; margin-bottom: 16px; }
-  .analysis { display: flex; gap: 32px; flex-wrap: wrap; }
+  .gs-summary {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    padding: 14px 20px;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 20px;
+  }
+  .analysis { display: flex; gap: 28px; flex-wrap: wrap; }
   .analysis > div { flex: 1; min-width: 220px; }
-  .analysis th { background: #283593; }
+  .analysis th { background: #1e1b4b; }
+
   /* NER */
-  .ner-summary { background: #f1f8e9; border-left: 4px solid #66bb6a; padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
-  footer { color: #888; font-size: 0.85em; margin-top: 48px; border-top: 1px solid #eee; padding-top: 12px; }
+  .ner-summary {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    padding: 14px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 20px 0;
+  }
+
+  footer {
+    color: #9ca3af;
+    font-size: 0.82em;
+    margin-top: 64px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+    text-align: center;
+    letter-spacing: .02em;
+  }
 </style>
 </head>
 <body>
 
-<h1>Informe de la Práctica 5 — LM causal y NER</h1>
-<p class="meta">
-  <strong>Asignatura:</strong> Procesamiento del Lenguaje Natural — UCM 2025/26 &nbsp;|&nbsp;
-  <strong>Grupo:</strong> 11 &nbsp;|&nbsp;
-  <strong>Integrantes:</strong> María Romero Huertas, Javier Martín Fuentes
-</p>
-
-<hr>
+<header class="report-header">
+  <div class="report-tag">Práctica 5 · Grupo 11 · UCM 2025/26</div>
+  <h1>LM Causal y NER</h1>
+  <p class="report-subtitle">Procesamiento del Lenguaje Natural — Alice in Wonderland + Harry Potter</p>
+  <div class="report-meta">
+    <span>María Romero Huertas</span>
+    <span>Javier Martín Fuentes</span>
+  </div>
+</header>
 
 <!-- ============================================================ -->
 <h2>1. Descripción del sistema</h2>
 
 <p>El sistema implementa un LLM pequeño de principio a fin. El tokenizador es BPE (Byte Pair Encoding) con vocabulario de 300 tokens entrenado sobre el corpus. El modelo de lenguaje es un Transformer causal con 4 bloques de atención multi-head (4 cabezas, dimensión 128) y ventana de contexto de 128 tokens. Para NER se añade un cabezal de clasificación lineal sobre las representaciones del backbone, ajustado mediante fine-tuning con lr reducida en el backbone (factor 0.1). El esquema de etiquetado es BIO reducido: <code>o</code>, <code>pi</code>/<code>pc</code> (persona inicio/continuación) y <code>li</code>/<code>lc</code> (lugar inicio/continuación).</p>
+
+<div class="analysis" style="margin-top:16px">
+  <div>
+    <h4>Tokenizador BPE</h4>
+    <table>
+      <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td><code>vocab_size</code></td><td>300</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h4>Arquitectura del modelo</h4>
+    <table>
+      <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td><code>d_model</code></td><td>128</td></tr>
+        <tr><td><code>n_blocks</code></td><td>4</td></tr>
+        <tr><td><code>n_heads</code></td><td>4</td></tr>
+        <tr><td><code>window_size</code></td><td>128</td></tr>
+        <tr><td><code>dropout</code></td><td>0.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h4>Entrenamiento causal</h4>
+    <table>
+      <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td><code>epochs</code></td><td>10</td></tr>
+        <tr><td><code>batch_size</code></td><td>64</td></tr>
+        <tr><td><code>learning_rate</code></td><td>0.0003</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 <hr>
 
@@ -150,6 +327,34 @@
 <p>El backbone cumple dos funciones: es el modelo de lenguaje para generación de texto <em>y</em> el encoder sobre el que se apoya el fine-tuning NER. Estas dos funciones tienen intereses ligeramente distintos en cuanto al corpus de preentrenamiento.</p>
 <p>Para generación, más datos producen representaciones más ricas y texto más fluido: entrenar con Alice + Harry Potter amplía el vocabulario efectivo del modelo y le da una base lingüística más sólida. Para NER, los datos de anotación son exclusivamente frases de Alice, por lo que un backbone entrenado únicamente en Alice habría estado mejor calibrado para ese dominio concreto. Sin embargo, con solo 68 frases etiquetadas, el cuello de botella del NER es la cantidad de datos de anotación, no la calidad del backbone: la diferencia de rendimiento NER entre los dos corpus de preentrenamiento habría sido marginal. Por eso se optó por Alice + Harry Potter, priorizando el objetivo de generación de texto sin esperar un coste significativo en NER.</p>
 
+<div class="analysis" style="margin:16px 0">
+  <div>
+    <h4>Entrenamiento NER</h4>
+    <table>
+      <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td><code>epochs</code></td><td>15</td></tr>
+        <tr><td><code>batch_size</code></td><td>16</td></tr>
+        <tr><td><code>learning_rate</code></td><td>0.0003</td></tr>
+        <tr><td><code>backbone_lr_factor</code></td><td>0.1</td></tr>
+        <tr><td><code>val_ratio</code></td><td>0.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h4>Estrategia de entrenamiento</h4>
+    <table>
+      <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td><code>class_weight_mode</code></td><td>inverse</td></tr>
+        <tr><td><code>entity_class_weight_boost</code></td><td>5.0</td></tr>
+        <tr><td><code>oversample_entity_windows</code></td><td>2</td></tr>
+        <tr><td><code>best_metric</code></td><td>macro F1 (sin <code>o</code>)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <div class="ner-summary">
   <strong>Mejor epoch:</strong> 10 (criterio: macro F1 sin clase "o") &nbsp;|&nbsp;
   <strong>Val loss:</strong> 1.6982 &nbsp;|&nbsp;
@@ -182,11 +387,11 @@
 <table>
   <thead><tr><th></th><th>pred: o</th><th>pred: pi</th><th>pred: pc</th><th>pred: li</th><th>pred: lc</th></tr></thead>
   <tbody>
-    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: o</th><td style="background:rgb(138,21,138);color:#fff;text-align:center;font-weight:bold">1174</td><td style="background:rgb(234,212,234);text-align:center">19</td><td style="background:rgb(235,215,235);text-align:center">2</td><td style="background:rgb(234,213,234);text-align:center">14</td><td style="background:rgb(235,215,235);text-align:center">1</td></tr>
-    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: pi</th><td style="background:rgb(190,125,190);text-align:center">5</td><td style="background:rgb(181,106,181);text-align:center;font-weight:bold">6</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
-    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: pc</th><td style="background:rgb(152,49,152);color:#fff;text-align:center;font-weight:bold">79</td><td style="background:rgb(234,213,234);text-align:center">1</td><td style="background:rgb(226,197,226);text-align:center">9</td><td style="background:rgb(232,209,232);text-align:center">3</td><td style="background:rgb(232,209,232);text-align:center">3</td></tr>
-    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: li</th><td style="background:rgb(135,15,135);color:#fff;text-align:center;font-weight:bold">2</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
-    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: lc</th><td style="background:rgb(135,15,135);color:#fff;text-align:center;font-weight:bold">11</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
+    <tr><th style="background:#eef2ff;color:#312e81;text-align:right;padding:6px 10px">true: o</th><td style="background:rgb(138,21,138);color:#fff;text-align:center;font-weight:bold">1174</td><td style="background:rgb(234,212,234);text-align:center;color:#333">19</td><td style="background:rgb(235,215,235);text-align:center;color:#333">2</td><td style="background:rgb(234,213,234);text-align:center;color:#333">14</td><td style="background:rgb(235,215,235);text-align:center;color:#333">1</td></tr>
+    <tr><th style="background:#eef2ff;color:#312e81;text-align:right;padding:6px 10px">true: pi</th><td style="background:rgb(190,125,190);text-align:center;color:#333">5</td><td style="background:rgb(181,106,181);color:#fff;text-align:center;font-weight:bold">6</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
+    <tr><th style="background:#eef2ff;color:#312e81;text-align:right;padding:6px 10px">true: pc</th><td style="background:rgb(152,49,152);color:#fff;text-align:center;font-weight:bold">79</td><td style="background:rgb(234,213,234);text-align:center;color:#333">1</td><td style="background:rgb(226,197,226);text-align:center;color:#333">9</td><td style="background:rgb(232,209,232);text-align:center;color:#333">3</td><td style="background:rgb(232,209,232);text-align:center;color:#333">3</td></tr>
+    <tr><th style="background:#eef2ff;color:#312e81;text-align:right;padding:6px 10px">true: li</th><td style="background:rgb(135,15,135);color:#fff;text-align:center;font-weight:bold">2</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
+    <tr><th style="background:#eef2ff;color:#312e81;text-align:right;padding:6px 10px">true: lc</th><td style="background:rgb(135,15,135);color:#fff;text-align:center;font-weight:bold">11</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
   </tbody>
 </table>
 
