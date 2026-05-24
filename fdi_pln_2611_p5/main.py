@@ -37,7 +37,8 @@ def cmd_train_tokenizer(
 @app.command("train-causal")
 def cmd_train_causal(
     weights: Annotated[
-        Path, typer.Option("--weights", help="Output path for causal model weights (.pth).")
+        Path,
+        typer.Option("--weights", help="Output path for causal model weights (.pth)."),
     ],
     config: Annotated[
         Optional[Path],
@@ -70,18 +71,24 @@ def cmd_train_causal(
 @app.command("train-ner")
 def cmd_train_ner(
     weights: Annotated[
-        Path, typer.Option("--weights", help="Output path for NER model weights (.pth).")
+        Path,
+        typer.Option("--weights", help="Output path for NER model weights (.pth)."),
     ],
     causal_weights: Annotated[
         Path,
-        typer.Option("--causal-weights", help="Path to pretrained causal backbone weights."),
+        typer.Option(
+            "--causal-weights", help="Path to pretrained causal backbone weights."
+        ),
     ],
     annotations: Annotated[
         Path,
-        typer.Option("--annotations", help="Merged annotation JSON for NER fine-tuning."),
+        typer.Option(
+            "--annotations", help="Merged annotation JSON for NER fine-tuning."
+        ),
     ] = package_path("data/annotations/merged.json"),
     config: Annotated[
-        Optional[Path], typer.Option("--config", help="Path to the JSON configuration file.")
+        Optional[Path],
+        typer.Option("--config", help="Path to the JSON configuration file."),
     ] = None,
     tokenizer: Annotated[
         Optional[Path],
@@ -131,7 +138,9 @@ def cmd_ner(
     ] = None,
     text: Annotated[
         Optional[str],
-        typer.Option("--text", "-t", help="Raw text to run NER on (alternative to a file)."),
+        typer.Option(
+            "--text", "-t", help="Raw text to run NER on (alternative to a file)."
+        ),
     ] = None,
 ):
     """Print named entities detected in a file or inline text."""
@@ -157,11 +166,14 @@ def cmd_ner(
 @app.command("prepare-annotations")
 def cmd_prepare_annotations(
     output_dir: Annotated[
-        Path, typer.Option("--output-dir", help="Directory for generated JSON templates.")
+        Path,
+        typer.Option("--output-dir", help="Directory for generated JSON templates."),
     ] = package_path("data/alice_jsons"),
     n_json: Annotated[
         int,
-        typer.Option("--n-json", help="Number of json_XX.json files (one per annotator)."),
+        typer.Option(
+            "--n-json", help="Number of json_XX.json files (one per annotator)."
+        ),
     ] = 14,
     frases_por_json: Annotated[
         int, typer.Option("--frases-por-json", help="Sentences per JSON file.")

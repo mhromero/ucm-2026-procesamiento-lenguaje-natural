@@ -13,8 +13,14 @@ from loguru import logger
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
 from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
-from fdi_pln_2611_p5.training.run_config import resolve_config_path, save_reproducibility_artifacts
-from fdi_pln_2611_p5.corpus.load_corpus import build_extra_train_corpus, concatenar_archivos_txt
+from fdi_pln_2611_p5.training.run_config import (
+    resolve_config_path,
+    save_reproducibility_artifacts,
+)
+from fdi_pln_2611_p5.corpus.load_corpus import (
+    build_extra_train_corpus,
+    concatenar_archivos_txt,
+)
 from fdi_pln_2611_p5.model.lm_causal.llm import LLM
 from fdi_pln_2611_p5.training.grid_search import run_grid_search
 from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
@@ -78,7 +84,9 @@ def prepare_tokenizer_and_tokens(
 
     if explicit_tokenizer is not None:
         if not explicit_tokenizer.is_file():
-            raise FileNotFoundError(f"No se encontró el tokenizador BPE: {explicit_tokenizer}")
+            raise FileNotFoundError(
+                f"No se encontró el tokenizador BPE: {explicit_tokenizer}"
+            )
         tokenizer = BPETokenizer.load(str(explicit_tokenizer))
         logger.info("Tokenizador BPE cargado desde {}", explicit_tokenizer)
     elif tokenizer_cfg["use_cache"] and bpe_path.exists():

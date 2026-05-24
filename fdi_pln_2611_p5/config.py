@@ -43,22 +43,22 @@ def resolve_tokenizer_path(
 ) -> Path:
     """Resolve the BPE tokenizer file path.
 
-    Search order: checkpoint metadata (if present), package default, then paths
-  adjacent to the weights file or results directory.
+      Search order: checkpoint metadata (if present), package default, then paths
+    adjacent to the weights file or results directory.
 
-    Args:
-        checkpoint_payload: Optional checkpoint metadata containing
-            ``tokenizer_path``.
-        config: Application configuration dictionary.
-        weights_path: Optional path to model weights; its parent is used as a
-            search root.
-        weights_dir: Optional directory to search for bundled tokenizer files.
+      Args:
+          checkpoint_payload: Optional checkpoint metadata containing
+              ``tokenizer_path``.
+          config: Application configuration dictionary.
+          weights_path: Optional path to model weights; its parent is used as a
+              search root.
+          weights_dir: Optional directory to search for bundled tokenizer files.
 
-    Returns:
-        Path to an existing ``bpe_tokenizer.json`` file.
+      Returns:
+          Path to an existing ``bpe_tokenizer.json`` file.
 
-    Raises:
-        FileNotFoundError: If no candidate tokenizer file exists.
+      Raises:
+          FileNotFoundError: If no candidate tokenizer file exists.
     """
     candidates: list[Path] = []
     if checkpoint_payload and checkpoint_payload.get("tokenizer_path"):

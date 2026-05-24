@@ -10,11 +10,17 @@ from pathlib import Path
 import torch
 from loguru import logger
 
-from fdi_pln_2611_p5.annotations.ner_dataset import build_ner_windows, load_merged_dataset
+from fdi_pln_2611_p5.annotations.ner_dataset import (
+    build_ner_windows,
+    load_merged_dataset,
+)
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.ner.checkpoints import save_ner_checkpoint
 from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
-from fdi_pln_2611_p5.training.run_config import resolve_config_path, save_reproducibility_artifacts
+from fdi_pln_2611_p5.training.run_config import (
+    resolve_config_path,
+    save_reproducibility_artifacts,
+)
 from fdi_pln_2611_p5.model.ner.labels import IGNORE_LABEL_ID, LABEL2ID
 from fdi_pln_2611_p5.model.ner.model import NERModel
 from fdi_pln_2611_p5.training.causal import build_model

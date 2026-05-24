@@ -9,7 +9,12 @@ from pathlib import Path
 
 from loguru import logger
 
-from fdi_pln_2611_p5.config import DEFAULT_CONFIG_PATH, PACKAGE_DIR, load_config, package_path
+from fdi_pln_2611_p5.config import (
+    DEFAULT_CONFIG_PATH,
+    PACKAGE_DIR,
+    load_config,
+    package_path,
+)
 
 TRAINING_CONFIG_NAME = "training_config.json"
 CONFIG_COPY_NAME = "config.json"
@@ -201,7 +206,10 @@ def backfill_missing_training_configs() -> list[Path]:
             if exp_id in ("causal_final", "ner"):
                 run_type = "ner" if exp_id == "ner" else "causal"
                 config = deepcopy(base_config)
-                extra: dict = {"backfilled": True, "note": "Reconstruido desde config.json del paquete."}
+                extra: dict = {
+                    "backfilled": True,
+                    "note": "Reconstruido desde config.json del paquete.",
+                }
                 if run_type == "causal":
                     history = cache_dir / "causal_history.csv"
                     if history.is_file():

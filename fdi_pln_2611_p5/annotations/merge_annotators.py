@@ -39,6 +39,7 @@ class MergeBundle:
     sentences: list[dict]
     frase_details: list[FraseMergeResult] = field(default_factory=list)
 
+
 VALID_LABELS = frozenset({"o", "pi", "pc", "li", "lc"})
 LABEL_TYPOS = {"ps": "pi", "o ": "o", " o": "o"}
 
@@ -350,7 +351,9 @@ def resolve_assignments(json_dir: Path) -> tuple[str, list[str], list[list[int]]
 
     frases = json.loads(frases_path.read_text(encoding="utf-8"))
     if not isinstance(frases, list) or not all(isinstance(f, str) for f in frases):
-        raise ValueError(f"{frases_path.name} must be a JSON array of sentence strings.")
+        raise ValueError(
+            f"{frases_path.name} must be a JSON array of sentence strings."
+        )
 
     json_paths = list_annotator_json_paths(json_dir)
     frase_texts = [frase.lower() for frase in frases]
@@ -439,9 +442,7 @@ def merge_annotations(
             records = json.loads(json_path.read_text(encoding="utf-8"))
             chunk = extract_frase_records(records, frase_texts[frase_idx])
             if chunk is None:
-                logger.warning(
-                    "Sentence {} not found in {}", frase_idx, json_path.name
-                )
+                logger.warning("Sentence {} not found in {}", frase_idx, json_path.name)
                 continue
             _, tokens, labels = records_to_word_labels(chunk)
             word_sets.append((tokens, labels))
