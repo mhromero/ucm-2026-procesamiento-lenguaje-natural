@@ -147,8 +147,6 @@ Los problemas más visibles son la puntuación errática (espacios antes de sign
 
 ## 5. Conclusiones generales
 
-El experimento de corpus deja clara la importancia del dominio: entrenar solo en Alice (val_loss=2.86) gana a Alice+HP (4.92) simplemente porque train y test coinciden, no porque el modelo generalice mejor. Añadir HP da más datos pero desenfoca el dominio.
+Se eligió Harry Potter como corpus adicional por compartir características con Alice: ficción literaria en inglés, narración en tercera persona y público similar. El objetivo era ampliar el corpus manteniendo un registro coherente. Sin embargo, el experimento de corpus muestra que añadir HP empeora la val_loss en Alice (4.92 vs 2.86 entrenando solo en Alice), porque train y test dejan de coincidir en dominio. Para el modelo final de NER se optó igualmente por el backbone entrenado en Alice+HP, ya que un corpus mayor produce representaciones más ricas aunque la validación causal sea peor.
 
-En NER el cuello de botella es la segmentación BPE: con 300 tokens los nombres propios se fragmentan y el modelo no aprende a encadenar etiquetas de continuación con tan pocos ejemplos. Un esquema de etiquetado a nivel de palabra mejoraría los resultados más que cualquier cambio de arquitectura.
-
-En generación el modelo reproduce patrones sintácticos del inglés literario pero sin coherencia temática sostenida. El dominio de HP domina por volumen. Con más datos, más épocas y un vocabulario mayor habría margen de mejora claro.
+En NER el problema más importante es la falta de datos: con tan pocas frases anotadas manualmente, el modelo no tiene ejemplos suficientes para aprender el etiquetado de forma fiable. Hay que tener en cuenta además que el esquema interno usa etiquetas de inicio y continuación (`pi`, `pc`, `li`, `lc`), pero la salida al usuario agrupa esas etiquetas en tipos de entidad (`PER`, `LOC`): el modelo predice subtokens individuales con `pi` o `pc` y el postprocesado los une en un span con su tipo. Con pocos datos, el modelo aprende a emitir `pi` en algún subtoken pero raramente encadena `pc` correctamente, por lo que los spans quedan truncados a un solo subtoken.
