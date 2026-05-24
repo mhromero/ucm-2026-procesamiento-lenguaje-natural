@@ -126,10 +126,14 @@ def resolve_tokenizer_path(
         parts = stored.parts
         if "fdi_pln_2611_p5" in parts:
             idx = parts.index("fdi_pln_2611_p5")
-            candidates.append(package_path(Path(*parts[idx + 1 :]).as_posix()))
+            rel = Path(*parts[idx + 1 :]).as_posix()
+            candidates.append(asset_path(rel))
+            candidates.append(package_path(rel))
 
-    candidates.append(path_in_cwd(config["tokenizer"]["cache_path"]))
-    candidates.append(package_path(config["tokenizer"]["cache_path"]))
+    cache_rel = config["tokenizer"]["cache_path"]
+    candidates.append(path_in_cwd(cache_rel))
+    candidates.append(asset_path(cache_rel))
+    candidates.append(package_path(cache_rel))
 
     base = weights_dir
     if base is None and weights_path is not None:

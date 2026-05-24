@@ -16,7 +16,12 @@ from fdi_pln_2611_p5.annotations.ner_dataset import (
 )
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.ner.checkpoints import save_ner_checkpoint
-from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, path_in_cwd
+from fdi_pln_2611_p5.config import (
+    PACKAGE_DIR,
+    load_config,
+    path_in_cwd,
+    resolve_tokenizer_path,
+)
 from fdi_pln_2611_p5.paths import require_file, require_optional_file
 from fdi_pln_2611_p5.training.run_config import (
     resolve_config_path,
@@ -156,12 +161,16 @@ def train_ner(
         causal_weights_path, map_location="cpu", weights_only=False
     )
     if resolved_tokenizer_path is None:
-        resolved_tokenizer_path = require_file(
-            causal_payload.get(
-                "tokenizer_path", str(path_in_cwd(config["tokenizer"]["cache_path"]))
-            ),
-            label="BPE tokenizer",
+        stored = causal_payload.get("tokenizer_path")
+        resolved_tokenizer_path = resolve_tokenizer_path(
+            causal_payload, config, weights_path=causal_weights_path
         )
+        if stored and Path(stored).resolve() != resolved_tokenizer_path.resolve():
+            logger.info(
+                "Checkpoint tokenizer not found ({}); using {}",
+                stored,
+                resolved_tokenizer_path,
+            )
     tokenizer = BPETokenizer.load(str(resolved_tokenizer_path))
     logger.info("Tokenizador BPE: {}", resolved_tokenizer_path)
 
