@@ -108,6 +108,7 @@ def train_ner(
     causal_weights_path: Path,
     merged_annotations_path: Path,
     config_path: Path | None = None,
+    tokenizer_path: Path | None = None,
 ) -> dict:
     """Fine-tune the NER head on a pretrained causal backbone.
 
@@ -119,6 +120,8 @@ def train_ner(
         causal_weights_path: Path to the pretrained causal model checkpoint.
         merged_annotations_path: Path to merged annotation JSON.
         config_path: Optional path to the configuration file.
+        tokenizer_path: Optional BPE tokenizer JSON; overrides the path stored in the
+            causal checkpoint when provided.
 
     Returns:
         Dict with best metric name, score, epoch, and window counts.
@@ -136,11 +139,20 @@ def train_ner(
     causal_payload = torch.load(
         causal_weights_path, map_location="cpu", weights_only=False
     )
-    tokenizer = BPETokenizer.load(
-        causal_payload.get(
-            "tokenizer_path", str(package_path(config["tokenizer"]["cache_path"]))
-        )
-    )
+    if tokenizer_path is not None:
+        resolved_tokenizer_path = Path(tokenizer_path).resolve()
+        if not resolved_tokenizer_path.is_file():
+            raise FileNotFoundError(
+                f"No se encontró el tokenizador BPE: {resolved_tokenizer_path}"
+            )
+    else:
+        resolved_tokenizer_path = Path(
+            causal_payload.get(
+                "tokenizer_path", str(package_path(config["tokenizer"]["cache_path"]))
+            )
+        ).resolve()
+    tokenizer = BPETokenizer.load(str(resolved_tokenizer_path))
+    logger.info("Tokenizador BPE: {}", resolved_tokenizer_path)
 
     llm = build_model(config, tokenizer)
     llm.load_state_dict(causal_payload["model_state_dict"], strict=True)
@@ -409,7 +421,7 @@ def train_ner(
         weights_path,
         ner_model,
         model_cfg,
-        package_path(config["tokenizer"]["cache_path"]),
+        resolved_tokenizer_path,
         extra={
             "best_metric": best_metric_name,
             "best_score": best_score,
@@ -435,6 +447,7 @@ def train_ner(
             "best_score": best_score,
             "best_epoch": best_epoch,
             "entity_threshold": ner_model.entity_threshold,
+            "tokenizer_path": str(resolved_tokenizer_path),
         },
     )
 

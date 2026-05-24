@@ -23,12 +23,15 @@ from fdi_pln_2611_p5.training.utils import entrenar_epochs_causal
 def prepare_tokenizer_and_tokens(
     config: dict,
     cache_dir: Path | None = None,
+    tokenizer_path: Path | None = None,
 ) -> tuple[BPETokenizer, list[int], list[int]]:
     """Prepare the BPE tokenizer and tokenized train/test splits.
 
     Args:
         config: Loaded project configuration.
         cache_dir: Optional directory for isolated caches (e.g. per experiment).
+        tokenizer_path: Optional path to a pre-trained ``bpe_tokenizer.json``. When set,
+            the file is loaded as-is (not retrained).
 
     Returns:
         Tuple of (tokenizer, train token ids, test token ids).
@@ -57,21 +60,32 @@ def prepare_tokenizer_and_tokens(
         else alice_textos + "\n" + extra_train_textos
     )
 
+    explicit_tokenizer = Path(tokenizer_path).resolve() if tokenizer_path else None
+
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
-        tokenizer_path = cache_dir / "bpe_tokenizer.json"
+        bpe_path = cache_dir / "bpe_tokenizer.json"
         train_tokens_path = cache_dir / "train_tokens.json"
         test_tokens_path = cache_dir / "test_tokens.json"
+    elif explicit_tokenizer is not None:
+        bpe_path = explicit_tokenizer
+        train_tokens_path = explicit_tokenizer.parent / "train_tokens.json"
+        test_tokens_path = explicit_tokenizer.parent / "test_tokens.json"
     else:
-        tokenizer_path = package_path(tokenizer_cfg["cache_path"])
+        bpe_path = package_path(tokenizer_cfg["cache_path"])
         train_tokens_path = package_path(tokenizer_cfg["train_tokens_cache_path"])
         test_tokens_path = package_path(tokenizer_cfg["test_tokens_cache_path"])
 
-    if tokenizer_cfg["use_cache"] and tokenizer_path.exists():
-        tokenizer = BPETokenizer.load(str(tokenizer_path))
+    if explicit_tokenizer is not None:
+        if not explicit_tokenizer.is_file():
+            raise FileNotFoundError(f"No se encontró el tokenizador BPE: {explicit_tokenizer}")
+        tokenizer = BPETokenizer.load(str(explicit_tokenizer))
+        logger.info("Tokenizador BPE cargado desde {}", explicit_tokenizer)
+    elif tokenizer_cfg["use_cache"] and bpe_path.exists():
+        tokenizer = BPETokenizer.load(str(bpe_path))
     else:
         tokenizer = BPETokenizer(textos_train, vocab_size=tokenizer_cfg["vocab_size"])
-        tokenizer.save(str(tokenizer_path))
+        tokenizer.save(str(bpe_path))
 
     if (
         tokenizer_cfg["use_cache"]
@@ -144,6 +158,7 @@ def train_causal(
     weights_path: Path,
     config_path: Path | None = None,
     grid_search: bool = False,
+    tokenizer_path: Path | None = None,
 ) -> dict:
     """Train the causal LLM on Alice (+ optional Harry Potter) and save a checkpoint.
 
@@ -154,6 +169,7 @@ def train_causal(
         weights_path: Destination path for model weights.
         config_path: Optional path to the configuration file.
         grid_search: Whether to run hyperparameter grid search before final training.
+        tokenizer_path: Optional path to a pre-trained BPE tokenizer JSON file.
 
     Returns:
         Dict with final train/test loss and a generated text sample.
@@ -176,7 +192,9 @@ def train_causal(
     torch.manual_seed(seed)
     logger.info("Semilla: {}", seed)
 
-    tokenizer, train_tokens, test_tokens = prepare_tokenizer_and_tokens(config)
+    tokenizer, train_tokens, test_tokens = prepare_tokenizer_and_tokens(
+        config, tokenizer_path=tokenizer_path
+    )
     model_cfg = config["model"]
     train_cfg = config["training"]
 
@@ -195,7 +213,11 @@ def train_causal(
         "window_size": model_cfg["window_size"],
         "dropout": model_cfg["dropout"],
     }
-    tokenizer_path = package_path(config["tokenizer"]["cache_path"])
+    checkpoint_tokenizer_path = (
+        Path(tokenizer_path).resolve()
+        if tokenizer_path is not None
+        else package_path(config["tokenizer"]["cache_path"])
+    )
 
     if grid_search:
         best = run_grid_search(
@@ -229,7 +251,7 @@ def train_causal(
         weights_path,
         model,
         model_config,
-        tokenizer_path,
+        checkpoint_tokenizer_path,
         extra={
             "train_loss": train_loss,
             "test_loss": test_loss,
@@ -252,6 +274,7 @@ def train_causal(
             "test_loss": test_loss,
             "hyperparams": train_cfg,
             "grid_search": grid_search,
+            "tokenizer_path": str(checkpoint_tokenizer_path),
         },
     )
 

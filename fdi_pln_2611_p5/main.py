@@ -50,9 +50,21 @@ def cmd_train_causal(
             help="Run a 3×3 learning-rate × batch-size grid search before final training.",
         ),
     ] = False,
+    tokenizer: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--tokenizer",
+            help="Path to a pre-trained BPE tokenizer (bpe_tokenizer.json).",
+        ),
+    ] = None,
 ):
     """Train (or retrain) the causal language model."""
-    train_causal(weights, config_path=config, grid_search=grid_search)
+    train_causal(
+        weights,
+        config_path=config,
+        grid_search=grid_search,
+        tokenizer_path=tokenizer,
+    )
 
 
 @app.command("train-ner")
@@ -71,9 +83,22 @@ def cmd_train_ner(
     config: Annotated[
         Optional[Path], typer.Option("--config", help="Path to the JSON configuration file.")
     ] = None,
+    tokenizer: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--tokenizer",
+            help="Path to BPE tokenizer JSON (default: path stored in causal checkpoint).",
+        ),
+    ] = None,
 ):
     """Fine-tune the NER head on top of the causal backbone."""
-    train_ner(weights, causal_weights, annotations, config_path=config)
+    train_ner(
+        weights,
+        causal_weights,
+        annotations,
+        config_path=config,
+        tokenizer_path=tokenizer,
+    )
 
 
 @app.command("inference-generate")
@@ -206,19 +231,6 @@ def cmd_merge_annotations(
         f"Merged {bundle.report['n_frases']} sentences → {output} "
         f"(κ={bundle.report['mean_cohen_kappa']:.3f})"
     )
-
-
-@app.command("backfill-training-configs")
-def cmd_backfill_training_configs():
-    """Write config.json / training_config.json for artifact dirs that lack them."""
-    from fdi_pln_2611_p5.training.run_config import backfill_missing_training_configs
-
-    written = backfill_missing_training_configs()
-    if not written:
-        typer.echo("No missing training configs found.")
-        return
-    for path in written:
-        typer.echo(f"Wrote {path}")
 
 
 @app.command("run-experiments")
