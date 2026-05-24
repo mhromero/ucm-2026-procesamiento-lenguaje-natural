@@ -1,4 +1,7 @@
 __pycache__/
+.venv/
+.venv-test-wheel/
+dist/
 .DS_Store
 deploy_p5_pixel.sh
 
