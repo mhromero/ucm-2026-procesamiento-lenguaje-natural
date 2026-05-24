@@ -125,6 +125,7 @@ Las rutas por defecto (`data/`, `p5_*.pth`, `checkpoints/`, `informes/`, etc.) s
 |---------|-------------|
 | `inference-generate` | Generación autoregresiva (pesos por defecto: `p5_causal_2611.pth`) |
 | `inference-generate --tokenizer <bpe.json>` | Generación con BPE explícito |
+| `inference-generate --prompt <texto>` | Generación con prompts del usuario |
 | `inference-ner <fichero.txt>` | Entidades en un fichero UTF-8 (por defecto: `sample_ner_test.txt`) |
 | `inference-ner --tokenizer <bpe.json>` | NER con BPE explícito |
 
@@ -135,7 +136,7 @@ Las rutas por defecto (`data/`, `p5_*.pth`, `checkpoints/`, `informes/`, etc.) s
 | `prepare-annotations` | Plantillas JSON vacías (por defecto: 5 frases/JSON, 2 anotadores/frase) |
 | `merge-annotations` | Fusiona `json_XX.json` → `data/annotations/merged.json` (asignaciones automáticas) |
 
-**Opciones habituales:** `--config`, `--tokenizer`, rutas de pesos, `--grid-search`, `--max-new-tokens`, `--temperature`.
+**Opciones habituales:** `--config`, `--tokenizer`, rutas de pesos, `--grid-search`, `--max-new-tokens`, `--temperature`, `--help`.
 
 ---
 
