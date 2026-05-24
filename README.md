@@ -48,21 +48,18 @@ pip install fdi_pln_2611_p5-1.0-py3-none-any.whl
 | `inference-ner --weights <ruta.pth> <fichero.txt>` | Lista entidades nombradas en un fichero |
 | `inference-ner --weights <ruta.pth> --text <texto>` | Lista entidades nombradas en texto directo |
 
-### Informes y exploración
+### Exploración
 
 | Comando | Descripción |
 |---------|-------------|
 | `run-experiments` | Lanza 8 experimentos (corpus, ventana, vocab, profundidad) y genera informe HTML |
-| `report-experiment` | Regenera `informes/informe_experimentos.html` desde `data/experiment_results.json` |
-| `report-grid-search` | Regenera `informes/informe_grid_search.html` desde `data/grid_search_results.json` |
+| `train-causal --grid-search` | Grid search lr×batch (9 runs) + entrenamiento final; genera `informes/informe_grid_search.html` |
 
 ### Anotación
 
 | Comando | Descripción |
 |---------|-------------|
-| `merge-etiquetados` | Fusiona `data/etiquetados/` (parte1 + parte2) en `data/annotations/merged.json` |
-| `report-annotation` | Genera informe HTML con métricas y gráficos del etiquetado |
-| `merge-annotations` | Fusiona JSON de anotadores y calcula κ de Cohen |
+| `merge-annotations` | Fusiona `json_XX.json` de una carpeta → `merged.json` (asignaciones automáticas) |
 | `prepare-annotations` | Crea los JSON de anotación vacíos (5 frases/JSON, 2 anotadores/frase por defecto) |
 
 ---
@@ -95,13 +92,8 @@ uv run fdi-pln-2611-p5 inference-ner --weights p5_ner_2611.pth --text "Alice met
 # Exploración de hiperparámetros y arquitectura
 uv run fdi-pln-2611-p5 run-experiments
 
-# Regenerar informes HTML
-uv run fdi-pln-2611-p5 report-experiment
-uv run fdi-pln-2611-p5 report-grid-search
-
-# Fusionar etiquetados e informe de anotación
-uv run fdi-pln-2611-p5 merge-etiquetados
-uv run fdi-pln-2611-p5 report-annotation --skip-merge
+# Fusionar anotaciones (solo la carpeta con json_01.json … tras prepare-annotations)
+uv run fdi-pln-2611-p5 merge-annotations
 ```
 
 ---
@@ -182,7 +174,6 @@ fdi_pln_2611_p5/
 ├── annotations/
 │   ├── json_templates.py        # Crear JSON vacíos (prepare-annotations)
 │   ├── merge_annotators.py      # Fusionar json_XX de varios anotadores
-│   ├── merge_labeled_dirs.py    # Fusionar data/etiquetados (p1/p2)
 │   ├── ner_dataset.py           # Ventanas NER desde merged.json
 │   ├── labeling_report.py       # Métricas e informe de etiquetado
 │   └── labeling_report_html.py  # Plantilla HTML del informe

@@ -12,9 +12,12 @@ from collections import Counter
 from pathlib import Path
 
 from fdi_pln_2611_p5.annotations.ner_dataset import load_merged_dataset
-from fdi_pln_2611_p5.annotations.merge_labeled_dirs import MergeBundle, merge_etiquetados
 from fdi_pln_2611_p5.annotations.labeling_report_html import build_report_html
-from fdi_pln_2611_p5.annotations.merge_annotators import records_to_text_and_labels
+from fdi_pln_2611_p5.annotations.merge_annotators import (
+    MergeBundle,
+    merge_annotations,
+    records_to_text_and_labels,
+)
 from fdi_pln_2611_p5.config import package_path
 from fdi_pln_2611_p5.model.ner.labels import LABEL2ID, PREFIX_TO_ENTITY_TYPE
 
@@ -68,34 +71,31 @@ def _count_entities(labels: list[str]) -> dict[str, int]:
     return dict(counts)
 
 
-def _scan_coverage(etiquetados_root: Path) -> list[dict]:
-    """Scan all labeled files and compute entity-token coverage per file."""
+def _scan_coverage(json_dir: Path) -> list[dict]:
+    """Scan annotator JSON files and compute entity-token coverage per file."""
     rows: list[dict] = []
-    for json_dir in sorted(etiquetados_root.iterdir()):
-        if not json_dir.is_dir():
-            continue
-        for ann_path in sorted(json_dir.glob("*.json")):
-            records = json.loads(ann_path.read_text(encoding="utf-8"))
-            _, labels = records_to_text_and_labels(records)
-            n = len(labels)
-            entity = sum(1 for label in labels if label != "o")
-            rows.append(
-                {
-                    "file": f"{json_dir.name}/{ann_path.name}",
-                    "tokens": n,
-                    "entity_tokens": entity,
-                    "entity_pct": round(100 * entity / max(n, 1), 2),
-                }
-            )
+    for ann_path in sorted(json_dir.glob("json_*.json")):
+        records = json.loads(ann_path.read_text(encoding="utf-8"))
+        _, labels = records_to_text_and_labels(records)
+        n = len(labels)
+        entity = sum(1 for label in labels if label != "o")
+        rows.append(
+            {
+                "file": ann_path.name,
+                "tokens": n,
+                "entity_tokens": entity,
+                "entity_pct": round(100 * entity / max(n, 1), 2),
+            }
+        )
     return rows
 
 
-def _collect_analytics(bundle: MergeBundle, etiquetados_root: Path) -> dict:
+def _collect_analytics(bundle: MergeBundle, json_dir: Path) -> dict:
     """Aggregate all analytics needed for the HTML report.
 
     Args:
         bundle: Merge result with per-sentence details and global report.
-        etiquetados_root: Root of labeled annotation directories.
+        json_dir: Directory containing per-annotator JSON files.
 
     Returns:
         Dict with distributions, confusion matrix, coverage, and per-sentence stats.
@@ -113,7 +113,7 @@ def _collect_analytics(bundle: MergeBundle, etiquetados_root: Path) -> dict:
         per_frase.append(
             {
                 "frase_id": detail.frase_id,
-                "lote": detail.lote,
+                "lote": ", ".join(detail.sources),
                 "kappa": detail.kappa,
                 "agreement": detail.token_agreement,
                 "disagreements": detail.disagreements,
@@ -138,7 +138,7 @@ def _collect_analytics(bundle: MergeBundle, etiquetados_root: Path) -> dict:
         "per_frase": sorted(per_frase, key=lambda row: row["kappa"] or 0),
         "kappa_values": kappas,
         "agreement_values": agreements,
-        "coverage": _scan_coverage(etiquetados_root),
+        "coverage": _scan_coverage(json_dir),
         "report": bundle.report,
     }
 
@@ -191,10 +191,9 @@ def _chart_js_script(
 
 def generate_annotation_report(
     bundle: MergeBundle | None = None,
-    etiquetados_root: Path | None = None,
+    json_dir: Path | None = None,
     output_html: Path | None = None,
     merged_json: Path | None = None,
-    lote_9frases_assignments: Path | None = None,
 ) -> Path:
     """Build and write the full labeling quality HTML report.
 
@@ -203,33 +202,25 @@ def generate_annotation_report(
 
     Args:
         bundle: Pre-computed merge result; merged on the fly when ``None``.
-        etiquetados_root: Root of labeled annotation directories.
+        json_dir: Directory with ``json_XX.json`` annotator files.
         output_html: Destination path for the HTML report.
         merged_json: Path to the merged dataset JSON (written during merge).
-        lote_9frases_assignments: Optional assignments for the 9-sentence batch.
 
     Returns:
         Path to the written HTML report file.
     """
-    etiquetados_root = etiquetados_root or package_path("data/etiquetados")
+    json_dir = json_dir or package_path("data/alice_jsons")
     output_html = output_html or package_path(
         "data/annotations/informe_etiquetado.html"
     )
     merged_json = merged_json or package_path("data/annotations/merged.json")
-    lote_9frases_assignments = lote_9frases_assignments or package_path(
-        "data/asignaciones/alice_jsons_1json_9frases/asignaciones.json"
-    )
 
     if bundle is None:
-        bundle = merge_etiquetados(
-            etiquetados_root=etiquetados_root,
-            output_path=merged_json,
-            lote_9frases_assignments=lote_9frases_assignments,
-        )
+        bundle = merge_annotations(json_dir, merged_json)
 
     merged_json_label_dist = _merged_json_label_distribution(merged_json)
 
-    data = _collect_analytics(bundle, etiquetados_root)
+    data = _collect_analytics(bundle, json_dir)
     data["merged_json_label_dist"] = merged_json_label_dist
     report = data["report"]
 

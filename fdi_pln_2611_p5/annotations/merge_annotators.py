@@ -8,11 +8,36 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from loguru import logger
 
 from fdi_pln_2611_p5.annotations.ner_dataset import save_merged_dataset
+
+
+@dataclass
+class FraseMergeResult:
+    """Per-sentence merge outcome with annotator comparison details."""
+
+    frase_id: int
+    text: str
+    json_indices: list[int]
+    sources: list[str]
+    label_sets: list[list[str]]
+    merged_labels: list[str]
+    token_agreement: float
+    kappa: float | None
+    disagreements: int
+
+
+@dataclass
+class MergeBundle:
+    """Full merge output: summary report, sentences, and per-sentence details."""
+
+    report: dict
+    sentences: list[dict]
+    frase_details: list[FraseMergeResult] = field(default_factory=list)
 
 VALID_LABELS = frozenset({"o", "pi", "pc", "li", "lc"})
 LABEL_TYPOS = {"ps": "pi", "o ": "o", " o": "o"}
@@ -280,66 +305,175 @@ def load_assignments(path: Path) -> tuple[str, list[str], list[list[int]]]:
     return granularidad, payload["frases"], payload["asignaciones"]
 
 
-def merge_annotations(
-    json_dir: Path,
-    assignments_path: Path,
-    output_path: Path,
-) -> dict:
-    """Merge dual annotations from a flat JSON directory into one dataset.
+def list_annotator_json_paths(json_dir: Path) -> list[Path]:
+    """Return sorted paths to ``json_XX.json`` annotator files in a directory."""
+    paths = sorted(json_dir.glob("json_*.json"))
+    if not paths:
+        raise FileNotFoundError(
+            f"No json_XX.json files found in {json_dir}. Run prepare-annotations first."
+        )
+    return paths
+
+
+def resolve_assignments(json_dir: Path) -> tuple[str, list[str], list[list[int]]]:
+    """Load or infer which sentences appear in each annotator JSON file.
+
+    Resolution order:
+
+    1. Use ``asignaciones.json`` when present in ``json_dir``.
+    2. Otherwise scan ``json_XX.json`` against ``frases_seleccionadas.json``,
+       then cache the result as ``asignaciones.json``.
 
     Args:
-        json_dir: Directory containing ``json_XX.json`` annotation files.
-        assignments_path: Path to ``asignaciones.json`` with sentence mapping.
+        json_dir: Directory with annotator JSON files and metadata.
+
+    Returns:
+        Tuple of granularity label, sentence texts, and per-JSON index lists.
+
+    Raises:
+        FileNotFoundError: If neither metadata nor annotator JSON files exist.
+        ValueError: If ``frases_seleccionadas.json`` has an invalid format.
+    """
+    json_dir = Path(json_dir)
+    asignaciones_path = json_dir / "asignaciones.json"
+    if asignaciones_path.is_file():
+        logger.info("Using assignments from {}", asignaciones_path)
+        return load_assignments(asignaciones_path)
+
+    frases_path = json_dir / "frases_seleccionadas.json"
+    if not frases_path.is_file():
+        list_annotator_json_paths(json_dir)
+        raise FileNotFoundError(
+            f"Missing {asignaciones_path.name} and {frases_path.name} in {json_dir}. "
+            "Run prepare-annotations to generate templates, or add asignaciones.json."
+        )
+
+    frases = json.loads(frases_path.read_text(encoding="utf-8"))
+    if not isinstance(frases, list) or not all(isinstance(f, str) for f in frases):
+        raise ValueError(f"{frases_path.name} must be a JSON array of sentence strings.")
+
+    json_paths = list_annotator_json_paths(json_dir)
+    frase_texts = [frase.lower() for frase in frases]
+    assignments: list[list[int]] = [[] for _ in range(len(json_paths))]
+
+    for json_idx, json_path in enumerate(json_paths):
+        records = json.loads(json_path.read_text(encoding="utf-8"))
+        for frase_idx, frase_text in enumerate(frase_texts):
+            if extract_frase_records(records, frase_text) is not None:
+                assignments[json_idx].append(frase_idx)
+
+    granularidad = "palabra"
+    asignaciones_path.write_text(
+        json.dumps(
+            {
+                "granularidad": granularidad,
+                "frases": frases,
+                "asignaciones": assignments,
+                "inferred": True,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    logger.info(
+        "Inferred assignments for {} annotators and {} sentences → {}",
+        len(json_paths),
+        len(frases),
+        asignaciones_path,
+    )
+    return granularidad, frases, assignments
+
+
+def merge_annotations(
+    json_dir: Path,
+    output_path: Path,
+) -> MergeBundle:
+    """Merge dual annotations from a flat directory into one NER dataset.
+
+    Expects ``json_dir`` with ``json_01.json``, ``json_02.json``, … Assignment
+    metadata is loaded from ``asignaciones.json`` or inferred automatically from
+    ``frases_seleccionadas.json``.
+
+    Args:
+        json_dir: Directory containing per-annotator ``json_XX.json`` files.
         output_path: Destination path for the merged dataset JSON.
 
     Returns:
-        Report dict with agreement statistics and metadata.
+        ``MergeBundle`` with global report, merged sentences, and per-sentence details.
     """
-    granularidad, frases, assignments = load_assignments(assignments_path)
+    granularidad, frases, assignments = resolve_assignments(json_dir)
     frase_texts = [frase.lower() for frase in frases]
-    logger.info("Fusionando anotaciones (granularidad={})", granularidad)
+    logger.info("Merging annotations (granularity={})", granularidad)
 
     merged_sentences: list[dict] = []
+    frase_details: list[FraseMergeResult] = []
     kappas: list[float] = []
     token_agreements: list[float] = []
+    skipped_no_pair = 0
+    skipped_unlabeled = 0
 
-    word_sets_by_frase: dict[int, list[tuple[list[str], list[str]]]] = {
-        idx: [] for idx in range(len(frases))
-    }
-    for json_idx in range(len(assignments)):
-        json_path = json_dir / f"json_{json_idx + 1:02d}.json"
-        if not json_path.exists():
+    json_indices_by_frase: dict[int, list[int]] = {i: [] for i in range(len(frases))}
+    for json_idx, frase_indices in enumerate(assignments):
+        for frase_idx in frase_indices:
+            json_indices_by_frase[frase_idx].append(json_idx)
+
+    for frase_idx, json_indices in json_indices_by_frase.items():
+        if len(json_indices) != 2:
+            logger.warning(
+                "Sentence {} assigned to {} JSON files (expected 2).",
+                frase_idx,
+                len(json_indices),
+            )
+            skipped_no_pair += 1
             continue
-        records = json.loads(json_path.read_text(encoding="utf-8"))
-        for frase_idx in assignments[json_idx]:
+
+        word_sets: list[tuple[list[str], list[str]]] = []
+        sources: list[str] = []
+
+        for json_idx in json_indices:
+            json_path = json_dir / f"json_{json_idx + 1:02d}.json"
+            if not json_path.exists():
+                logger.warning("Missing {}", json_path.name)
+                continue
+            records = json.loads(json_path.read_text(encoding="utf-8"))
             chunk = extract_frase_records(records, frase_texts[frase_idx])
             if chunk is None:
                 logger.warning(
-                    "Frase {} no encontrada en {}", frase_idx, json_path.name
+                    "Sentence {} not found in {}", frase_idx, json_path.name
                 )
                 continue
             _, tokens, labels = records_to_word_labels(chunk)
-            if any(label != "o" for label in labels):
-                word_sets_by_frase[frase_idx].append((tokens, labels))
+            word_sets.append((tokens, labels))
+            sources.append(json_path.name)
 
-    for frase_idx, word_sets in word_sets_by_frase.items():
-        if not word_sets:
+        if len(word_sets) < 2:
+            skipped_unlabeled += 1
             continue
+
         label_sets = [labels for _, labels in word_sets]
         tokens = word_sets[0][0]
-        if len(word_sets) == 2 and word_sets[0][0] != word_sets[1][0]:
+        if word_sets[0][0] != word_sets[1][0]:
             logger.warning(
-                "Frase {} tokens distintos entre anotadores; se usa el primero.",
+                "Sentence {}: tokenization differs between annotators; using the first.",
                 frase_idx,
             )
-        if len(label_sets) == 2 and len(label_sets[0]) == len(label_sets[1]):
-            kappas.append(
-                cohen_kappa(
-                    [normalize_merge_label(l) for l in label_sets[0]],
-                    [normalize_merge_label(l) for l in label_sets[1]],
-                )
+        if len(label_sets[0]) != len(label_sets[1]):
+            logger.warning(
+                "Sentence {} length mismatch: {} vs {} units.",
+                frase_idx,
+                len(label_sets[0]),
+                len(label_sets[1]),
             )
+            continue
+
+        norm_a = [normalize_merge_label(label) for label in label_sets[0]]
+        norm_b = [normalize_merge_label(label) for label in label_sets[1]]
+        kappa = cohen_kappa(norm_a, norm_b)
         merged_labels, agreement = merge_sentence_labels(label_sets)
+        disagreements = sum(1 for left, right in zip(norm_a, norm_b) if left != right)
+
+        kappas.append(kappa)
         token_agreements.append(agreement)
         merged_sentences.append(
             {
@@ -349,16 +483,35 @@ def merge_annotations(
                 "labels": merged_labels,
             }
         )
+        frase_details.append(
+            FraseMergeResult(
+                frase_id=frase_idx,
+                text=frase_texts[frase_idx],
+                json_indices=json_indices,
+                sources=sources,
+                label_sets=label_sets,
+                merged_labels=merged_labels,
+                token_agreement=agreement,
+                kappa=kappa,
+                disagreements=disagreements,
+            )
+        )
 
     report = {
+        "source": str(json_dir),
         "granularidad": granularidad,
         "n_frases": len(merged_sentences),
+        "skipped_no_pair": skipped_no_pair,
+        "skipped_unlabeled": skipped_unlabeled,
         "mean_token_agreement": sum(token_agreements) / max(len(token_agreements), 1),
         "mean_cohen_kappa": sum(kappas) / max(len(kappas), 1),
         "pairwise_kappas": kappas,
     }
     save_merged_dataset(output_path, merged_sentences)
-    logger.info("Fusión guardada en {}", output_path)
-    logger.info("Acuerdo medio por token: {:.3f}", report["mean_token_agreement"])
-    logger.info("Kappa de Cohen medio: {:.3f}", report["mean_cohen_kappa"])
-    return report
+    logger.info("Merged dataset written to {}", output_path)
+    logger.info("Mean token agreement: {:.3f}", report["mean_token_agreement"])
+    logger.info("Mean Cohen's kappa: {:.3f}", report["mean_cohen_kappa"])
+
+    return MergeBundle(
+        report=report, sentences=merged_sentences, frase_details=frase_details
+    )

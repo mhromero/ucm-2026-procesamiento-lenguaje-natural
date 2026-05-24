@@ -164,7 +164,38 @@ def build_report_html(data: dict, charts_js: str) -> str:
     worst_rows = "".join(rank_row(f) for f in worst)
     best_rows = "".join(rank_row(f) for f in best)
 
-    l1, l2 = report["lotes"][0], report["lotes"][1]
+    lotes = report.get("lotes") or []
+    if len(lotes) >= 2:
+        l1, l2 = lotes[0], lotes[1]
+        batch_summary_html = f"""
+          <div class="lote-grid">
+            <div class="lote-item">
+              <span class="lote-tag">P1</span>
+              <span class="lote-stats">
+                <strong>{l1["n_frases_fusionadas"]}</strong> frases ·
+                κ <strong>{l1["mean_cohen_kappa"]:.2f}</strong> ·
+                {l1["mean_token_agreement"]:.0%} acuerdo
+              </span>
+            </div>
+            <div class="lote-item">
+              <span class="lote-tag">P2</span>
+              <span class="lote-stats">
+                <strong>{l2["n_frases_fusionadas"]}</strong> frases ·
+                κ <strong>{l2["mean_cohen_kappa"]:.2f}</strong> ·
+                {l2["mean_token_agreement"]:.0%} acuerdo
+              </span>
+            </div>
+          </div>
+          <p class="note">Frases omitidas sin etiquetar: P1={l1["skipped_unlabeled"]}, P2={l2["skipped_unlabeled"]}</p>"""
+    else:
+        batch_summary_html = f"""
+          <p class="note">
+            <strong>{report.get("n_frases", 0)}</strong> frases fusionadas ·
+            κ <strong>{report.get("mean_cohen_kappa", 0):.2f}</strong> ·
+            {report.get("mean_token_agreement", 0):.0%} acuerdo por token<br/>
+            Omitidas (≠2 JSON): {report.get("skipped_no_pair", 0)} ·
+            sin etiquetar: {report.get("skipped_unlabeled", 0)}
+          </p>"""
     confusion_header = "".join(f"<th>{html.escape(c)}</th>" for c in confusion_labels)
     n_frases = report["n_frases"]
     merged_json_dist = data.get("merged_json_label_dist", {})
@@ -607,26 +638,8 @@ def build_report_html(data: dict, charts_js: str) -> str:
       <p class="section-title">Distribución y lotes</p>
       <div class="grid g2">
         <div class="card">
-          <h3>Lotes de anotación</h3>
-          <div class="lote-grid">
-            <div class="lote-item">
-              <span class="lote-tag">P1</span>
-              <span class="lote-stats">
-                <strong>{l1["n_frases_fusionadas"]}</strong> frases ·
-                κ <strong>{l1["mean_cohen_kappa"]:.2f}</strong> ·
-                {l1["mean_token_agreement"]:.0%} acuerdo
-              </span>
-            </div>
-            <div class="lote-item">
-              <span class="lote-tag">P2</span>
-              <span class="lote-stats">
-                <strong>{l2["n_frases_fusionadas"]}</strong> frases ·
-                κ <strong>{l2["mean_cohen_kappa"]:.2f}</strong> ·
-                {l2["mean_token_agreement"]:.0%} acuerdo
-              </span>
-            </div>
-          </div>
-          <p class="note">Frases omitidas sin etiquetar: P1={l1["skipped_unlabeled"]}, P2={l2["skipped_unlabeled"]}</p>
+          <h3>Resumen de fusión</h3>
+          {batch_summary_html}
         </div>
         <div class="card">
           <h3>Entidades detectadas</h3>

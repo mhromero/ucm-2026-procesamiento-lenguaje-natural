@@ -7,9 +7,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from fdi_pln_2611_p5.annotations.labeling_report import generate_annotation_report
 from fdi_pln_2611_p5.annotations.merge_annotators import merge_annotations
-from fdi_pln_2611_p5.annotations.merge_labeled_dirs import merge_etiquetados
 from fdi_pln_2611_p5.config import package_path
 from fdi_pln_2611_p5.inference import (
     extract_entities_from_file,
@@ -192,105 +190,22 @@ def cmd_prepare_annotations(
 @app.command("merge-annotations")
 def cmd_merge_annotations(
     json_dir: Annotated[
-        Path, typer.Option("--json-dir", help="Directory containing json_XX.json files.")
-    ] = package_path("data/alice_jsons"),
-    assignments: Annotated[
-        Path, typer.Option("--assignments", help="Sentence-to-JSON assignment file.")
-    ] = package_path("data/alice_jsons/asignaciones.json"),
-    output: Annotated[
-        Path, typer.Option("--output", help="Merged dataset output path.")
-    ] = package_path("data/annotations/merged.json"),
-):
-    """Merge multiple annotator JSON files and compute inter-annotator agreement."""
-    merge_annotations(json_dir, assignments, output)
-
-
-@app.command("merge-etiquetados")
-def cmd_merge_etiquetados(
-    etiquetados_dir: Annotated[
         Path,
-        typer.Option("--etiquetados-dir", help="Root directory of labeled JSON trees."),
-    ] = package_path("data/etiquetados"),
-    parte1_assignments: Annotated[
-        Path, typer.Option("--parte1-assignments", help="Assignments for part 1.")
-    ] = package_path("data/asignaciones/alice_jsons_parte1/asignaciones.json"),
-    parte2_assignments: Annotated[
-        Path, typer.Option("--parte2-assignments", help="Assignments for part 2.")
-    ] = package_path("data/asignaciones/alice_jsons_parte2/asignaciones.json"),
-    lote_9frases_assignments: Annotated[
-        Path | None,
         typer.Option(
-            "--lote-9frases-assignments",
-            help="Assignments for the shared 9-sentence batch (json_14/json_15).",
+            "--json-dir",
+            help="Directory with json_XX.json files (and frases_seleccionadas.json).",
         ),
-    ] = package_path("data/asignaciones/alice_jsons_1json_9frases/asignaciones.json"),
-    sin_lote_9frases: Annotated[
-        bool,
-        typer.Option(
-            "--sin-lote-9frases",
-            help="Skip merging json_14/json_15 even if assignment files exist.",
-        ),
-    ] = False,
+    ] = package_path("data/alice_jsons"),
     output: Annotated[
         Path, typer.Option("--output", help="Merged dataset output path.")
     ] = package_path("data/annotations/merged.json"),
 ):
-    """Merge labeled trees under data/etiquetados (part 1 + part 2; two JSONs per sentence)."""
-    lote_9 = None if sin_lote_9frases else lote_9frases_assignments
-    bundle = merge_etiquetados(
-        etiquetados_root=etiquetados_dir,
-        parte1_assignments=parte1_assignments,
-        parte2_assignments=parte2_assignments,
-        lote_9frases_assignments=lote_9,
-        output_path=output,
-    )
+    """Merge annotator JSON files from one directory and write merged.json."""
+    bundle = merge_annotations(json_dir, output)
     typer.echo(
         f"Merged {bundle.report['n_frases']} sentences → {output} "
         f"(κ={bundle.report['mean_cohen_kappa']:.3f})"
     )
-
-
-@app.command("report-annotation")
-def cmd_annotation_report(
-    etiquetados_dir: Annotated[
-        Path,
-        typer.Option("--etiquetados-dir", help="Root directory of labeled JSON trees."),
-    ] = package_path("data/etiquetados"),
-    output_html: Annotated[
-        Path, typer.Option("--output-html", help="Output HTML report path.")
-    ] = package_path("data/annotations/informe_etiquetado.html"),
-    merged_json: Annotated[
-        Path, typer.Option("--merged-json", help="Path to merged annotation JSON.")
-    ] = package_path("data/annotations/merged.json"),
-    lote_9frases_assignments: Annotated[
-        Path | None,
-        typer.Option("--lote-9frases-assignments", help="Assignments for the 9-sentence batch."),
-    ] = package_path("data/asignaciones/alice_jsons_1json_9frases/asignaciones.json"),
-    sin_lote_9frases: Annotated[
-        bool, typer.Option("--sin-lote-9frases", help="Skip the 9-sentence batch.")
-    ] = False,
-    skip_merge: Annotated[
-        bool,
-        typer.Option("--skip-merge", help="Use existing merged.json without re-merging."),
-    ] = False,
-):
-    """Build an HTML report with labeling metrics and charts."""
-    lote_9 = None if sin_lote_9frases else lote_9frases_assignments
-    bundle = None
-    if not skip_merge:
-        bundle = merge_etiquetados(
-            etiquetados_root=etiquetados_dir,
-            output_path=merged_json,
-            lote_9frases_assignments=lote_9,
-        )
-    path = generate_annotation_report(
-        bundle=bundle,
-        etiquetados_root=etiquetados_dir,
-        output_html=output_html,
-        merged_json=merged_json,
-        lote_9frases_assignments=lote_9,
-    )
-    typer.echo(f"Report saved to {path}")
 
 
 @app.command("run-experiments")
@@ -302,54 +217,6 @@ def cmd_run_experiments(
 ):
     """Run eight causal-LM ablations (corpus, window, vocab, depth) and write an HTML report."""
     run_experiment_exploration(config_path=config)
-
-
-@app.command("report-experiment")
-def cmd_experiment_report(
-    results_json: Annotated[
-        Path,
-        typer.Option("--results-json", help="Experiment results JSON path."),
-    ] = package_path("data/experiment_results.json"),
-    output_html: Annotated[
-        Path, typer.Option("--output-html", help="Output HTML report path.")
-    ] = package_path("informes/informe_experimentos.html"),
-):
-    """Regenerate the experiment comparison HTML from experiment_results.json."""
-    from fdi_pln_2611_p5.training.experiment_report import (
-        generate_experiment_html_from_json,
-    )
-
-    if not results_json.exists():
-        typer.echo(
-            f"Missing {results_json}. Run run-experiments first.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-    path = generate_experiment_html_from_json(results_json, output_html)
-    typer.echo(f"Report saved to {path}")
-
-
-@app.command("report-grid-search")
-def cmd_grid_search_report(
-    results_json: Annotated[
-        Path,
-        typer.Option("--results-json", help="Grid search results JSON path."),
-    ] = package_path("data/grid_search_results.json"),
-    output_html: Annotated[
-        Path, typer.Option("--output-html", help="Output HTML report path.")
-    ] = package_path("informes/informe_grid_search.html"),
-):
-    """Build or refresh the hyperparameter grid-search HTML report."""
-    from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html
-
-    if not results_json.exists():
-        typer.echo(
-            f"Missing {results_json}. Run train-causal --grid-search first.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-    path = generate_grid_search_html(results_json, output_html)
-    typer.echo(f"Report saved to {path}")
 
 
 def main() -> None:
