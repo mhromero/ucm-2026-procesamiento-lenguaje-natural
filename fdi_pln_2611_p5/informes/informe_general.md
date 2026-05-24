@@ -65,6 +65,10 @@ Diferencia casi nula: depth_2 da 4.963 y depth_4 da 4.921. Con 5 épocas y este 
 
 ## 3. Entrenamiento NER
 
+### 3.0 Elección del corpus de preentrenamiento
+
+El backbone cumple dos funciones: es el modelo de lenguaje para generación de texto *y* el encoder sobre el que se apoya el fine-tuning NER. Para generación, más datos producen representaciones más ricas: entrenar con Alice + Harry Potter amplía el vocabulario efectivo del modelo y le da una base lingüística más sólida. Para NER, los datos de anotación son exclusivamente frases de Alice, por lo que un backbone entrenado únicamente en Alice habría estado mejor calibrado para ese dominio. Sin embargo, con solo 68 frases etiquetadas, el cuello de botella del NER es la cantidad de datos de anotación, no la calidad del backbone: la diferencia de rendimiento entre los dos corpus de preentrenamiento habría sido marginal. Por eso se optó por Alice + Harry Potter, priorizando el objetivo de generación sin esperar un coste significativo en NER.
+
 <!-- Referencia: informes/ner_report.html -->
 
 **Configuración**: 15 épocas de fine-tuning, batch=16, lr=0.0003, validación estratificada 80/20.  

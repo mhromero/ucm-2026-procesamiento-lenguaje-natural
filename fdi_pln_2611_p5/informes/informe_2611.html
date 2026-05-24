@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe Práctica 5 — LM causal y NER (fdi-pln-2611)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 24px; color: #222; line-height: 1.6; }
+  h1 { border-bottom: 3px solid #1a237e; padding-bottom: 10px; color: #1a237e; }
+  h2 { color: #283593; border-bottom: 2px solid #c5cae9; padding-bottom: 4px; margin-top: 2.2em; }
+  h3 { color: #3949ab; margin-top: 1.4em; }
+  h4 { color: #555; margin-top: 1.2em; }
+  p { margin: 0.7em 0; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 0.92em; }
+  pre { background: #f5f5f5; padding: 14px 18px; border-radius: 6px; font-size: 0.88em; overflow-x: auto; border-left: 3px solid #bbb; }
+  ul { margin: 0.5em 0; padding-left: 1.5em; }
+  li { margin: 0.3em 0; }
+  .meta { color: #666; font-size: 0.9em; }
+  .info { background: #e8eaf6; border-left: 4px solid #3949ab; padding: 12px 18px; border-radius: 4px; margin: 16px 0; }
+  .figure { margin: 24px 0; text-align: center; }
+  .figure figcaption { font-size: 0.88em; color: #555; margin-top: 6px; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 2.5em 0; }
+  /* --- tablas de resultados --- */
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.92em; }
+  th { background: #3949ab; color: #fff; padding: 8px 10px; text-align: left; }
+  td { border: 1px solid #e0e0e0; padding: 6px 10px; }
+  tr.best-row { background: #e8f5e9; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  /* grid search */
+  .gs-summary { background: #e8f5e9; border-left: 4px solid #43a047; padding: 12px 18px; border-radius: 4px; margin-bottom: 16px; }
+  .analysis { display: flex; gap: 32px; flex-wrap: wrap; }
+  .analysis > div { flex: 1; min-width: 220px; }
+  .analysis th { background: #283593; }
+  /* NER */
+  .ner-summary { background: #f1f8e9; border-left: 4px solid #66bb6a; padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
+  footer { color: #888; font-size: 0.85em; margin-top: 48px; border-top: 1px solid #eee; padding-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Informe de la Práctica 5 — LM causal y NER</h1>
+<p class="meta">
+  <strong>Asignatura:</strong> Procesamiento del Lenguaje Natural — UCM 2025/26 &nbsp;|&nbsp;
+  <strong>Grupo:</strong> 11 &nbsp;|&nbsp;
+  <strong>Integrantes:</strong> María Romero Huertas, Javier Martín Fuentes
+</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2>1. Descripción del sistema</h2>
+
+<p>El sistema implementa un LLM pequeño de principio a fin. El tokenizador es BPE (Byte Pair Encoding) con vocabulario de 300 tokens entrenado sobre el corpus. El modelo de lenguaje es un Transformer causal con 4 bloques de atención multi-head (4 cabezas, dimensión 128) y ventana de contexto de 128 tokens. Para NER se añade un cabezal de clasificación lineal sobre las representaciones del backbone, ajustado mediante fine-tuning con lr reducida en el backbone (factor 0.1). El esquema de etiquetado es BIO reducido: <code>o</code>, <code>pi</code>/<code>pc</code> (persona inicio/continuación) y <code>li</code>/<code>lc</code> (lugar inicio/continuación).</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2>2. Exploración de hiperparámetros del LM causal</h2>
+
+<h3>2.1 Grid search: learning rate × batch size</h3>
+
+<p><strong>Configuración explorada:</strong> 9 combinaciones (lr ∈ {0.0001, 0.0003, 0.001} × batch ∈ {32, 64, 128}), 3 épocas por run.</p>
+
+<div class="gs-summary">
+  <strong>Mejor combinación:</strong> learning_rate = <code>0.0003</code> &nbsp;|&nbsp; batch_size = <code>128</code> &nbsp;|&nbsp; test_loss = <code>4.4918</code>
+</div>
+
+<table>
+  <tr>
+    <th>Learning rate</th><th>Batch size</th><th>Train loss</th><th>Test loss</th><th>Comparativa</th>
+  </tr>
+  <tr style="background:#e8f5e9"><td><strong>0.0003 ★</strong></td><td>128</td><td>2.8020</td><td>4.4918</td><td><div style="background:rgb(50,200,80);width:4px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr><td>0.001</td><td>128</td><td>2.7321</td><td>4.4970</td><td><div style="background:rgb(50,199,80);width:4px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr style="background:#f9f9f9"><td>0.0001</td><td>128</td><td>3.2218</td><td>4.7522</td><td><div style="background:rgb(73,180,80);width:23px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr><td>0.0003</td><td>64</td><td>2.7218</td><td>5.0526</td><td><div style="background:rgb(99,158,80);width:49px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr style="background:#f9f9f9"><td>0.001</td><td>64</td><td>2.7323</td><td>5.1303</td><td><div style="background:rgb(106,152,80);width:56px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr><td>0.0001</td><td>64</td><td>2.9390</td><td>5.2395</td><td><div style="background:rgb(116,144,80);width:66px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr style="background:#f9f9f9"><td>0.0003</td><td>32</td><td>2.6837</td><td>6.1802</td><td><div style="background:rgb(200,74,80);width:150px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr><td>0.0001</td><td>32</td><td>2.7637</td><td>6.3174</td><td><div style="background:rgb(212,64,80);width:162px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+  <tr style="background:#f9f9f9"><td>0.001</td><td>32</td><td>2.8313</td><td>6.5133</td><td><div style="background:rgb(230,50,80);width:180px;height:14px;border-radius:3px;display:inline-block;"></div></td></tr>
+</table>
+
+<div class="analysis">
+  <div>
+    <h4>Por learning rate (test_loss medio)</h4>
+    <table><tr><th>LR</th><th>Media test_loss</th></tr><tr><td><strong>0.0003</strong></td><td>5.2415</td></tr><tr><td>0.001</td><td>5.3802</td></tr><tr><td>0.0001</td><td>5.4363</td></tr></table>
+  </div>
+  <div>
+    <h4>Por batch size (test_loss medio)</h4>
+    <table><tr><th>Batch</th><th>Media test_loss</th></tr><tr><td><strong>128</strong></td><td>4.5804</td></tr><tr><td>64</td><td>5.1408</td></tr><tr><td>32</td><td>6.3370</td></tr></table>
+  </div>
+</div>
+
+<p>El <code>batch_size</code> es el factor dominante: aumentarlo de 32 a 128 reduce la test_loss en ~1.7 puntos de forma consistente en todas las lr. En cambio, con batch=128 las tres lr dan resultados casi idénticos (4.75, 4.49, 4.50), por lo que la lr exacta apenas importa cuando el gradiente es estable.</p>
+<p>La brecha train/test es llamativa con batch=32 (ej. lr=0.001: train=2.83, test=6.51), lo que apunta a sobreajuste: con batches pequeños hay muchas más actualizaciones por época y el modelo tiende a memorizar. Con batch=128 la brecha se reduce a ~1.7 puntos.</p>
+
+<h3>2.2 Experimentos de arquitectura y corpus</h3>
+
+<p class="meta">5 épocas por experimento · validación siempre en Alice · hiperparámetros fijos: lr=0.0003, batch=64, d_model=128, n_heads=4, dropout=0.1</p>
+
+<figure class="figure">
+  <svg width="520" height="220" xmlns="http://www.w3.org/2000/svg">
+    <text x="48" y="14" font-size="12" fill="#333">Mejor val_loss por experimento</text>
+    <line x1="48" y1="200" x2="500" y2="200" stroke="#999"/>
+    <rect x="60.7" y="185.8" width="31.1" height="14.2" fill="#43a047" rx="3"/><text x="76.2" y="192" text-anchor="middle" font-size="9" fill="#333">corpus_alice</text><text x="76.2" y="181.8" text-anchor="middle" font-size="9" fill="#111">2.856</text>
+    <rect x="117.2" y="93.5" width="31.1" height="106.5" fill="#5c6bc0" rx="3"/><text x="132.8" y="192" text-anchor="middle" font-size="9" fill="#333">vocab_200</text><text x="132.8" y="89.5" text-anchor="middle" font-size="9" fill="#111">4.706</text>
+    <rect x="173.7" y="84.6" width="31.1" height="115.4" fill="#5c6bc0" rx="3"/><text x="189.2" y="192" text-anchor="middle" font-size="9" fill="#333">window_64</text><text x="189.2" y="80.6" text-anchor="middle" font-size="9" fill="#111">4.886</text>
+    <rect x="230.2" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="245.8" y="192" text-anchor="middle" font-size="9" fill="#333">corpus_alice_hp4</text><text x="245.8" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text>
+    <rect x="286.7" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="302.2" y="192" text-anchor="middle" font-size="9" fill="#333">window_128</text><text x="302.2" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text>
+    <rect x="343.2" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="358.8" y="192" text-anchor="middle" font-size="9" fill="#333">vocab_300</text><text x="358.8" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text>
+    <rect x="399.7" y="82.8" width="31.1" height="117.2" fill="#5c6bc0" rx="3"/><text x="415.2" y="192" text-anchor="middle" font-size="9" fill="#333">depth_4</text><text x="415.2" y="78.8" text-anchor="middle" font-size="9" fill="#111">4.921</text>
+    <rect x="456.2" y="80.7" width="31.1" height="119.3" fill="#5c6bc0" rx="3"/><text x="471.8" y="192" text-anchor="middle" font-size="9" fill="#333">depth_2</text><text x="471.8" y="76.7" text-anchor="middle" font-size="9" fill="#111">4.963</text>
+  </svg>
+  <figcaption>Figura 1. Comparativa de val_loss entre los 8 experimentos. En verde, el mejor resultado (corpus_alice).</figcaption>
+</figure>
+
+<table>
+  <thead>
+    <tr><th>ID</th><th>Corpus train</th><th>Ventana</th><th>Vocab</th><th>Bloques</th><th>Ventanas train</th><th>Mejor val_loss</th></tr>
+  </thead>
+  <tbody>
+    <tr class="best-row"><td><strong>corpus_alice ★</strong></td><td>solo Alice</td><td>128</td><td>300</td><td>4</td><td>140,456</td><td>2.8557</td></tr>
+    <tr><td>vocab_200</td><td>Alice + 4 HP</td><td>128</td><td>200</td><td>4</td><td>1,437,079</td><td>4.7063</td></tr>
+    <tr><td>window_64</td><td>Alice + 4 HP</td><td>64</td><td>300</td><td>4</td><td>1,257,018</td><td>4.8863</td></tr>
+    <tr><td>corpus_alice_hp4</td><td>Alice + 4 HP</td><td>128</td><td>300</td><td>4</td><td>1,256,954</td><td>4.9214</td></tr>
+    <tr><td>window_128</td><td>Alice + 4 HP</td><td>128</td><td>300</td><td>4</td><td>1,256,954</td><td>4.9214</td></tr>
+    <tr><td>vocab_300</td><td>Alice + 4 HP</td><td>128</td><td>300</td><td>4</td><td>1,256,954</td><td>4.9214</td></tr>
+    <tr><td>depth_4</td><td>Alice + 4 HP</td><td>128</td><td>300</td><td>4</td><td>1,256,954</td><td>4.9214</td></tr>
+    <tr><td>depth_2</td><td>Alice + 4 HP</td><td>128</td><td>300</td><td>2</td><td>1,256,954</td><td>4.9628</td></tr>
+  </tbody>
+</table>
+
+<h4>Efecto del corpus</h4>
+<p>Entrenar solo con Alice da val_loss=2.86 frente a 4.92 con Alice+4HP. El resultado es esperable: el corpus de validación es Alice, así que entrenar en el mismo dominio alinea perfectamente distribución de train y test. Añadir Harry Potter introduce vocabulario y estilo distintos que "diluyen" la representación de Alice; el modelo aprende más cosas pero predice peor el texto concreto de Alice. Esto no significa que el modelo entrenado solo en Alice generalice mejor, sino que está sobreajustado al dominio de evaluación.</p>
+
+<h4>Efecto del tamaño de ventana</h4>
+<p>Diferencia mínima: window_64 obtiene 4.886 frente a 4.921 con window_128. El contexto extra no aporta con este corpus y tamaño de modelo, lo que sugiere que las dependencias relevantes en Alice están dentro de las primeras 64 posiciones.</p>
+
+<h4>Efecto del vocabulario BPE</h4>
+<p>vocab_200 mejora ligeramente (4.706 vs 4.921). Con vocabulario más pequeño cada texto produce más tokens, lo que se traduce en más ventanas de entrenamiento (~180k más). Probablemente es ese volumen extra lo que explica la mejora, más que la granularidad del tokenizador en sí.</p>
+
+<h4>Efecto de la profundidad</h4>
+<p>Diferencia casi nula: depth_2 da 4.963 y depth_4 da 4.921. Con 5 épocas y este corpus, la capacidad extra de los 2 bloques adicionales no se aprovecha.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2>3. Entrenamiento NER</h2>
+
+<h3>3.0 Elección del corpus de preentrenamiento</h3>
+<p>El backbone cumple dos funciones: es el modelo de lenguaje para generación de texto <em>y</em> el encoder sobre el que se apoya el fine-tuning NER. Estas dos funciones tienen intereses ligeramente distintos en cuanto al corpus de preentrenamiento.</p>
+<p>Para generación, más datos producen representaciones más ricas y texto más fluido: entrenar con Alice + Harry Potter amplía el vocabulario efectivo del modelo y le da una base lingüística más sólida. Para NER, los datos de anotación son exclusivamente frases de Alice, por lo que un backbone entrenado únicamente en Alice habría estado mejor calibrado para ese dominio concreto. Sin embargo, con solo 68 frases etiquetadas, el cuello de botella del NER es la cantidad de datos de anotación, no la calidad del backbone: la diferencia de rendimiento NER entre los dos corpus de preentrenamiento habría sido marginal. Por eso se optó por Alice + Harry Potter, priorizando el objetivo de generación de texto sin esperar un coste significativo en NER.</p>
+
+<div class="ner-summary">
+  <strong>Mejor epoch:</strong> 10 (criterio: macro F1 sin clase "o") &nbsp;|&nbsp;
+  <strong>Val loss:</strong> 1.6982 &nbsp;|&nbsp;
+  <strong>Accuracy global:</strong> 86.5% &nbsp;|&nbsp;
+  <strong>Entity token accuracy:</strong> 13.4% &nbsp;|&nbsp;
+  <strong>Macro F1 (sin o):</strong> 20.2% &nbsp;|&nbsp;
+  <strong>Span F1:</strong> 6.2%
+</div>
+
+<p>La accuracy global (86.5%) es engañosa: el modelo aprende a predecir <code>o</code> casi siempre, lo que es correcto para la gran mayoría de tokens. La entity token accuracy del 13.4% refleja lo que realmente importa: el modelo apenas detecta entidades. El entrenamiento mejora hasta la época 10 medido por macro F1 sobre etiquetas de entidad, pero no llega a aprender a extender correctamente los spans con etiquetas de continuación (<code>pc</code>, <code>lc</code>).</p>
+
+<h3>Curvas de entrenamiento</h3>
+<table>
+  <thead>
+    <tr><th>Epoch</th><th>Train loss</th><th>Val loss</th><th>Accuracy</th><th>Entity Recall</th><th>Macro F1</th><th>Span F1</th><th>Pred. entidades</th><th>Gold entidades</th></tr>
+  </thead>
+  <tbody>
+    <tr><td style="text-align:center">1</td><td style="text-align:right">1.1420</td><td><span style="display:inline-block;width:73px;height:12px;background:rgb(89,154,80);border-radius:2px;vertical-align:middle;"></span> 1.3175</td><td><span style="display:inline-block;width:104px;height:12px;background:rgb(80,120,200);border-radius:2px;vertical-align:middle;"></span> 87.4%</td><td><span style="display:inline-block;width:10px;height:12px;background:rgb(180,80,80);border-radius:2px;vertical-align:middle;"></span> 8.4%</td><td><span style="display:inline-block;width:17px;height:12px;background:rgb(120,80,180);border-radius:2px;vertical-align:middle;"></span> 14.4%</td><td><span style="display:inline-block;width:2px;height:12px;background:rgb(80,140,200);border-radius:2px;vertical-align:middle;"></span> 2.3%</td><td style="text-align:center">70</td><td style="text-align:center">119</td></tr>
+    <tr><td style="text-align:center">2</td><td style="text-align:right">0.6517</td><td><span style="display:inline-block;width:70px;height:12px;background:rgb(80,160,80);border-radius:2px;vertical-align:middle;"></span> 1.2648</td><td><span style="display:inline-block;width:103px;height:12px;background:rgb(80,120,200);border-radius:2px;vertical-align:middle;"></span> 86.0%</td><td><span style="display:inline-block;width:12px;height:12px;background:rgb(180,80,80);border-radius:2px;vertical-align:middle;"></span> 10.1%</td><td><span style="display:inline-block;width:17px;height:12px;background:rgb(120,80,180);border-radius:2px;vertical-align:middle;"></span> 14.6%</td><td><span style="display:inline-block;width:4px;height:12px;background:rgb(80,140,200);border-radius:2px;vertical-align:middle;"></span> 4.0%</td><td style="text-align:center">94</td><td style="text-align:center">119</td></tr>
+    <tr><td style="text-align:center">3</td><td style="text-align:right">0.4786</td><td><span style="display:inline-block;width:72px;height:12px;background:rgb(84,156,80);border-radius:2px;vertical-align:middle;"></span> 1.2921</td><td><span style="display:inline-block;width:102px;height:12px;background:rgb(80,120,200);border-radius:2px;vertical-align:middle;"></span> 85.6%</td><td><span style="display:inline-block;width:15px;height:12px;background:rgb(180,80,80);border-radius:2px;vertical-align:middle;"></span> 12.6%</td><td><span style="display:inline-block;width:20px;height:12px;background:rgb(120,80,180);border-radius:2px;vertical-align:middle;"></span> 17.4%</td><td><span style="display:inline-block;width:4px;height:12px;background:rgb(80,140,200);border-radius:2px;vertical-align:middle;"></span> 3.7%</td><td style="text-align:center">108</td><td style="text-align:center">119</td></tr>
+    <tr><td style="text-align:center">5</td><td style="text-align:right">0.3306</td><td><span style="display:inline-block;width:76px;height:12px;background:rgb(100,147,80);border-radius:2px;vertical-align:middle;"></span> 1.3788</td><td><span style="display:inline-block;width:102px;height:12px;background:rgb(80,120,200);border-radius:2px;vertical-align:middle;"></span> 85.1%</td><td><span style="display:inline-block;width:15px;height:12px;background:rgb(180,80,80);border-radius:2px;vertical-align:middle;"></span> 12.6%</td><td><span style="display:inline-block;width:20px;height:12px;background:rgb(120,80,180);border-radius:2px;vertical-align:middle;"></span> 16.7%</td><td><span style="display:inline-block;width:4px;height:12px;background:rgb(80,140,200);border-radius:2px;vertical-align:middle;"></span> 3.6%</td><td style="text-align:center">118</td><td style="text-align:center">119</td></tr>
+    <tr><td style="text-align:center">7</td><td style="text-align:right">0.2374</td><td><span style="display:inline-block;width:81px;height:12px;background:rgb(115,137,80);border-radius:2px;vertical-align:middle;"></span> 1.4632</td><td><span style="display:inline-block;width:102px;height:12px;background:rgb(80,120,200);border-radius:2px;vertical-align:middle;"></span> 85.6%</td><td><span style="display:inline-block;width:15px;height:12px;background:rgb(180,80,80);border-radius:2px;vertical-align:middle;"></span> 12.6%</td><td><span style="display:inline-block;width:21px;height:12px;background:rgb(120,80,180);border-radius:2px;vertical-align:middle;"></span> 18.2%</td><td><span style="display:inline-block;width:4px;height:12px;background:rgb(80,140,200);border-radius:2px;vertical-align:middle;"></span> 3.7%</td><td style="text-align:center">111</td><td style="text-align:center">119</td></tr>
+    <tr style="background:#fffde7"><td style="text-align:center"><strong>10 ★</strong></td><td style="text-align:right">0.1427</td><td><span style="display:inline-block;width:94px;height:12px;background:rgb(158,111,80);border-radius:2px;vertical-align:middle;"></span> 1.6982</td><td><span style="display:inline-block;width:103px;height:12px;background:rgb(80,120,200);border-radius:2px;vertical-align:middle;"></span> 86.5%</td><td><span style="display:inline-block;width:16px;height:12px;background:rgb(180,80,80);border-radius:2px;vertical-align:middle;"></span> 13.4%</td><td><span style="display:inline-block;width:24px;height:12px;background:rgb(120,80,180);border-radius:2px;vertical-align:middle;"></span> 20.2%</td><td><span style="display:inline-block;width:7px;height:12px;background:rgb(80,140,200);border-radius:2px;vertical-align:middle;"></span> 6.2%</td><td style="text-align:center">107</td><td style="text-align:center">119</td></tr>
+    <tr><td style="text-align:center">15</td><td style="text-align:right">0.0746</td><td><span style="display:inline-block;width:120px;height:12px;background:rgb(240,60,80);border-radius:2px;vertical-align:middle;"></span> 2.1517</td><td><span style="display:inline-block;width:103px;height:12px;background:rgb(80,120,200);border-radius:2px;vertical-align:middle;"></span> 86.5%</td><td><span style="display:inline-block;width:15px;height:12px;background:rgb(180,80,80);border-radius:2px;vertical-align:middle;"></span> 12.6%</td><td><span style="display:inline-block;width:23px;height:12px;background:rgb(120,80,180);border-radius:2px;vertical-align:middle;"></span> 19.6%</td><td><span style="display:inline-block;width:5px;height:12px;background:rgb(80,140,200);border-radius:2px;vertical-align:middle;"></span> 4.3%</td><td style="text-align:center">105</td><td style="text-align:center">119</td></tr>
+  </tbody>
+</table>
+
+<h3>Matriz de confusión (validación, epoch 10)</h3>
+<p class="meta">Filas = etiqueta real · Columnas = etiqueta predicha · Intensidad = proporción respecto al total de la fila</p>
+<table>
+  <thead><tr><th></th><th>pred: o</th><th>pred: pi</th><th>pred: pc</th><th>pred: li</th><th>pred: lc</th></tr></thead>
+  <tbody>
+    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: o</th><td style="background:rgb(138,21,138);color:#fff;text-align:center;font-weight:bold">1174</td><td style="background:rgb(234,212,234);text-align:center">19</td><td style="background:rgb(235,215,235);text-align:center">2</td><td style="background:rgb(234,213,234);text-align:center">14</td><td style="background:rgb(235,215,235);text-align:center">1</td></tr>
+    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: pi</th><td style="background:rgb(190,125,190);text-align:center">5</td><td style="background:rgb(181,106,181);text-align:center;font-weight:bold">6</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
+    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: pc</th><td style="background:rgb(152,49,152);color:#fff;text-align:center;font-weight:bold">79</td><td style="background:rgb(234,213,234);text-align:center">1</td><td style="background:rgb(226,197,226);text-align:center">9</td><td style="background:rgb(232,209,232);text-align:center">3</td><td style="background:rgb(232,209,232);text-align:center">3</td></tr>
+    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: li</th><td style="background:rgb(135,15,135);color:#fff;text-align:center;font-weight:bold">2</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
+    <tr><th style="background:#e8f5e9;text-align:right;padding:6px 10px">true: lc</th><td style="background:rgb(135,15,135);color:#fff;text-align:center;font-weight:bold">11</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td><td style="background:#f8f8f8;color:#bbb;text-align:center">0</td></tr>
+  </tbody>
+</table>
+
+<h3>Métricas por clase (epoch 10)</h3>
+<table>
+  <thead><tr><th>Etiqueta</th><th>Precision</th><th>Recall</th><th>F1</th><th>Support</th></tr></thead>
+  <tbody>
+    <tr><td><strong>o</strong></td><td style="text-align:right">92.4%</td><td style="text-align:right">97.0%</td><td style="text-align:right;background:rgb(68,212,80);color:#fff;font-weight:bold">94.6%</td><td style="text-align:right">1210</td></tr>
+    <tr><td><strong>pi</strong></td><td style="text-align:right">23.1%</td><td style="text-align:right">54.5%</td><td style="text-align:right;background:rgb(168,125,80);color:#fff;font-weight:bold">32.4%</td><td style="text-align:right">11</td></tr>
+    <tr><td><strong>pc</strong></td><td style="text-align:right">81.8%</td><td style="text-align:right">9.5%</td><td style="text-align:right;background:rgb(192,103,80);color:#fff;font-weight:bold">17.0%</td><td style="text-align:right">95</td></tr>
+    <tr><td><strong>li</strong></td><td style="text-align:right">0.0%</td><td style="text-align:right">0.0%</td><td style="text-align:right;background:rgb(220,80,80);color:#fff;font-weight:bold">0.0%</td><td style="text-align:right">2</td></tr>
+    <tr><td><strong>lc</strong></td><td style="text-align:right">0.0%</td><td style="text-align:right">0.0%</td><td style="text-align:right;background:rgb(220,80,80);color:#fff;font-weight:bold">0.0%</td><td style="text-align:right">11</td></tr>
+  </tbody>
+</table>
+
+<h3>3.1 Evaluación cualitativa y limitaciones</h3>
+
+<p>Ejemplo de predicción sobre frases extraídas del corpus:</p>
+
+<pre>Entrada:
+  alice was beginning to get very tired of sitting by her sister on the bank.
+  the white rabbit ran close by her.
+  alice started to her feet and ran across the field after the rabbit.
+  the queen of hearts shouted off with her head.
+  alice met the cheshire cat sitting on a branch.
+  lewis carroll wrote alice's adventures in wonderland.
+  the mad hatter and the march hare were having a tea party.
+  alice found herself in the court of the king and queen of hearts.
+
+Salida del modelo:
+  PER  ali
+  LOC  n
+  PER  k
+  PER  ali
+  PER  a
+  PER  ali
+  PER  alice
+  PER  a
+  LOC  p
+  PER  ali</pre>
+
+<p>Los resultados son claramente deficientes. El modelo detecta subtokens BPE aislados (<code>ali</code>, <code>a</code>, <code>k</code>, <code>n</code>, <code>p</code>) en lugar de los nombres completos, y no detecta ninguna entidad LOC correctamente (<code>wonderland</code> debería aparecer). Hay varias razones que se acumulan:</p>
+<ul>
+  <li><strong>BPE rompe los nombres propios:</strong> "alice" se tokeniza como <code>ali</code>+<code>ce</code>, "queen" como <code>q</code>+<code>ueen</code>, etc. El modelo puede aprender a marcar el primer subtoken como <code>pi</code> pero no aprende a encadenar los siguientes con <code>pc</code>, por lo que los spans quedan truncados a un solo subtoken.</li>
+  <li><strong>Dataset de anotaciones pequeño:</strong> pocas frases etiquetadas manualmente son insuficientes para aprender el etiquetado de continuación de forma fiable.</li>
+  <li><strong>Desequilibrio extremo de clases:</strong> la inmensa mayoría de tokens son <code>o</code>, lo que sesga el modelo hacia predecir <code>o</code> salvo señales muy claras.</li>
+  <li><strong>Dominio mixto del backbone:</strong> el tokenizador BPE fue entrenado con Alice+HP, por lo que los nombres propios de Alice no tienen representación propia clara en el vocabulario y se fragmentan más.</li>
+</ul>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2>4. Generación de texto</h2>
+
+<p>Ejemplos de texto generado (100 tokens, temperatura=1.0):</p>
+
+<p><strong>Prompt: <code>"alice"</code></strong></p>
+<pre>aliceted astonishness .he come out an unpleasant run .it was a while you dont go !
+hermione was learned .in my wand said to him .let me watch him .for questionly come
+on he said .she could hear now said a frightened library looking at hermione for a rac</pre>
+
+<p><strong>Prompt: <code>"harry potter is"</code></strong></p>
+<pre>harry potter isnt this evenes ?lill it you his hand ?something youre a put us when you
+came to prival to the truth as i ?said dumbledore and george .he held up her hand hid
+him .theyll find funny ive knowledge i had heard is in here wouldve y</pre>
+
+<p><strong>Prompt: <code>"the queen said"</code></strong></p>
+<pre>the queen saidseek above the imprisontains again he felt as though she were in these
+three tall his ankle and things the spells was struggling all lumors on viere and worked
+him through the platform beetle .spun diggory and sprieked by haywi</pre>
+
+<p>Los resultados son pobres pero no uniformemente malos. El modelo ignora completamente el tema del prompt: con <code>"alice"</code> genera texto de Harry Potter (hermione, wand) y con <code>"the queen said"</code> produce referencias a Diggory y plataformas de Hogwarts. El dominio de HP domina simplemente porque su corpus es mucho mayor, y el modelo aprende a reproducir ese registro con más fluidez.</p>
+<p>Lo que sí se nota gracias al volumen de HP es que algunas frases tienen estructura sintáctica parcialmente correcta: <em>"he felt as though she were in these three tall"</em> o <em>"it was a while you dont go"</em> tienen un ritmo reconocible aunque sin sentido. El modelo ha aprendido patrones de frase del inglés literario, pero no tiene mecanismo para mantener coherencia temática más allá de 2-3 tokens.</p>
+<p>Los problemas más visibles son la puntuación errática (espacios antes de signos, interrogaciones intercaladas) y nombres propios fragmentados o inventados (<code>aliceted</code>, <code>imprisontains</code>, <code>evenes</code>), artefactos del vocabulario BPE de 300 tokens recomponiendo subwords en combinaciones que nunca vio en entrenamiento.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2>5. Conclusiones generales</h2>
+
+<p>Se eligió Harry Potter como corpus adicional por compartir características con Alice: ficción literaria en inglés, narración en tercera persona y público similar. El objetivo era ampliar el corpus manteniendo un registro coherente. Sin embargo, el experimento de corpus muestra que añadir HP empeora la val_loss en Alice (4.92 vs 2.86 entrenando solo en Alice), porque train y test dejan de coincidir en dominio. Para el modelo final de NER se optó igualmente por el backbone entrenado en Alice+HP, ya que un corpus mayor produce representaciones más ricas aunque la validación causal sea peor.</p>
+
+<p>En NER el problema más importante es la falta de datos: con tan pocas frases anotadas manualmente, el modelo no tiene ejemplos suficientes para aprender el etiquetado de forma fiable. Hay que tener en cuenta además que el esquema interno usa etiquetas de inicio y continuación (<code>pi</code>, <code>pc</code>, <code>li</code>, <code>lc</code>), pero la salida al usuario agrupa esas etiquetas en tipos de entidad (<code>PER</code>, <code>LOC</code>): el modelo predice subtokens individuales con <code>pi</code> o <code>pc</code> y el postprocesado los une en un span con su tipo. Con pocos datos, el modelo aprende a emitir <code>pi</code> en algún subtoken pero raramente encadena <code>pc</code> correctamente, por lo que los spans quedan truncados a un solo subtoken.</p>
+
+<footer>Práctica 5 — fdi-pln-2611 · UCM 2025/26</footer>
+</body>
+</html>
