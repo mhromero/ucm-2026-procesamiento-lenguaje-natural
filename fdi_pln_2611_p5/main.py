@@ -12,7 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from fdi_pln_2611_p5.annotations.merge_annotators import merge_annotations
-from fdi_pln_2611_p5.config import load_config, package_path
+from fdi_pln_2611_p5.config import asset_path, load_config
 from fdi_pln_2611_p5.inference import extract_entities_from_file, generate_text
 from fdi_pln_2611_p5.paths import PathNotFoundError, require_file
 from fdi_pln_2611_p5.training.causal import train_causal, train_tokenizer
@@ -23,7 +23,7 @@ app = typer.Typer(
     help="Practice 5: causal language model and NER on Alice in Wonderland."
 )
 
-_EXAMPLE_NER_PATH = package_path("data/sample_ner_test.txt")
+_EXAMPLE_NER_PATH = asset_path("data/sample_ner_test.txt")
 _STDERR_CONSOLE = Console(stderr=True)
 _STDOUT_CONSOLE = Console()
 
@@ -139,7 +139,7 @@ def cmd_train_causal(
     weights: Annotated[
         Path,
         typer.Option("--weights", help="Output path for causal model weights (.pth)."),
-    ] = package_path("p5_causal_2611.pth"),
+    ] = Path("p5_causal_2611.pth"),
     config: Annotated[
         Optional[Path],
         typer.Option("--config", help="Path to the JSON configuration file."),
@@ -174,19 +174,19 @@ def cmd_train_ner(
     weights: Annotated[
         Path,
         typer.Option("--weights", help="Output path for NER model weights (.pth)."),
-    ] = package_path("p5_ner_2611.pth"),
+    ] = Path("p5_ner_2611.pth"),
     causal_weights: Annotated[
         Path,
         typer.Option(
             "--causal-weights", help="Path to pretrained causal backbone weights."
         ),
-    ] = package_path("p5_causal_2611.pth"),
+    ] = Path("p5_causal_2611.pth"),
     annotations: Annotated[
         Path,
         typer.Option(
             "--annotations", help="Merged annotation JSON for NER fine-tuning."
         ),
-    ] = package_path("data/annotations/merged.json"),
+    ] = Path("data/annotations/merged.json"),
     config: Annotated[
         Optional[Path],
         typer.Option("--config", help="Path to the JSON configuration file."),
@@ -215,7 +215,7 @@ def cmd_generate(
     weights: Annotated[
         Path,
         typer.Option("--weights", help="Path to causal model weights (.pth)."),
-    ] = package_path("p5_causal_2611.pth"),
+    ] = Path("p5_causal_2611.pth"),
     prompt: Annotated[
         Optional[str],
         typer.Option(
@@ -260,7 +260,7 @@ def cmd_ner(
     weights: Annotated[
         Path,
         typer.Option("--weights", help="Path to NER model weights (.pth)."),
-    ] = package_path("p5_ner_2611.pth"),
+    ] = Path("p5_ner_2611.pth"),
     tokenizer: Annotated[
         Optional[Path],
         typer.Option(
@@ -294,7 +294,7 @@ def cmd_prepare_annotations(
     output_dir: Annotated[
         Path,
         typer.Option("--output-dir", help="Directory for generated JSON templates."),
-    ] = package_path("data/alice_jsons"),
+    ] = Path("data/alice_jsons"),
     n_json: Annotated[
         int,
         typer.Option(
@@ -331,7 +331,7 @@ def cmd_prepare_annotations(
     )
 
     info = crear_jsons_anotacion(
-        archivo_entrada=package_path("data/corpus/alice_in_wonderland.txt"),
+        archivo_entrada=asset_path("data/corpus/alice_in_wonderland.txt"),
         directorio_salida=output_dir,
         tokenizar=tokenizar_palabras,
         granularidad="palabra",
@@ -359,10 +359,10 @@ def cmd_merge_annotations(
             "--json-dir",
             help="Directory with json_XX.json files (and frases_seleccionadas.json).",
         ),
-    ] = package_path("data/alice_jsons"),
+    ] = Path("data/alice_jsons"),
     output: Annotated[
         Path, typer.Option("--output", help="Merged dataset output path.")
-    ] = package_path("data/annotations/merged.json"),
+    ] = Path("data/annotations/merged.json"),
 ):
     """Merge annotator JSON files from one directory and write merged.json."""
     bundle = merge_annotations(json_dir, output)

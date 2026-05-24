@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fdi_pln_2611_p5.config import package_path
+from fdi_pln_2611_p5.config import resolve_data_dir
 from fdi_pln_2611_p5.paths import require_dir
 
 # First-chapter markers for each Harry Potter book (lowercase; extra corpus is lowercased).
@@ -77,7 +77,9 @@ def build_extra_train_corpus(corpus_cfg: dict) -> str:
     max_books = corpus_cfg.get("extra_max_books")
     if max_books == 0:
         return ""
-    extra = concatenar_archivos_txt(package_path(corpus_cfg["extra_data_dir"])).lower()
+    extra = concatenar_archivos_txt(
+        resolve_data_dir(corpus_cfg["extra_data_dir"])
+    ).lower()
     if max_books is None:
         return extra
     return truncar_corpus_extra(extra, max_books)

@@ -11,7 +11,7 @@ from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
-from fdi_pln_2611_p5.config import package_path
+from fdi_pln_2611_p5.config import path_in_cwd
 from fdi_pln_2611_p5.training.run_config import save_reproducibility_artifacts
 from fdi_pln_2611_p5.model.lm_causal.llm import LLM
 from fdi_pln_2611_p5.training.grid_search_report import generate_grid_search_html
@@ -74,7 +74,7 @@ def run_grid_search(
             logger.info("Grid {} -> test_loss={:.4f}", row, test_loss)
 
     best = min(results, key=lambda item: item["test_loss"])
-    output_path = package_path(grid_cfg["results_path"])
+    output_path = path_in_cwd(grid_cfg["results_path"])
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
         json.dumps({"results": results, "best": best}, ensure_ascii=False, indent=2),
@@ -98,7 +98,7 @@ def run_grid_search(
         run_type="grid_search",
         extra=grid_extra,
     )
-    grid_cache = package_path("data/experiments/grid_search")
+    grid_cache = path_in_cwd("data/experiments/grid_search")
     if grid_cache.is_dir() and grid_cache.resolve() != output_path.parent.resolve():
         save_reproducibility_artifacts(
             grid_cache,

@@ -16,7 +16,7 @@ from fdi_pln_2611_p5.annotations.ner_dataset import (
 )
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.ner.checkpoints import save_ner_checkpoint
-from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
+from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, path_in_cwd
 from fdi_pln_2611_p5.paths import require_file, require_optional_file
 from fdi_pln_2611_p5.training.run_config import (
     resolve_config_path,
@@ -158,7 +158,7 @@ def train_ner(
     if resolved_tokenizer_path is None:
         resolved_tokenizer_path = require_file(
             causal_payload.get(
-                "tokenizer_path", str(package_path(config["tokenizer"]["cache_path"]))
+                "tokenizer_path", str(path_in_cwd(config["tokenizer"]["cache_path"]))
             ),
             label="BPE tokenizer",
         )
@@ -392,7 +392,7 @@ def train_ner(
         ner_model.entity_threshold,
     )
 
-    history_path = package_path(config["metrics"]["ner_history_csv_path"])
+    history_path = path_in_cwd(config["metrics"]["ner_history_csv_path"])
     history_path.parent.mkdir(parents=True, exist_ok=True)
     with history_path.open("w", newline="", encoding="utf-8") as handle:
         writer = DictWriter(
@@ -462,7 +462,7 @@ def train_ner(
         },
     )
 
-    report_path = package_path(config["metrics"]["ner_report_path"])
+    report_path = path_in_cwd(config["metrics"]["ner_report_path"])
     generate_ner_report(
         history=ner_history,
         confusion=confusion,

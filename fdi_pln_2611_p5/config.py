@@ -12,7 +12,7 @@ DEFAULT_CONFIG_PATH = PACKAGE_DIR / "config.json"
 
 
 def package_path(relative: str) -> Path:
-    """Resolve a path relative to the package root.
+    """Resolve a path relative to the installed package root (bundled assets).
 
     Args:
         relative: Path segment relative to the package directory.
@@ -21,6 +21,62 @@ def package_path(relative: str) -> Path:
         Absolute path under the package root.
     """
     return PACKAGE_DIR / relative
+
+
+def path_in_cwd(relative: str | Path) -> Path:
+    """Resolve a path relative to the current working directory.
+
+    Used for CLI outputs (weights, reports, caches) so artifacts land where the
+    user runs the command, not under ``site-packages``.
+
+    Args:
+        relative: Path segment (or absolute path) to resolve.
+
+    Returns:
+        Resolved absolute path.
+    """
+    p = Path(relative)
+    if p.is_absolute():
+        return p.resolve()
+    return (Path.cwd() / p).resolve()
+
+
+def asset_path(relative: str) -> Path:
+    """Resolve a bundled asset, preferring a copy in the working directory.
+
+    Args:
+        relative: Path relative to the project/package layout (e.g. ``data/corpus``).
+
+    Returns:
+        Existing path in the working directory, or the bundled package path.
+    """
+    local = path_in_cwd(relative)
+    if local.exists():
+        return local
+    return package_path(relative)
+
+
+def resolve_data_dir(relative: str) -> Path:
+    """Resolve a corpus directory (cwd override, else bundled package data).
+
+    Args:
+        relative: Corpus directory from config (e.g. ``data/corpus``).
+
+    Returns:
+        Absolute path to an existing directory.
+
+    Raises:
+        FileNotFoundError: If the directory exists neither in cwd nor in the package.
+    """
+    local = path_in_cwd(relative)
+    if local.is_dir():
+        return local
+    bundled = package_path(relative)
+    if bundled.is_dir():
+        return bundled
+    raise FileNotFoundError(
+        f"Corpus directory not found: {relative}\n  → {local}\n  → {bundled}"
+    )
 
 
 def load_config(path: Path | None = None) -> dict:
@@ -72,6 +128,7 @@ def resolve_tokenizer_path(
             idx = parts.index("fdi_pln_2611_p5")
             candidates.append(package_path(Path(*parts[idx + 1 :]).as_posix()))
 
+    candidates.append(path_in_cwd(config["tokenizer"]["cache_path"]))
     candidates.append(package_path(config["tokenizer"]["cache_path"]))
 
     base = weights_dir

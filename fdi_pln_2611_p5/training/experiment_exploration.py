@@ -16,7 +16,7 @@ from rich.console import Console
 from rich.table import Table
 
 from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
-from fdi_pln_2611_p5.config import DEFAULT_CONFIG_PATH, load_config, package_path
+from fdi_pln_2611_p5.config import DEFAULT_CONFIG_PATH, load_config, path_in_cwd
 from fdi_pln_2611_p5.training.run_config import save_reproducibility_artifacts
 from fdi_pln_2611_p5.training.causal import build_model, prepare_tokenizer_and_tokens
 from fdi_pln_2611_p5.training.experiment_report import generate_experiment_html
@@ -424,9 +424,9 @@ def run_experiment_exploration(config_path: Path | None = None) -> dict:
     base_config = load_config(config_path)
     exp_cfg = base_config["experiment_exploration"]
     epochs = exp_cfg["epochs_per_run"]
-    cache_root = package_path(exp_cfg["cache_root"])
-    results_path = package_path(exp_cfg["results_path"])
-    report_path = package_path(exp_cfg["report_path"])
+    cache_root = path_in_cwd(exp_cfg["cache_root"])
+    results_path = path_in_cwd(exp_cfg["results_path"])
+    report_path = path_in_cwd(exp_cfg["report_path"])
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(

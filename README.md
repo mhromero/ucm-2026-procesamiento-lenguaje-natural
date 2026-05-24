@@ -99,6 +99,8 @@ uv run fdi-pln-2611-p5 inference-generate          # prompt de ejemplo (config)
 uv run fdi-pln-2611-p5 inference-ner               # fichero de ejemplo (sample_ner_test.txt)
 ```
 
+Las rutas por defecto (`data/`, `p5_*.pth`, `checkpoints/`, `informes/`, etc.) son **relativas al directorio desde el que ejecutas el comando**, no a la instalación del paquete. El corpus y ficheros de ejemplo se leen del paquete si no existen en tu carpeta de trabajo.
+
 ---
 
 ## Comandos CLI

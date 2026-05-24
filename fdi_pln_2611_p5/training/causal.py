@@ -12,7 +12,13 @@ from loguru import logger
 
 from fdi_pln_2611_p5.model.lm_causal.bpe_tokenizer import BPETokenizer
 from fdi_pln_2611_p5.model.lm_causal.checkpoints import save_causal_checkpoint
-from fdi_pln_2611_p5.config import PACKAGE_DIR, load_config, package_path
+from fdi_pln_2611_p5.config import (
+    PACKAGE_DIR,
+    load_config,
+    package_path,
+    path_in_cwd,
+    resolve_data_dir,
+)
 from fdi_pln_2611_p5.paths import require_optional_file
 from fdi_pln_2611_p5.training.run_config import (
     resolve_config_path,
@@ -46,7 +52,9 @@ def prepare_tokenizer_and_tokens(
     corpus_cfg = config["corpus"]
     tokenizer_cfg = config["tokenizer"]
 
-    alice_textos = concatenar_archivos_txt(package_path(corpus_cfg["data_dir"])).lower()
+    alice_textos = concatenar_archivos_txt(
+        resolve_data_dir(corpus_cfg["data_dir"])
+    ).lower()
     max_books = corpus_cfg.get("extra_max_books")
     extra_train_textos = build_extra_train_corpus(corpus_cfg)
     if max_books == 0:
@@ -79,9 +87,10 @@ def prepare_tokenizer_and_tokens(
         train_tokens_path = explicit_tokenizer.parent / "train_tokens.json"
         test_tokens_path = explicit_tokenizer.parent / "test_tokens.json"
     else:
-        bpe_path = package_path(tokenizer_cfg["cache_path"])
-        train_tokens_path = package_path(tokenizer_cfg["train_tokens_cache_path"])
-        test_tokens_path = package_path(tokenizer_cfg["test_tokens_cache_path"])
+        bpe_path = path_in_cwd(tokenizer_cfg["cache_path"])
+        train_tokens_path = path_in_cwd(tokenizer_cfg["train_tokens_cache_path"])
+        test_tokens_path = path_in_cwd(tokenizer_cfg["test_tokens_cache_path"])
+        bpe_path.parent.mkdir(parents=True, exist_ok=True)
 
     if explicit_tokenizer is not None:
         tokenizer = BPETokenizer.load(str(explicit_tokenizer))
@@ -121,14 +130,17 @@ def train_tokenizer(config_path: Path | None = None) -> BPETokenizer:
     corpus_cfg = config["corpus"]
     tokenizer_cfg = config["tokenizer"]
 
-    alice_textos = concatenar_archivos_txt(package_path(corpus_cfg["data_dir"])).lower()
+    alice_textos = concatenar_archivos_txt(
+        resolve_data_dir(corpus_cfg["data_dir"])
+    ).lower()
     extra_textos = build_extra_train_corpus(corpus_cfg)
     texto_completo = (
         alice_textos if not extra_textos else alice_textos + "\n" + extra_textos
     )
 
     tokenizer = BPETokenizer(texto_completo, vocab_size=tokenizer_cfg["vocab_size"])
-    tokenizer_path = package_path(tokenizer_cfg["cache_path"])
+    tokenizer_path = path_in_cwd(tokenizer_cfg["cache_path"])
+    tokenizer_path.parent.mkdir(parents=True, exist_ok=True)
     tokenizer.save(str(tokenizer_path))
     logger.info(
         "Tokenizador BPE guardado en {} (vocab_size={})",
@@ -222,7 +234,7 @@ def train_causal(
     checkpoint_tokenizer_path = (
         Path(tokenizer_path).resolve()
         if tokenizer_path is not None
-        else package_path(config["tokenizer"]["cache_path"])
+        else path_in_cwd(config["tokenizer"]["cache_path"])
     )
 
     if grid_search:
@@ -284,7 +296,7 @@ def train_causal(
         },
     )
 
-    metrics_path = package_path(config["metrics"]["loss_csv_path"])
+    metrics_path = path_in_cwd(config["metrics"]["loss_csv_path"])
     metrics_path.parent.mkdir(parents=True, exist_ok=True)
     with metrics_path.open("w", newline="", encoding="utf-8") as handle:
         writer = DictWriter(
@@ -301,7 +313,7 @@ def train_causal(
             }
         )
 
-    history_path = package_path(config["metrics"]["causal_history_csv_path"])
+    history_path = path_in_cwd(config["metrics"]["causal_history_csv_path"])
     history_path.parent.mkdir(parents=True, exist_ok=True)
     with history_path.open("w", newline="", encoding="utf-8") as handle:
         writer = DictWriter(handle, fieldnames=["epoch", "train_loss", "val_loss"])

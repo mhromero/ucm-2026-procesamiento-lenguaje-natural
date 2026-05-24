@@ -18,7 +18,7 @@ from fdi_pln_2611_p5.annotations.merge_annotators import (
     merge_annotations,
     records_to_text_and_labels,
 )
-from fdi_pln_2611_p5.config import package_path
+from fdi_pln_2611_p5.config import path_in_cwd
 from fdi_pln_2611_p5.model.ner.labels import LABEL2ID, PREFIX_TO_ENTITY_TYPE
 
 
@@ -209,11 +209,9 @@ def generate_annotation_report(
     Returns:
         Path to the written HTML report file.
     """
-    json_dir = json_dir or package_path("data/alice_jsons")
-    output_html = output_html or package_path(
-        "data/annotations/informe_etiquetado.html"
-    )
-    merged_json = merged_json or package_path("data/annotations/merged.json")
+    json_dir = json_dir or path_in_cwd("data/alice_jsons")
+    output_html = output_html or path_in_cwd("data/annotations/informe_etiquetado.html")
+    merged_json = merged_json or path_in_cwd("data/annotations/merged.json")
 
     if bundle is None:
         bundle = merge_annotations(json_dir, merged_json)
